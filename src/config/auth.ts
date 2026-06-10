@@ -1,6 +1,6 @@
 export const authRoutes = ["/login", "/register"] as const;
 
-export const protectedRoutes = ["/chat", "/pomodoro", "/profile"] as const;
+export const protectedRoutes = ["/chat", "/profile"] as const;
 
 export function isAuthRoute(pathname: string) {
   return authRoutes.some(

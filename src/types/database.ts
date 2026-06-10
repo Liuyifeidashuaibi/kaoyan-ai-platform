@@ -222,9 +222,104 @@ export type Database = {
           updated_at?: string;
         };
       };
+      study_subjects: {
+        Row: {
+          id: string;
+          user_id: string;
+          name: string;
+          color: string;
+          total_seconds: number;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          name: string;
+          color: string;
+          total_seconds?: number;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          name?: string;
+          color?: string;
+          total_seconds?: number;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "study_subjects_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "users";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      study_timer_sessions: {
+        Row: {
+          id: string;
+          user_id: string;
+          subject_id: string;
+          mode: "stopwatch" | "countdown";
+          duration_seconds: number;
+          started_at: string;
+          ended_at: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          subject_id: string;
+          mode: "stopwatch" | "countdown";
+          duration_seconds: number;
+          started_at: string;
+          ended_at: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          subject_id?: string;
+          mode?: "stopwatch" | "countdown";
+          duration_seconds?: number;
+          started_at?: string;
+          ended_at?: string;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "study_timer_sessions_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "users";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "study_timer_sessions_subject_id_fkey";
+            columns: ["subject_id"];
+            isOneToOne: false;
+            referencedRelation: "study_subjects";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
     };
     Views: Record<string, never>;
-    Functions: Record<string, never>;
+    Functions: {
+      increment_subject_total_seconds: {
+        Args: {
+          p_subject_id: string;
+          p_user_id: string;
+          p_delta_seconds: number;
+        };
+        Returns: undefined;
+      };
+    };
     Enums: Record<string, never>;
   };
 };

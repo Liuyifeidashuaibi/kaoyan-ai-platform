@@ -36,9 +36,9 @@ export const navItems: NavItem[] = [
   },
   {
     href: "/pomodoro",
-    label: "番茄",
+    label: "学习计时",
     icon: Timer,
-    description: "专注学习与计时",
+    description: "科目计时与统计看板",
   },
   {
     href: "/community",

@@ -3,26 +3,55 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 
-import { createClient } from "@/lib/supabase/client";
+import { createClient, isSupabaseConfigured } from "@/lib/supabase/client";
 
 export function UserBadge() {
   const [email, setEmail] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const supabase = createClient();
+    if (!isSupabaseConfigured()) {
+      setLoading(false);
+      return;
+    }
 
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      setEmail(user?.email ?? null);
-    });
+    let subscription: { unsubscribe: () => void } | undefined;
 
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      setEmail(session?.user?.email ?? null);
-    });
+    try {
+      const supabase = createClient();
 
-    return () => subscription.unsubscribe();
+      supabase.auth
+        .getUser()
+        .then(({ data: { user } }) => {
+          setEmail(user?.email ?? null);
+        })
+        .catch(() => {
+          setEmail(null);
+        })
+        .finally(() => {
+          setLoading(false);
+        });
+
+      const { data } = supabase.auth.onAuthStateChange((_event, session) => {
+        setEmail(session?.user?.email ?? null);
+        setLoading(false);
+      });
+
+      subscription = data.subscription;
+    } catch {
+      setLoading(false);
+    }
+
+    return () => subscription?.unsubscribe();
   }, []);
+
+  if (loading) {
+    return (
+      <span className="text-sm text-muted-foreground" aria-hidden>
+        ···
+      </span>
+    );
+  }
 
   if (!email) {
     return (
@@ -36,7 +65,10 @@ export function UserBadge() {
   }
 
   return (
-    <span className="max-w-[180px] truncate text-sm text-muted-foreground">
+    <span
+      className="max-w-[180px] truncate text-sm text-muted-foreground"
+      title={email}
+    >
       {email}
     </span>
   );

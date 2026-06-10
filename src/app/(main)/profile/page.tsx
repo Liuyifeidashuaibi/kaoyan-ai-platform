@@ -1,5 +1,3 @@
-import { redirect } from "next/navigation";
-
 import { LogoutButton } from "@/components/auth/logout-button";
 import {
   Card,
@@ -9,7 +7,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { createClient } from "@/lib/supabase/server";
+import { requireAuth } from "@/lib/auth/require-auth";
 
 function formatDateTime(value: string) {
   return new Intl.DateTimeFormat("zh-CN", {
@@ -19,14 +17,7 @@ function formatDateTime(value: string) {
 }
 
 export default async function ProfilePage() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    redirect("/login?next=/profile");
-  }
+  const user = await requireAuth("/profile");
 
   return (
     <div className="flex flex-col gap-6 p-6 md:p-8">

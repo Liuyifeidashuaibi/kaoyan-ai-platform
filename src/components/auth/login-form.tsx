@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -15,38 +15,61 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { createClient } from "@/lib/supabase/client";
+import {
+  getLoginErrorMessage,
+  safeNextPath,
+} from "@/lib/auth/navigation";
+import { createClient, isSupabaseConfigured } from "@/lib/supabase/client";
 
 export function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const next = searchParams.get("next") ?? "/";
+  const next = safeNextPath(searchParams.get("next"));
+
+  const callbackError = useMemo(
+    () => getLoginErrorMessage(searchParams.get("error")),
+    [searchParams]
+  );
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(callbackError);
   const [loading, setLoading] = useState(false);
+
+  const configReady = isSupabaseConfigured();
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError(null);
-    setLoading(true);
 
-    const supabase = createClient();
-    const { error: signInError } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-
-    setLoading(false);
-
-    if (signInError) {
-      setError(signInError.message);
+    if (!configReady) {
+      setError("服务未正确配置，请联系管理员。");
       return;
     }
 
-    router.push(next);
-    router.refresh();
+    setLoading(true);
+
+    try {
+      const supabase = createClient();
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (signInError) {
+        setError(signInError.message);
+        return;
+      }
+
+      router.push(next);
+      router.refresh();
+    } catch (submitError) {
+      setError(
+        submitError instanceof Error ? submitError.message : "登录失败，请重试。"
+      );
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -57,6 +80,11 @@ export function LoginForm() {
       </CardHeader>
       <form onSubmit={handleSubmit}>
         <CardContent className="space-y-4">
+          {!configReady ? (
+            <p className="text-sm text-destructive">
+              Supabase 环境变量未配置，无法在 Vercel 上完成登录。
+            </p>
+          ) : null}
           <div className="space-y-2">
             <Label htmlFor="email">邮箱</Label>
             <Input
@@ -67,6 +95,7 @@ export function LoginForm() {
               value={email}
               onChange={(event) => setEmail(event.target.value)}
               required
+              disabled={!configReady}
             />
           </div>
           <div className="space-y-2">
@@ -79,6 +108,7 @@ export function LoginForm() {
               value={password}
               onChange={(event) => setPassword(event.target.value)}
               required
+              disabled={!configReady}
             />
           </div>
           {error ? (
@@ -86,12 +116,19 @@ export function LoginForm() {
           ) : null}
         </CardContent>
         <CardFooter className="flex flex-col gap-3">
-          <Button type="submit" className="w-full" disabled={loading}>
+          <Button
+            type="submit"
+            className="w-full"
+            disabled={loading || !configReady}
+          >
             {loading ? "登录中..." : "登录"}
           </Button>
           <p className="text-sm text-muted-foreground">
             还没有账号？{" "}
-            <Link href="/register" className="font-medium text-foreground underline-offset-4 hover:underline">
+            <Link
+              href={`/register?next=${encodeURIComponent(next)}`}
+              className="font-medium text-foreground underline-offset-4 hover:underline"
+            >
               立即注册
             </Link>
           </p>

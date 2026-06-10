@@ -1,6 +1,9 @@
 import { PagePlaceholder } from "@/components/layout/page-placeholder";
+import { requireAuth } from "@/lib/auth/require-auth";
 
-export default function ChatPage() {
+export default async function ChatPage() {
+  await requireAuth("/chat");
+
   return (
     <PagePlaceholder
       title="AI 聊天"

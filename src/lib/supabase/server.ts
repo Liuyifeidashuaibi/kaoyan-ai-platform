@@ -1,11 +1,11 @@
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 
-import { getSupabaseEnv } from "@/lib/supabase/env";
+import { requireSupabaseEnv } from "@/lib/supabase/env";
 
 export async function createClient() {
   const cookieStore = await cookies();
-  const { url, key } = getSupabaseEnv();
+  const { url, key } = requireSupabaseEnv();
 
   return createServerClient(url, key, {
     cookies: {
@@ -18,7 +18,7 @@ export async function createClient() {
             cookieStore.set(name, value, options)
           );
         } catch {
-          // Server Component 中无法写 cookie，由 middleware 处理
+            // Server Component 中无法写 cookie，由 proxy 处理
         }
       },
     },

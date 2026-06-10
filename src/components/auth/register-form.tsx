@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -15,10 +15,13 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { createClient } from "@/lib/supabase/client";
+import { safeNextPath } from "@/lib/auth/navigation";
+import { createClient, isSupabaseConfigured } from "@/lib/supabase/client";
 
 export function RegisterForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const next = safeNextPath(searchParams.get("next"));
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -27,10 +30,17 @@ export function RegisterForm() {
   const [message, setMessage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
+  const configReady = isSupabaseConfigured();
+
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError(null);
     setMessage(null);
+
+    if (!configReady) {
+      setError("服务未正确配置，请联系管理员。");
+      return;
+    }
 
     if (password !== confirmPassword) {
       setError("两次输入的密码不一致");
@@ -44,29 +54,35 @@ export function RegisterForm() {
 
     setLoading(true);
 
-    const supabase = createClient();
-    const { data, error: signUpError } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        emailRedirectTo: `${window.location.origin}/auth/callback?next=/`,
-      },
-    });
+    try {
+      const supabase = createClient();
+      const { data, error: signUpError } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}`,
+        },
+      });
 
-    setLoading(false);
+      if (signUpError) {
+        setError(signUpError.message);
+        return;
+      }
 
-    if (signUpError) {
-      setError(signUpError.message);
-      return;
+      if (data.session) {
+        router.push(next);
+        router.refresh();
+        return;
+      }
+
+      setMessage("注册成功，请查收邮箱完成验证后再登录。");
+    } catch (submitError) {
+      setError(
+        submitError instanceof Error ? submitError.message : "注册失败，请重试。"
+      );
+    } finally {
+      setLoading(false);
     }
-
-    if (data.session) {
-      router.push("/");
-      router.refresh();
-      return;
-    }
-
-    setMessage("注册成功，请查收邮箱完成验证后再登录。");
   }
 
   return (
@@ -77,6 +93,11 @@ export function RegisterForm() {
       </CardHeader>
       <form onSubmit={handleSubmit}>
         <CardContent className="space-y-4">
+          {!configReady ? (
+            <p className="text-sm text-destructive">
+              Supabase 环境变量未配置，无法在 Vercel 上完成注册。
+            </p>
+          ) : null}
           <div className="space-y-2">
             <Label htmlFor="email">邮箱</Label>
             <Input
@@ -87,6 +108,7 @@ export function RegisterForm() {
               value={email}
               onChange={(event) => setEmail(event.target.value)}
               required
+              disabled={!configReady}
             />
           </div>
           <div className="space-y-2">
@@ -99,6 +121,7 @@ export function RegisterForm() {
               value={password}
               onChange={(event) => setPassword(event.target.value)}
               required
+              disabled={!configReady}
             />
           </div>
           <div className="space-y-2">
@@ -111,6 +134,7 @@ export function RegisterForm() {
               value={confirmPassword}
               onChange={(event) => setConfirmPassword(event.target.value)}
               required
+              disabled={!configReady}
             />
           </div>
           {error ? (
@@ -121,12 +145,19 @@ export function RegisterForm() {
           ) : null}
         </CardContent>
         <CardFooter className="flex flex-col gap-3">
-          <Button type="submit" className="w-full" disabled={loading}>
+          <Button
+            type="submit"
+            className="w-full"
+            disabled={loading || !configReady}
+          >
             {loading ? "注册中..." : "注册"}
           </Button>
           <p className="text-sm text-muted-foreground">
             已有账号？{" "}
-            <Link href="/login" className="font-medium text-foreground underline-offset-4 hover:underline">
+            <Link
+              href={`/login?next=${encodeURIComponent(next)}`}
+              className="font-medium text-foreground underline-offset-4 hover:underline"
+            >
               去登录
             </Link>
           </p>

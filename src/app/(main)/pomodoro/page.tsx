@@ -1,6 +1,9 @@
 import { PagePlaceholder } from "@/components/layout/page-placeholder";
+import { requireAuth } from "@/lib/auth/require-auth";
 
-export default function PomodoroPage() {
+export default async function PomodoroPage() {
+  await requireAuth("/pomodoro");
+
   return (
     <PagePlaceholder
       title="番茄"

@@ -4,10 +4,25 @@ import { createClient } from "@/lib/supabase/server";
 import { getSupabaseEnv } from "@/lib/supabase/env";
 
 export async function GET() {
+  if (process.env.NODE_ENV === "production") {
+    return NextResponse.json({ ok: true });
+  }
+
   try {
-    const { url } = getSupabaseEnv();
+    const env = getSupabaseEnv();
+    if (!env) {
+      return NextResponse.json(
+        {
+          ok: false,
+          error:
+            "Missing NEXT_PUBLIC_SUPABASE_URL or NEXT_PUBLIC_SUPABASE_ANON_KEY",
+        },
+        { status: 500 }
+      );
+    }
+
     const supabase = await createClient();
-    const { data, error } = await supabase.auth.getClaims();
+    const { data } = await supabase.auth.getClaims();
 
     const tables: Record<string, string> = {};
     for (const table of [
@@ -18,16 +33,17 @@ export async function GET() {
       "chat_messages",
       "admission_data",
     ]) {
-      const { error: tableError } = await supabase.from(table).select("id").limit(1);
+      const { error: tableError } = await supabase
+        .from(table)
+        .select("id")
+        .limit(1);
       tables[table] = tableError ? tableError.message : "ok";
     }
 
     return NextResponse.json({
       ok: true,
-      supabaseUrl: url,
       auth: {
         hasSession: Boolean(data?.claims),
-        userId: data?.claims?.sub ?? null,
       },
       tables,
     });

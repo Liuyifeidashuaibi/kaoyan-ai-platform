@@ -32,6 +32,16 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+!.env.example
+
+# Python 后端
+backend/__pycache__/
+backend/.venv/
+chroma_db/
+kaoyan.db
+uploads/**/*
+!uploads/wrong_questions/.gitkeep
+!uploads/chat/.gitkeep
 
 # vercel
 .vercel

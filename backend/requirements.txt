@@ -1,0 +1,30 @@
+# FastAPI 后端依赖 — Python 3.11+
+fastapi>=0.115.0
+uvicorn[standard]>=0.32.0
+python-multipart>=0.0.12
+python-dotenv>=1.0.1
+pydantic>=2.9.0
+pydantic-settings>=2.6.0
+
+# 数据库
+sqlalchemy>=2.0.36
+aiosqlite>=0.20.0
+
+# 阿里云百炼 / DashScope
+dashscope>=1.20.0
+openai>=1.55.0
+
+# RAG — LlamaIndex + Chroma
+llama-index>=0.12.0
+llama-index-vector-stores-chroma>=0.4.0
+llama-index-embeddings-dashscope>=0.3.0
+llama-index-llms-openai-like>=0.3.0
+chromadb>=0.5.0
+
+# Agent — LangGraph
+langgraph>=0.2.0
+langchain-core>=0.3.0
+
+# 文档解析
+pypdf>=5.1.0
+aiofiles>=24.1.0

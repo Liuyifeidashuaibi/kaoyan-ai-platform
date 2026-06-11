@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { shouldSkipAuthInDev } from "@/lib/auth/dev-auth";
 import {
   getLoginErrorMessage,
   safeNextPath,
@@ -37,6 +38,7 @@ export function LoginForm() {
   const [loading, setLoading] = useState(false);
 
   const configReady = isSupabaseConfigured();
+  const devBypass = shouldSkipAuthInDev();
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -80,9 +82,21 @@ export function LoginForm() {
       </CardHeader>
       <form onSubmit={handleSubmit}>
         <CardContent className="space-y-4">
-          {!configReady ? (
+          {devBypass ? (
+            <p className="text-sm text-muted-foreground">
+              本地开发未配置 Supabase，已自动跳过登录。可直接{" "}
+              <Link
+                href={next}
+                className="font-medium text-foreground underline-offset-4 hover:underline"
+              >
+                进入平台
+              </Link>
+              ，或在下方配置 Supabase 后使用真实账号。
+            </p>
+          ) : !configReady ? (
             <p className="text-sm text-destructive">
-              Supabase 环境变量未配置，无法在 Vercel 上完成登录。
+              Supabase 环境变量未配置，无法完成登录。请在 .env.local 中设置
+              NEXT_PUBLIC_SUPABASE_URL 和 NEXT_PUBLIC_SUPABASE_ANON_KEY。
             </p>
           ) : null}
           <div className="space-y-2">

@@ -1,5 +1,5 @@
-import { StudySubjectsPage } from "@/components/study-timer/study-subjects-page";
+import { redirect } from "next/navigation";
 
-export default function PomodoroPage() {
-  return <StudySubjectsPage />;
+export default function PomodoroRedirectPage() {
+  redirect("/study/tomato");
 }

@@ -2,6 +2,7 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
 import { isAuthRoute, isProtectedRoute } from "@/config/auth";
+import { shouldSkipAuthInDev } from "@/lib/auth/dev-auth";
 import { getSupabaseEnv } from "@/lib/supabase/env";
 
 function redirectToLogin(request: NextRequest, pathname: string) {
@@ -26,6 +27,10 @@ export async function updateSession(request: NextRequest) {
     const env = getSupabaseEnv();
 
     if (!env) {
+      if (shouldSkipAuthInDev()) {
+        return NextResponse.next({ request });
+      }
+
       console.error(
         "[proxy] Missing NEXT_PUBLIC_SUPABASE_URL or NEXT_PUBLIC_SUPABASE_ANON_KEY"
       );

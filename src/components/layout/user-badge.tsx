@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 
+import { shouldSkipAuthInDev } from "@/lib/auth/dev-auth";
 import { createClient, isSupabaseConfigured } from "@/lib/supabase/client";
 
 export function UserBadge() {
@@ -11,6 +12,9 @@ export function UserBadge() {
 
   useEffect(() => {
     if (!isSupabaseConfigured()) {
+      if (shouldSkipAuthInDev()) {
+        setEmail("开发模式");
+      }
       setLoading(false);
       return;
     }

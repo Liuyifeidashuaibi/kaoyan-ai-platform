@@ -1,13 +1,20 @@
-import { PagePlaceholder } from "@/components/layout/page-placeholder";
+import { Suspense } from "react";
+
+import { ChatApp } from "@/components/chat/chat-app";
 import { requireAuth } from "@/lib/auth/require-auth";
 
 export default async function ChatPage() {
   await requireAuth("/chat");
 
   return (
-    <PagePlaceholder
-      title="AI 聊天"
-      description="与 AI 助手对话，获取备考答疑、知识点讲解与学习规划建议。"
-    />
+    <Suspense
+      fallback={
+        <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
+          加载聊天...
+        </div>
+      }
+    >
+      <ChatApp />
+    </Suspense>
   );
 }

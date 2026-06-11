@@ -1,4 +1,5 @@
 import {
+  BookOpen,
   GraduationCap,
   Home,
   MessageSquare,
@@ -29,16 +30,22 @@ export const navItems: NavItem[] = [
     description: "智能答疑与备考助手",
   },
   {
+    href: "/wrong-questions",
+    label: "错题本",
+    icon: BookOpen,
+    description: "错题整理与 AI 解析",
+  },
+  {
     href: "/schools",
     label: "择校",
     icon: GraduationCap,
     description: "院校与专业查询",
   },
   {
-    href: "/pomodoro",
-    label: "学习计时",
+    href: "/study/tomato",
+    label: "番茄钟",
     icon: Timer,
-    description: "科目计时与统计看板",
+    description: "专注计时与本地统计",
   },
   {
     href: "/community",

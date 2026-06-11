@@ -1,8 +1,13 @@
 import { redirect } from "next/navigation";
 
+import { createDevUser, shouldSkipAuthInDev } from "@/lib/auth/dev-auth";
 import { createClient } from "@/lib/supabase/server";
 
 export async function requireAuth(returnPath: string) {
+  if (shouldSkipAuthInDev()) {
+    return createDevUser();
+  }
+
   const supabase = await createClient();
   const {
     data: { user },

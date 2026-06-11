@@ -1,6 +1,6 @@
 "use client";
 
-import {
+import React, {
   memo,
   useCallback,
   useEffect,
@@ -133,13 +133,13 @@ const MarkdownContent = memo(function MarkdownContent({
       components={{
         /* Code blocks */
         pre({ children, ...props }) {
-          const codeEl =
-            typeof children === "object" &&
-            children !== null &&
-            "props" in (children as React.ReactElement)
-              ? (children as React.ReactElement)
-              : null;
-          const code = codeEl?.props?.children ?? "";
+          const codeEl = React.isValidElement(children) ? children : null;
+          const code =
+            codeEl?.props &&
+            typeof codeEl.props === "object" &&
+            "children" in codeEl.props
+              ? (codeEl.props as { children?: React.ReactNode }).children
+              : "";
           const rawCode = typeof code === "string" ? code : String(code ?? "");
 
           return (

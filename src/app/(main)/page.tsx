@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { BookOpen, MessageSquare, Timer } from "lucide-react";
 
-import { Button } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import {
   Card,
   CardContent,
@@ -54,9 +55,12 @@ export default function HomePage() {
                 <CardDescription>{item.description}</CardDescription>
               </CardHeader>
               <CardContent className="mt-auto">
-                <Button asChild variant="outline" className="w-full">
-                  <Link href={item.href}>进入 {item.label}</Link>
-                </Button>
+                <Link
+                  href={item.href}
+                  className={cn(buttonVariants({ variant: "outline" }), "w-full")}
+                >
+                  进入 {item.label}
+                </Link>
               </CardContent>
             </Card>
           );

@@ -35,6 +35,7 @@ type MessageBubbleProps = {
   role: string;
   content: string;
   imagePath?: string | null;
+  localPreview?: string | null;
   isStreaming?: boolean;
   onRegenerate?: () => void;
 };
@@ -240,10 +241,12 @@ const MessageBubble = memo(function MessageBubble({
   role,
   content,
   imagePath,
+  localPreview,
   isStreaming,
   onRegenerate,
 }: MessageBubbleProps) {
   const isUser = role === "user";
+  const imageSrc = localPreview || (imagePath ? resolveUploadUrl(imagePath) : "");
 
   return (
     <div className={cn("group flex gap-3", isUser ? "flex-row-reverse" : "flex-row")}>
@@ -269,10 +272,10 @@ const MessageBubble = memo(function MessageBubble({
               : "rounded-tl-sm bg-muted/60 text-foreground"
           )}
         >
-          {imagePath && (
+          {imageSrc && (
             // eslint-disable-next-line @next/next/no-img-element
             <img
-              src={resolveUploadUrl(imagePath)}
+              src={imageSrc}
               alt="上传图片"
               className="mb-2 max-h-52 rounded-lg object-contain"
             />
@@ -384,6 +387,7 @@ export function ChatMessageList({
               role={msg.role}
               content={msg.content}
               imagePath={msg.image_path}
+              localPreview={msg.local_preview}
               onRegenerate={
                 i === lastAssistantIndex && onRegenerate
                   ? () => onRegenerate(i)

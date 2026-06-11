@@ -17,6 +17,8 @@ export type ChatMessage = {
   role: "user" | "assistant" | "system";
   content: string;
   image_path: string | null;
+  /** 本地上传图片的临时预览（仅前端会话内展示，不落盘） */
+  local_preview?: string | null;
   created_at: string;
 };
 

@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Menu, X } from "lucide-react";
 
-import { ChatInput } from "@/components/chat/chat-input";
+import { ChatInput, type ChatSendPayload } from "@/components/chat/chat-input";
 import { ChatMessageList } from "@/components/chat/chat-message-list";
 import { ChatSidebar } from "@/components/chat/chat-sidebar";
 import { Button } from "@/components/ui/button";
@@ -14,9 +14,10 @@ import {
   getChatMessages,
   listChatSessions,
   streamChatMessage,
-  uploadChatImage,
 } from "@/lib/api/chat";
 import type { ChatMessage, ChatSession } from "@/lib/api/types";
+import { initApiBaseUrl } from "@/lib/config/api";
+
 
 export function ChatApp() {
   const router = useRouter();
@@ -39,15 +40,23 @@ export function ChatApp() {
 
   const abortControllerRef = useRef<AbortController | null>(null);
   const autoReplyTriggeredRef = useRef<string | null>(null);
+  const isStreamingRef = useRef(false);
+  const skipNextMessageLoadRef = useRef(false);
 
-  /* ── URL sync ─────────────────────────────────────────── */
+  useEffect(() => {
+    void initApiBaseUrl();
+  }, []);
+
+  useEffect(() => {
+    isStreamingRef.current = isStreaming;
+  }, [isStreaming]);
+
   useEffect(() => {
     if (!sessionFromUrl) return;
     const t = window.setTimeout(() => setActiveSessionId(sessionFromUrl), 0);
     return () => window.clearTimeout(t);
   }, [sessionFromUrl]);
 
-  /* ── Load session list ───────────────────────────────── */
   useEffect(() => {
     let cancelled = false;
     (async () => {
@@ -63,15 +72,21 @@ export function ChatApp() {
     return () => { cancelled = true; };
   }, [searchKeyword]);
 
-  /* ── Load messages for active session ───────────────── */
   useEffect(() => {
     if (!activeSessionId) return;
+    if (skipNextMessageLoadRef.current) {
+      skipNextMessageLoadRef.current = false;
+      return;
+    }
+
     let cancelled = false;
     (async () => {
       setLoadingMessages(true);
       try {
         const data = await getChatMessages(activeSessionId);
-        if (!cancelled) setMessages(data);
+        if (!cancelled && !isStreamingRef.current) {
+          setMessages(data);
+        }
       } catch (e) {
         if (!cancelled) setError(e instanceof Error ? e.message : "加载消息失败");
       } finally {
@@ -87,14 +102,22 @@ export function ChatApp() {
     setSessions(data);
   }, [searchKeyword]);
 
-  /* ── Core streaming function ─────────────────────────── */
   const streamAssistantReply = useCallback(
     async (
       sessionId: string,
       content: string,
-      imagePath?: string | null,
-      options?: { skipOptimisticUser?: boolean; skipUserSave?: boolean }
+      options?: {
+        imageFile?: File | null;
+        imagePath?: string | null;
+        localPreview?: string | null;
+        skipOptimisticUser?: boolean;
+        skipUserSave?: boolean;
+      }
     ) => {
+      const imageFile = options?.imageFile ?? null;
+      const imagePath = options?.imagePath ?? null;
+      const localPreview = options?.localPreview ?? null;
+
       abortControllerRef.current?.abort();
       const controller = new AbortController();
       abortControllerRef.current = controller;
@@ -108,6 +131,7 @@ export function ChatApp() {
         role: "user",
         content,
         image_path: imagePath ?? null,
+        local_preview: localPreview,
         created_at: new Date().toISOString(),
       };
 
@@ -119,6 +143,7 @@ export function ChatApp() {
         await streamChatMessage({
           sessionId,
           content,
+          imageFile,
           imagePath,
           skipUserSave: options?.skipUserSave,
           signal: controller.signal,
@@ -127,14 +152,17 @@ export function ChatApp() {
           },
         });
         const data = await getChatMessages(sessionId);
+        // 服务端已有 image_path，不再需要 blob URL
+        if (localPreview) URL.revokeObjectURL(localPreview);
         setMessages(data);
         await refreshSessions();
       } catch (e) {
-        if ((e as Error)?.name === "AbortError") return; // stopped by user
+        if ((e as Error)?.name === "AbortError") return;
         setError(e instanceof Error ? e.message : "发送失败");
         if (!options?.skipOptimisticUser) {
           setMessages((prev) => prev.filter((m) => m.id !== tempUserMsg.id));
         }
+        if (localPreview) URL.revokeObjectURL(localPreview);
       } finally {
         setIsStreaming(false);
         setStreamingContent("");
@@ -144,12 +172,10 @@ export function ChatApp() {
     [refreshSessions]
   );
 
-  /* ── Stop generation ─────────────────────────────────── */
   const handleStop = useCallback(() => {
     abortControllerRef.current?.abort();
   }, []);
 
-  /* ── Auto-reply from wrong-questions one-tap ─────────── */
   useEffect(() => {
     if (!autoReply || !activeSessionId || loadingMessages || isStreaming) return;
     if (messages.length === 0) return;
@@ -161,18 +187,16 @@ export function ChatApp() {
 
     autoReplyTriggeredRef.current = activeSessionId;
     router.replace(`/chat?session=${activeSessionId}`, { scroll: false });
-    void streamAssistantReply(
-      activeSessionId,
-      lastUser.content,
-      lastUser.image_path,
-      { skipOptimisticUser: true, skipUserSave: true }
-    );
+    void streamAssistantReply(activeSessionId, lastUser.content, {
+      imagePath: lastUser.image_path,
+      skipOptimisticUser: true,
+      skipUserSave: true,
+    });
   }, [
     activeSessionId, autoReply, isStreaming,
     loadingMessages, messages, router, streamAssistantReply,
   ]);
 
-  /* ── Regenerate last assistant message ───────────────── */
   const handleRegenerate = useCallback(
     async (_messageIndex: number) => {
       if (!activeSessionId) return;
@@ -187,17 +211,16 @@ export function ChatApp() {
         return arr;
       });
 
-      await streamAssistantReply(
-        activeSessionId,
-        lastUser.content,
-        lastUser.image_path,
-        { skipOptimisticUser: true, skipUserSave: true }
-      );
+      await streamAssistantReply(activeSessionId, lastUser.content, {
+        imagePath: lastUser.image_path,
+        localPreview: lastUser.local_preview,
+        skipOptimisticUser: true,
+        skipUserSave: true,
+      });
     },
     [activeSessionId, messages, streamAssistantReply]
   );
 
-  /* ── Session actions ─────────────────────────────────── */
   const handleNewChat = async () => {
     setError(null);
     try {
@@ -230,33 +253,31 @@ export function ChatApp() {
     }
   };
 
-  /* ── Send message ────────────────────────────────────── */
-  const sendToSession = useCallback(
-    async (sessionId: string, content: string, imagePath?: string | null) => {
-      await streamAssistantReply(sessionId, content, imagePath);
-    },
-    [streamAssistantReply]
-  );
+  const handleSend = async ({ content, imageFile, previewUrl }: ChatSendPayload) => {
+    const sendPayload = {
+      imageFile: imageFile ?? null,
+      localPreview: previewUrl,
+    };
 
-  const handleSend = async (content: string, imagePath?: string | null) => {
     if (!activeSessionId) {
       try {
         const session = await createChatSession();
         setSessions((prev) => [session, ...prev]);
+        skipNextMessageLoadRef.current = true;
         setActiveSessionId(session.id);
-        await sendToSession(session.id, content, imagePath);
+        setMessages([]);
+        await streamAssistantReply(session.id, content, sendPayload);
       } catch (e) {
         setError(e instanceof Error ? e.message : "发送失败");
       }
       return;
     }
-    await sendToSession(activeSessionId, content, imagePath);
+
+    await streamAssistantReply(activeSessionId, content, sendPayload);
   };
 
-  /* ── Render ──────────────────────────────────────────── */
   return (
     <div className="flex h-full overflow-hidden">
-      {/* Mobile sidebar backdrop */}
       {sidebarOpen && (
         <button
           type="button"
@@ -266,7 +287,6 @@ export function ChatApp() {
         />
       )}
 
-      {/* Sidebar */}
       <div
         className={`fixed inset-y-14 left-0 z-50 w-72 transition-transform md:static md:inset-y-0 md:z-auto md:translate-x-0 ${
           sidebarOpen ? "translate-x-0" : "-translate-x-full"
@@ -284,9 +304,7 @@ export function ChatApp() {
         />
       </div>
 
-      {/* Main chat area */}
       <div className="flex min-h-0 min-w-0 flex-1 flex-col">
-        {/* Mobile top bar */}
         <div className="flex shrink-0 items-center gap-2 border-b border-border px-3 py-2 md:hidden">
           <Button
             variant="ghost"
@@ -300,7 +318,6 @@ export function ChatApp() {
           </span>
         </div>
 
-        {/* Error banner */}
         {error && (
           <div className="shrink-0 border-b border-destructive/30 bg-destructive/10 px-4 py-2 text-sm text-destructive">
             {error}
@@ -314,7 +331,6 @@ export function ChatApp() {
           </div>
         )}
 
-        {/* Message list */}
         {loadingMessages ? (
           <div className="flex flex-1 items-center justify-center text-sm text-muted-foreground">
             加载消息…
@@ -328,15 +344,10 @@ export function ChatApp() {
           />
         )}
 
-        {/* Input bar */}
         <ChatInput
           onSend={handleSend}
           onStop={handleStop}
           isStreaming={isStreaming}
-          onUploadImage={async (file) => {
-            const { image_path } = await uploadChatImage(file);
-            return image_path;
-          }}
           disabled={loadingMessages}
         />
       </div>

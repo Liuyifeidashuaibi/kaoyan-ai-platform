@@ -1,91 +1,74 @@
 """
-LangGraph Agent 编排服务。
+Agent 编排服务 — RAG 检索 + 模型路由（图片 → VL_MODEL，纯文本 → LLM_MODEL）。
 
-工作流：
-  接收用户输入 → RAG 检索 → 判断是否有图片 → 选择文本/多模态路径 → 流式生成回复
+不使用 LangGraph 状态序列化来传递图片对象，直接在本函数内路由，
+避免 compiled.invoke() 对 ResolvedImage dataclass 的序列化问题。
 """
 
 import logging
-from typing import AsyncGenerator, TypedDict
-
-from langgraph.graph import END, StateGraph
+from typing import AsyncGenerator
 
 from app.services.ai_service import get_ai_service
 from app.services.rag_service import get_rag_service
+from app.utils.image_url import ResolvedImage, log_image_event
 
 logger = logging.getLogger(__name__)
-
-
-class AgentState(TypedDict):
-    """Agent 状态定义。"""
-
-    query: str
-    image_path: str | None
-    history: list[dict]
-    rag_context: str
-    has_image: bool
-    response: str
-
-
-def _retrieve_node(state: AgentState) -> AgentState:
-    """节点：RAG 知识库检索（用户错题优先）。"""
-    rag = get_rag_service()
-    context = rag.retrieve(state["query"])
-    return {**state, "rag_context": context}
-
-
-def _route_node(state: AgentState) -> AgentState:
-    """节点：判断是否需要图片处理。"""
-    has_image = bool(state.get("image_path"))
-    return {**state, "has_image": has_image}
 
 
 async def run_agent_stream(
     query: str,
     history: list[dict] | None = None,
-    image_path: str | None = None,
+    image: ResolvedImage | None = None,
 ) -> AsyncGenerator[str, None]:
     """
-    执行 LangGraph Agent 并流式返回 token。
+    RAG 检索 + 流式生成。
 
-    图结构：retrieve → route → (stream with image / stream text only)
+    有图片 → VL_MODEL（chat_with_image_stream）
+    纯文本 → LLM_MODEL（chat_stream）
     """
-    # 构建并编译 LangGraph 工作流
-    graph = StateGraph(AgentState)
-    graph.add_node("retrieve", _retrieve_node)
-    graph.add_node("route", _route_node)
-    graph.set_entry_point("retrieve")
-    graph.add_edge("retrieve", "route")
-    graph.add_edge("route", END)
-    compiled = graph.compile()
-
-    # 运行检索与路由节点（同步部分）
-    initial: AgentState = {
-        "query": query,
-        "image_path": image_path,
-        "history": history or [],
-        "rag_context": "",
-        "has_image": False,
-        "response": "",
-    }
-    result = compiled.invoke(initial)
-
     ai = get_ai_service()
-    rag_context = result.get("rag_context", "")
 
-    # 根据是否有图片选择不同的流式生成路径
-    if result.get("has_image") and image_path:
-        logger.info("路由: 图片问答 → %s", ai.settings.vl_model)
+    # ── RAG 检索（同步，不经过 LangGraph，避免 state 序列化问题）
+    try:
+        rag = get_rag_service()
+        rag_context: str = rag.retrieve(query) or ""
+    except Exception as exc:
+        logger.warning("RAG 检索失败，忽略: %s", exc)
+        rag_context = ""
+
+    # ── 路由：直接用参数判断，不依赖 LangGraph state
+    if image is not None:
+        log_image_event(
+            request_type="vision",
+            source=image.source_type,
+            model=ai.settings.vl_model,
+            status="agent_route_vl",
+            detail=f"api_url_len={len(image.api_url)}",
+        )
+        logger.info(
+            "[Agent] 路由 → VL_MODEL | image_source=%s | query=%r",
+            image.source_type,
+            query[:80],
+        )
         async for token in ai.chat_with_image_stream(
             text=query,
-            image_path=image_path,
-            history=result.get("history"),
+            image=image,
+            history=list(history or []),
             rag_context=rag_context,
         ):
             yield token
     else:
-        logger.info("路由: 文本问答 → %s", ai.settings.llm_model)
-        messages = list(result.get("history") or [])
+        log_image_event(
+            request_type="text",
+            source="none",
+            model=ai.settings.llm_model,
+            status="agent_route_llm",
+        )
+        logger.info(
+            "[Agent] 路由 → LLM_MODEL | query=%r",
+            query[:80],
+        )
+        messages = list(history or [])
         messages.append({"role": "user", "content": query})
         async for token in ai.chat_stream(messages, rag_context):
             yield token

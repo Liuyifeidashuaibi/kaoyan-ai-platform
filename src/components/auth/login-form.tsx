@@ -66,9 +66,15 @@ export function LoginForm() {
       router.push(next);
       router.refresh();
     } catch (submitError) {
-      setError(
-        submitError instanceof Error ? submitError.message : "登录失败，请重试。"
-      );
+      const msg =
+        submitError instanceof Error ? submitError.message : "登录失败，请重试。";
+      if (/failed to fetch|network|timeout/i.test(msg)) {
+        setError(
+          "无法连接认证服务（Supabase），请检查网络或代理。本地开发可在 .env.local 设置 SKIP_AUTH_IN_DEV=true 后重启前端，直接跳过登录。"
+        );
+      } else {
+        setError(msg);
+      }
     } finally {
       setLoading(false);
     }
@@ -84,7 +90,7 @@ export function LoginForm() {
         <CardContent className="space-y-4">
           {devBypass ? (
             <p className="text-sm text-muted-foreground">
-              本地开发未配置 Supabase，已自动跳过登录。可直接{" "}
+              本地开发已跳过 Supabase 登录。可直接{" "}
               <Link
                 href={next}
                 className="font-medium text-foreground underline-offset-4 hover:underline"

@@ -31,8 +31,10 @@ class Settings(BaseSettings):
     llm_model: str = "qwen-max-latest"
     vl_model: str = "qwen2.5-vl-72b-instruct"
     dashscope_base_url: str = "https://dashscope.aliyuncs.com/compatible-mode/v1"
-    # 图片公网访问根地址（如 https://your-api.onrender.com），供 DashScope 视觉模型拉取图片
-    public_base_url: str = ""
+    # 聊天图片上传大小上限（字节）
+    max_image_upload_bytes: int = 10 * 1024 * 1024
+    # 模型 API 调用超时（秒）
+    model_timeout_seconds: int = 120
 
     # 服务
     api_host: str = "0.0.0.0"

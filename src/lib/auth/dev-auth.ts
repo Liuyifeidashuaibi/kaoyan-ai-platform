@@ -2,9 +2,17 @@ import type { User } from "@supabase/supabase-js";
 
 import { getSupabaseEnv } from "@/lib/supabase/env";
 
-/** 本地开发且未配置 Supabase 时，跳过登录校验 */
+/** 本地开发跳过登录：未配置 Supabase，或显式设置 SKIP_AUTH_IN_DEV=true */
 export function shouldSkipAuthInDev() {
-  return process.env.NODE_ENV === "development" && !getSupabaseEnv();
+  if (process.env.NODE_ENV !== "development") return false;
+
+  const explicitSkip =
+    process.env.SKIP_AUTH_IN_DEV === "true" ||
+    process.env.NEXT_PUBLIC_SKIP_AUTH_IN_DEV === "true";
+
+  if (explicitSkip) return true;
+
+  return !getSupabaseEnv();
 }
 
 export function createDevUser(): User {

@@ -1,7 +1,8 @@
 "use client";
 
+import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Loader2, MessageSquare, Sparkles } from "lucide-react";
+import { Loader2, MessageSquare, Sparkles, ZoomIn } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -13,6 +14,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
+import { ImageViewer } from "@/components/wrong-questions/image-viewer";
 import type { WrongQuestion } from "@/lib/api/types";
 import { resolveUploadUrl } from "@/lib/config/api";
 
@@ -38,10 +40,12 @@ export function QuestionDetailDialog({
   startingChat,
 }: QuestionDetailDialogProps) {
   const router = useRouter();
+  const [viewerOpen, setViewerOpen] = useState(false);
 
   if (!question) return null;
 
   return (
+    <>
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
         <DialogHeader>
@@ -52,12 +56,23 @@ export function QuestionDetailDialog({
         </DialogHeader>
 
         <div className="space-y-4">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={resolveUploadUrl(question.image_path)}
-            alt={question.title}
-            className="w-full rounded-lg border object-contain"
-          />
+          <button
+            type="button"
+            onClick={() => setViewerOpen(true)}
+            className="group relative block w-full overflow-hidden rounded-lg border"
+            aria-label="点击放大查看（滚轮缩放）"
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={resolveUploadUrl(question.image_path)}
+              alt={question.title}
+              className="w-full object-contain"
+            />
+            <span className="absolute right-2 top-2 flex items-center gap-1 rounded-full bg-black/55 px-2 py-1 text-xs text-white opacity-0 transition-opacity group-hover:opacity-100">
+              <ZoomIn className="size-3.5" />
+              点击放大
+            </span>
+          </button>
 
           <div className="space-y-2">
             <p className="text-sm font-medium">介绍</p>
@@ -116,5 +131,19 @@ export function QuestionDetailDialog({
         </DialogFooter>
       </DialogContent>
     </Dialog>
+
+    <ImageViewer
+      open={viewerOpen}
+      index={0}
+      slides={[
+        {
+          src: resolveUploadUrl(question.image_path),
+          title: question.title,
+          description: question.category_name,
+        },
+      ]}
+      onClose={() => setViewerOpen(false)}
+    />
+    </>
   );
 }

@@ -1,0 +1,24 @@
+# Cloudflare Tunnel 配置模板
+#
+# 使用步骤：
+#   1. 复制本文件为 config.yml（config.yml 已在 .gitignore 中，不会提交）
+#   2. 按下方说明填写 tunnel、credentials-file、hostname
+#   3. 运行 scripts/start-tunnel.ps1
+#
+# 首次创建隧道（只需做一次）：
+#   cloudflared tunnel login
+#   cloudflared tunnel create kaoyan-api
+#   cloudflared tunnel route dns kaoyan-api api.你的域名.com
+#
+# credentials-file 路径在创建隧道后位于：
+#   Windows: C:\Users\<用户名>\.cloudflared\<tunnel-id>.json
+
+tunnel: kaoyan-api
+credentials-file: C:\Users\YOUR_USER\.cloudflared\YOUR_TUNNEL_ID.json
+
+ingress:
+  # 固定公网域名 → 本地 FastAPI
+  - hostname: api.你的域名.com
+    service: http://127.0.0.1:8000
+  # 必须保留：未匹配请求的默认规则
+  - service: http_status:404

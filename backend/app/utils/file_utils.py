@@ -5,8 +5,8 @@
 import uuid
 from pathlib import Path
 
-# 允许上传的图片扩展名
-ALLOWED_IMAGE_EXTENSIONS = {".jpg", ".jpeg", ".png", ".gif", ".webp", ".bmp"}
+# 允许上传的图片扩展名（错题本等落盘场景）
+ALLOWED_IMAGE_EXTENSIONS = {".jpg", ".jpeg", ".png", ".gif", ".webp"}
 
 
 def ensure_dir(path: Path) -> Path:

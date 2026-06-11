@@ -1,4 +1,4 @@
-import { getApiBaseUrl } from "@/lib/config/api";
+import { ensureApiBaseUrl } from "@/lib/config/api";
 import type { ApiResponse } from "@/lib/api/types";
 
 export class ApiError extends Error {
@@ -16,7 +16,8 @@ export async function apiFetch<T>(
   path: string,
   init?: RequestInit
 ): Promise<T> {
-  const res = await fetch(`${getApiBaseUrl()}${path}`, init);
+  const base = await ensureApiBaseUrl();
+  const res = await fetch(`${base}${path}`, init);
   const json = (await res.json()) as ApiResponse<T>;
 
   if (!res.ok || !json.success) {
@@ -31,7 +32,8 @@ export async function apiUpload<T>(
   path: string,
   formData: FormData
 ): Promise<T> {
-  const res = await fetch(`${getApiBaseUrl()}${path}`, {
+  const base = await ensureApiBaseUrl();
+  const res = await fetch(`${base}${path}`, {
     method: "POST",
     body: formData,
   });

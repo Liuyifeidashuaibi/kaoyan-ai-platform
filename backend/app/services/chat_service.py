@@ -2,6 +2,7 @@
 聊天业务服务 — 会话管理、消息持久化、流式对话编排。
 """
 
+import json
 import uuid
 from datetime import datetime
 
@@ -9,8 +10,7 @@ from sqlalchemy.orm import Session
 
 from app.database import ChatMessage, ChatSession
 from app.services.agent_service import run_agent_stream
-from app.config import get_settings
-from app.utils.file_utils import ensure_dir, save_upload_image
+from app.utils.image_url import ResolvedImage, log_image_event
 
 
 class ChatService:
@@ -74,7 +74,6 @@ class ChatService:
             created_at=datetime.utcnow(),
         )
         self.db.add(msg)
-        # 更新会话时间；首条用户消息可自动更新标题
         session = self.get_session(session_id)
         if session:
             session.updated_at = datetime.utcnow()
@@ -97,43 +96,59 @@ class ChatService:
         self,
         session_id: str,
         user_content: str,
-        image_path: str | None = None,
+        image: ResolvedImage | None = None,
         *,
         skip_user_save: bool = False,
     ):
         """
         保存用户消息 → 调用 Agent 流式生成 → 保存助手回复。
-
-        这是一个 async generator，yield SSE 格式数据块。
+        yield SSE 格式数据块。
         """
         session = self.get_session(session_id)
         if not session:
             yield 'data: {"error": "会话不存在"}\n\n'
             return
 
+        storage_ref = image.storage_ref if image else None
         if not skip_user_save:
-            self.save_message(session_id, "user", user_content, image_path)
+            self.save_message(session_id, "user", user_content, storage_ref)
 
         history = self.build_history_for_llm(session_id)
-        # 当前轮 user 已在历史中（含 skip_user_save 场景），Agent 会自行 append
         if history and history[-1]["role"] == "user":
             history = history[:-1]
 
-        full_response: list[str] = []
-        async for token in run_agent_stream(user_content, history, image_path):
-            full_response.append(token)
-            # SSE 格式：data: <json>\n\n
-            import json
+        request_type = "vision" if image else "text"
+        log_image_event(
+            request_type=request_type,
+            source=image.source_type if image else "none",
+            model="-",
+            status="stream_start",
+            detail=f"session={session_id}",
+        )
 
-            yield f"data: {json.dumps({'token': token}, ensure_ascii=False)}\n\n"
+        full_response: list[str] = []
+        try:
+            async for token in run_agent_stream(user_content, history, image):
+                full_response.append(token)
+                yield f"data: {json.dumps({'token': token}, ensure_ascii=False)}\n\n"
+        except Exception as exc:
+            logger_msg = str(exc)
+            log_image_event(
+                request_type=request_type,
+                source=image.source_type if image else "none",
+                model="-",
+                status="stream_error",
+                detail=logger_msg,
+            )
+            yield f"data: {json.dumps({'error': '对话生成失败，请稍后重试'}, ensure_ascii=False)}\n\n"
+            return
 
         assistant_text = "".join(full_response)
         self.save_message(session_id, "assistant", assistant_text)
-        yield 'data: {"done": true}\n\n'
-
-    def save_chat_image(self, content: bytes, filename: str, upload_dir) -> str:
-        """保存聊天中上传的图片，返回相对路径。"""
-        ensure_dir(upload_dir)
-        return save_upload_image(
-            content, upload_dir, filename, project_root=get_settings().root
+        log_image_event(
+            request_type=request_type,
+            source=image.source_type if image else "none",
+            model="-",
+            status="stream_done",
         )
+        yield 'data: {"done": true}\n\n'

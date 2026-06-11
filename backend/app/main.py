@@ -10,7 +10,7 @@ from contextlib import asynccontextmanager
 from pathlib import Path
 
 from dotenv import load_dotenv
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
@@ -36,7 +36,7 @@ async def lifespan(app: FastAPI):
     # 确保关键目录存在
     ensure_dir(settings.public_data_path)
     ensure_dir(settings.upload_path)
-    ensure_dir(settings.upload_path.parent / "chat")
+    ensure_dir(settings.upload_path.parent / "chat")   # uploads/chat/ 聊天图片
     ensure_dir(settings.chroma_path)
 
     init_db()
@@ -51,7 +51,7 @@ async def lifespan(app: FastAPI):
 app = FastAPI(
     title="考研 AI 平台 API",
     description="AI 聊天 + 错题本 + RAG 知识库",
-    version="0.1.0",
+    version="0.1.1",
     lifespan=lifespan,
 )
 
@@ -68,10 +68,10 @@ app.add_middleware(
 app.include_router(chat.router)
 app.include_router(wrong_questions.router)
 
-# 静态文件服务 — 提供上传图片访问
+# 静态文件服务 — 提供上传图片访问（确保目录存在后再挂载）
 _uploads_root = get_settings().root / "uploads"
-if _uploads_root.exists():
-    app.mount("/uploads", StaticFiles(directory=str(_uploads_root)), name="uploads")
+_uploads_root.mkdir(parents=True, exist_ok=True)
+app.mount("/uploads", StaticFiles(directory=str(_uploads_root)), name="uploads")
 
 
 @app.get("/api/health")
@@ -84,11 +84,35 @@ async def health_check():
             "status": "ok",
             "llm_model": settings.llm_model,
             "vl_model": settings.vl_model,
-            "public_base_url": settings.public_base_url or None,
+            "max_image_upload_mb": settings.max_image_upload_bytes // (1024 * 1024),
             "api_key_configured": api_key_ok,
             "public_data_dir": str(settings.public_data_path),
         }
     )
+
+
+@app.post("/api/debug/echo")
+async def debug_echo(request: Request):
+    """
+    调试接口：打印收到的所有表单字段和文件，返回摘要，不调用 AI 模型。
+    用法：在浏览器 DevTools → Network 里观察请求体是否包含 image_file。
+    """
+    form = await request.form()
+    result: dict = {}
+    for key in form:
+        value = form[key]
+        if hasattr(value, "filename"):  # UploadFile
+            content = await value.read()
+            result[key] = {
+                "type": "file",
+                "filename": value.filename,
+                "content_type": value.content_type,
+                "size_bytes": len(content),
+                "first_20_bytes_hex": content[:20].hex() if content else "",
+            }
+        else:
+            result[key] = {"type": "field", "value": str(value)[:200]}
+    return success_response(result, message="echo ok")
 
 
 @app.get("/")

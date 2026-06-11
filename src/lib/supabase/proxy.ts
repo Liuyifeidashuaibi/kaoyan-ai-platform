@@ -1,9 +1,33 @@
-import { createServerClient } from "@supabase/ssr";
+import { createServerClient, type SupabaseClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
 import { isAuthRoute, isProtectedRoute } from "@/config/auth";
 import { shouldSkipAuthInDev } from "@/lib/auth/dev-auth";
 import { getSupabaseEnv } from "@/lib/supabase/env";
+
+const DEV_AUTH_TIMEOUT_MS = 3000;
+
+async function getClaimsWithDevTimeout(supabase: SupabaseClient) {
+  const claimsPromise = supabase.auth.getClaims();
+
+  if (process.env.NODE_ENV !== "development") {
+    return claimsPromise;
+  }
+
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const timeoutPromise = new Promise<never>((_, reject) => {
+    timer = setTimeout(
+      () => reject(new Error("Supabase auth timeout")),
+      DEV_AUTH_TIMEOUT_MS
+    );
+  });
+
+  try {
+    return await Promise.race([claimsPromise, timeoutPromise]);
+  } finally {
+    if (timer) clearTimeout(timer);
+  }
+}
 
 function redirectToLogin(request: NextRequest, pathname: string) {
   const redirectUrl = request.nextUrl.clone();
@@ -23,13 +47,14 @@ function redirectWithCookies(url: URL, supabaseResponse: NextResponse) {
 export async function updateSession(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
 
+  if (shouldSkipAuthInDev()) {
+    return NextResponse.next({ request });
+  }
+
   try {
     const env = getSupabaseEnv();
 
     if (!env) {
-      if (shouldSkipAuthInDev()) {
-        return NextResponse.next({ request });
-      }
 
       console.error(
         "[proxy] Missing NEXT_PUBLIC_SUPABASE_URL or NEXT_PUBLIC_SUPABASE_ANON_KEY"
@@ -66,7 +91,8 @@ export async function updateSession(request: NextRequest) {
       },
     });
 
-    const { data, error } = await supabase.auth.getClaims();
+    const claimsResult = await getClaimsWithDevTimeout(supabase);
+    const { data, error } = claimsResult;
 
     if (error) {
       console.error("[proxy] getClaims failed:", error.message);

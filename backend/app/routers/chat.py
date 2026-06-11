@@ -1,11 +1,15 @@
 """
-AI 聊天路由 — 会话管理、消息历史、流式对话、图片上传。
+AI 聊天路由 — 会话管理、消息历史、流式对话、图片处理。
 
-对应前端左侧侧边栏：新建聊天、搜索历史、错题本入口（错题本见 wrong_questions 路由）。
+图片策略：
+  - 本地上传：落盘到 uploads/chat/，同时转 Base64 发给 VL 模型，刷新后仍可显示
+  - 公网链接：仅 https://，拦截内网/本机
+  - 错题本追问：沿用 uploads/ 磁盘路径（转 Base64）
 """
 
 import json
-from pathlib import Path
+import logging
+from dataclasses import replace as dc_replace
 
 from fastapi import APIRouter, Depends, File, Form, Query, UploadFile
 from fastapi.responses import StreamingResponse
@@ -15,16 +19,41 @@ from app.config import get_settings
 from app.database import get_db
 from app.schemas.chat import ChatSearchRequest, ChatSendRequest, ChatSessionCreate
 from app.services.chat_service import ChatService
-from app.utils.file_utils import is_allowed_image
-from app.utils.image_url import resolve_public_image_url
+from app.utils.file_utils import ensure_dir, save_upload_image
+from app.utils.image_url import ImageProcessingError, ResolvedImage, resolve_chat_image
 from app.utils.response import error_response, success_response
 
 router = APIRouter(prefix="/api/chat", tags=["AI聊天"])
 settings = get_settings()
+logger = logging.getLogger(__name__)
 
 
 def _get_chat_service(db: Session = Depends(get_db)) -> ChatService:
     return ChatService(db)
+
+
+async def _read_image_file(
+    image_file: UploadFile | None,
+) -> tuple[bytes | None, str | None]:
+    """读取上传文件的字节内容，空文件返回 (None, None)。"""
+    if not image_file:
+        return None, None
+
+    filename = image_file.filename or "upload.jpg"
+    try:
+        content = await image_file.read()
+    except Exception as exc:
+        raise ImageProcessingError(
+            "读取上传图片失败，请重试。",
+            log_detail=str(exc),
+        ) from exc
+
+    if not content:
+        logger.warning("[Router] 收到空图片文件: filename=%s", filename)
+        return None, None
+
+    logger.info("[Router] 收到图片上传: filename=%s, bytes=%d", filename, len(content))
+    return content, filename
 
 
 @router.post("/sessions")
@@ -99,35 +128,12 @@ async def get_messages(
     return success_response(data)
 
 
-@router.post("/upload-image")
-async def upload_chat_image(
-    file: UploadFile = File(...),
-    service: ChatService = Depends(_get_chat_service),
-):
-    """
-    上传聊天图片（数学题、截图等）。
-
-    返回图片相对路径，发送消息时携带 image_path 字段。
-    """
-    if not file.filename or not is_allowed_image(file.filename):
-        return error_response("仅支持 jpg/png/gif/webp/bmp 格式图片")
-
-    content = await file.read()
-    # 聊天图片也存到 uploads 目录下的 chat 子目录
-    chat_upload_dir = settings.upload_path.parent / "chat"
-    rel_path = service.save_chat_image(content, file.filename, chat_upload_dir)
-    payload: dict = {"image_path": rel_path}
-    try:
-        payload["image_url"] = resolve_public_image_url(rel_path, settings)
-    except Exception:
-        payload["image_url"] = None
-    return success_response(payload, message="图片上传成功")
-
-
 @router.post("/send/stream")
 async def send_message_stream(
     session_id: str = Form(...),
     content: str = Form(...),
+    image_file: UploadFile | None = File(default=None),
+    image_url: str | None = Form(default=None),
     image_path: str | None = Form(default=None),
     skip_user_save: bool = Form(default=False),
     service: ChatService = Depends(_get_chat_service),
@@ -135,16 +141,65 @@ async def send_message_stream(
     """
     发送消息并以 SSE 流式返回 AI 回复。
 
-    支持多轮对话；若携带 image_path 则启用多模态图片题识别。
-    Content-Type: multipart/form-data
+    图片输入（三选一，优先级从高到低）：
+      - image_file：本地上传，落盘 uploads/chat/ + 转 Base64 给 VL 模型
+      - image_url：公网 https 图片链接
+      - image_path：错题本追问等已落盘相对路径
+
+    也可在 content 中直接粘贴 https 图片链接。
     """
     session = service.get_session(session_id)
     if not session:
         return error_response("会话不存在")
 
+    try:
+        image_bytes, image_filename = await _read_image_file(image_file)
+
+        # ── 聊天图片落盘（uploads/chat/），确保刷新后仍可显示 ──
+        saved_image_path: str | None = None
+        if image_bytes:
+            chat_upload_dir = settings.upload_path.parent / "chat"
+            ensure_dir(chat_upload_dir)
+            saved_image_path = save_upload_image(
+                image_bytes,
+                chat_upload_dir,
+                image_filename or "image.jpg",
+                project_root=settings.root,
+            )
+            logger.info("[Router] 图片已落盘: %s", saved_image_path)
+
+        resolved: ResolvedImage | None = await resolve_chat_image(
+            content=content,
+            image_bytes=image_bytes,
+            image_filename=image_filename,
+            image_url_field=image_url,
+            image_path_legacy=image_path,
+            settings=settings,
+        )
+
+        # 把磁盘路径写入 storage_ref，chat_service 会用它存入 DB image_path 字段
+        if resolved is not None and saved_image_path is not None:
+            resolved = dc_replace(resolved, storage_ref=saved_image_path)
+
+    except ImageProcessingError as exc:
+        logger.warning("[Router] 图片处理失败: %s | %s", exc.user_message, exc.log_detail)
+        return error_response(exc.user_message)
+
+    logger.info(
+        "[Router] send/stream | session=%s | has_image=%s | source=%s | storage_ref=%s | content=%r",
+        session_id,
+        resolved is not None,
+        resolved.source_type if resolved else "none",
+        resolved.storage_ref if resolved else "none",
+        content[:80],
+    )
+
     async def event_generator():
         async for chunk in service.stream_reply(
-            session_id, content, image_path, skip_user_save=skip_user_save
+            session_id,
+            content,
+            resolved,
+            skip_user_save=skip_user_save,
         ):
             yield chunk
 
@@ -164,21 +219,33 @@ async def send_message(
     body: ChatSendRequest,
     service: ChatService = Depends(_get_chat_service),
 ):
-    """
-    非流式发送消息（备用接口，收集完整回复后返回）。
-    """
+    """非流式发送消息（备用接口，收集完整回复后返回）。"""
     session = service.get_session(body.session_id)
     if not session:
         return error_response("会话不存在")
 
+    try:
+        resolved = await resolve_chat_image(
+            content=body.content,
+            image_bytes=None,
+            image_filename=None,
+            image_url_field=body.image_url,
+            image_path_legacy=body.image_path,
+            settings=settings,
+        )
+    except ImageProcessingError as exc:
+        return error_response(exc.user_message)
+
     full: list[str] = []
-    async for chunk in service.stream_reply(body.session_id, body.content, body.image_path):
+    async for chunk in service.stream_reply(body.session_id, body.content, resolved):
         if chunk.startswith("data: "):
             payload = chunk[6:].strip()
             try:
                 obj = json.loads(payload)
                 if "token" in obj:
                     full.append(obj["token"])
+                if "error" in obj:
+                    return error_response(obj["error"])
             except json.JSONDecodeError:
                 pass
 

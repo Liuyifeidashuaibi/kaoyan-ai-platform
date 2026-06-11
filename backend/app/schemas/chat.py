@@ -39,7 +39,8 @@ class ChatSendRequest(BaseModel):
 
     session_id: str
     content: str = Field(..., min_length=1)
-    image_path: str | None = None  # 已上传图片的相对路径
+    image_url: str | None = None  # 公网 https 图片链接
+    image_path: str | None = None  # 错题本等已落盘相对路径
 
 
 class ChatSearchRequest(BaseModel):

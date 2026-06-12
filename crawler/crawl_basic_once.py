@@ -38,6 +38,7 @@ load_dotenv(_here.parent / ".env")
 SUPABASE_URL = os.environ.get("SUPABASE_URL", "")
 SUPABASE_KEY = os.environ.get("SUPABASE_SERVICE_ROLE_KEY", "")
 DASHSCOPE_KEY = os.environ.get("DASHSCOPE_API_KEY", "")
+CRAWLER_MODEL = os.environ.get("CRAWLER_PARSE_MODEL", "qwen3.7-plus")
 DONE_FLAG = _here / ".basic_done"
 
 # ── 日志 ──────────────────────────────────────────────────────────────────────
@@ -292,7 +293,7 @@ async def ask_qwen(prompt: str, max_retries: int = 3) -> Optional[str]:
     for attempt in range(max_retries):
         try:
             resp = await get_qwen().chat.completions.create(
-                model="qwen-max",
+                model=CRAWLER_MODEL,
                 messages=[{"role": "user", "content": prompt}],
                 max_tokens=3000,
                 temperature=0.05,

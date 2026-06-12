@@ -292,7 +292,7 @@ async def ask_qwen(prompt: str, max_retries: int = 3) -> Optional[str]:
     for attempt in range(max_retries):
         try:
             resp = await get_qwen().chat.completions.create(
-                model="qwen2.5-coder-32b-instruct",
+                model="qwen-max",
                 messages=[{"role": "user", "content": prompt}],
                 max_tokens=3000,
                 temperature=0.05,

@@ -224,7 +224,7 @@ async def qwen_extract(content: str, retries: int = 3) -> Optional[Any]:
     for attempt in range(retries):
         try:
             resp = await get_qwen().chat.completions.create(
-                model="qwen2.5-coder-32b-instruct",
+                model="qwen-max",
                 messages=[{"role": "user", "content": prompt}],
                 max_tokens=4000,
                 temperature=0.05,

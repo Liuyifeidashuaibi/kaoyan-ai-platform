@@ -18,10 +18,10 @@ export type University = {
   double_first_class: string | null;
   school_type: string | null;
   intro: string | null;
-  description: string | null;
   address: string | null;
   website: string | null;
-  code: string | null;
+  school_code: string | null;
+  graduate_url: string | null;
 };
 
 export type UniversityWithMajorCount = University & { major_count: number };
@@ -126,7 +126,7 @@ export async function getUniversities(
   let query = client
     .from("universities")
     .select(
-      "id, name, logo_url, province, city, level_985, level_211, double_first_class, school_type, intro, description, address, website, code, majors(count)",
+      "id, name, logo_url, province, city, level_985, level_211, double_first_class, school_type, intro, address, website, school_code, graduate_url, majors(count)",
       { count: "exact" }
     )
     .order("name", { ascending: true });
@@ -166,7 +166,7 @@ export async function getUniversity(id: string): Promise<University | null> {
   const client = createClient();
   const { data, error } = await client
     .from("universities")
-    .select("id, name, logo_url, province, city, level_985, level_211, double_first_class, school_type, intro, description, address, website, code")
+    .select("id, name, logo_url, province, city, level_985, level_211, double_first_class, school_type, intro, address, website, school_code, graduate_url")
     .eq("id", id)
     .single();
   if (error) return null;

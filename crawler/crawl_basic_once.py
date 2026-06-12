@@ -432,7 +432,7 @@ async def process_university(
                     ai_raw = await ask_qwen(BASIC_INFO_PROMPT.format(content=hp_content))
                     info = parse_json_safe(ai_raw) or {}
                     if isinstance(info, dict):
-                        patch: dict = {"name": name}
+                        patch: dict = {**base_row}
                         if info.get("intro"):
                             patch["intro"] = str(info["intro"])[:500]
                         if info.get("address"):
@@ -441,7 +441,7 @@ async def process_university(
                             patch["school_code"] = str(info["school_code"])[:10]
                         if info.get("graduate_url"):
                             patch["graduate_url"] = str(info["graduate_url"])[:300]
-                        if len(patch) > 1:
+                        if any(k in patch for k in ("intro", "address", "school_code", "graduate_url")):
                             db.upsert_university(patch)
                             log.info("[%s] 详细信息更新 (%s)", name,
                                      ", ".join(k for k in patch if k != "name"))

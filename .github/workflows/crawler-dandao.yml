@@ -1,0 +1,67 @@
+name: 爬虫 — 淡季（1-2月/6-8月/12月每周一次）
+
+# 淡季：每年 1-2月、6-8月、12月，每周一 09:00 北京时间（01:00 UTC）
+# 更新全部类型数据（频率低，节省 API 成本）
+on:
+  schedule:
+    - cron: "0 1 * 1,2,6,7,8,12 1"   # 北京时间周一 09:00（UTC 01:00）
+
+  workflow_dispatch:
+    inputs:
+      season:
+        description: "手动指定季节（留空则自动判断）"
+        required: false
+        default: ""
+        type: choice
+        options: ["", "淡季", "招生季", "复试季"]
+      force:
+        description: "是否强制全量更新"
+        required: false
+        default: "false"
+        type: choice
+        options: ["false", "true"]
+
+jobs:
+  update:
+    name: 淡季全量数据同步
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+          cache-dependency-path: crawler/requirements.txt
+
+      - name: Install dependencies
+        run: pip install -r crawler/requirements.txt
+
+      - name: Run update crawler (淡季)
+        env:
+          SUPABASE_URL:              ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          DASHSCOPE_API_KEY:         ${{ secrets.DASHSCOPE_API_KEY }}
+        run: |
+          cd crawler
+          SEASON_FLAG=""
+          if [ -n "${{ github.event.inputs.season }}" ]; then
+            SEASON_FLAG="--season ${{ github.event.inputs.season }}"
+          fi
+          FORCE_FLAG=""
+          if [ "${{ github.event.inputs.force }}" = "true" ]; then
+            FORCE_FLAG="--force"
+          fi
+          python crawl_updates_smart.py $SEASON_FLAG $FORCE_FLAG
+
+      - name: Upload logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: updates-log-dandao-${{ github.run_number }}
+          path: crawler/updates.log
+          retention-days: 30

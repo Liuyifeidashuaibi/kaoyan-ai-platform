@@ -1,0 +1,89 @@
+name: Crawler — Auto Update
+
+on:
+  # 增量更新：每天凌晨 2 点（UTC+8 10:00 UTC）
+  schedule:
+    - cron: "0 18 * * *"     # 每日增量（北京时间 02:00）
+    - cron: "0 1 1 9 *"      # 每年9月1日全量更新专业目录（北京时间 09:00）
+    - cron: "0 1 15 3 *"     # 每年3月15日全量更新分数线（北京时间 09:00）
+
+  # 手动触发（支持选择 full / increment 模式）
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "爬取模式"
+        required: true
+        default: "increment"
+        type: choice
+        options:
+          - increment
+          - full
+
+jobs:
+  crawl:
+    name: Run Crawler
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+          cache-dependency-path: "crawler/requirements.txt"
+
+      - name: Install dependencies
+        run: pip install -r crawler/requirements.txt
+
+      - name: Restore checkpoint (cache for increment mode)
+        uses: actions/cache@v4
+        with:
+          path: crawler/checkpoint.json
+          key: crawler-checkpoint-${{ github.run_number }}
+          restore-keys: crawler-checkpoint-
+
+      - name: Determine run mode
+        id: mode
+        run: |
+          # 手动触发优先使用 input，定时任务默认 increment
+          MODE="${{ github.event.inputs.mode }}"
+          if [ -z "$MODE" ]; then
+            MONTH=$(date -u +%m)
+            DAY=$(date -u +%d)
+            # 9月1日 → full（专业目录）; 3月15日 → full（分数线）
+            if ( [ "$MONTH" = "09" ] && [ "$DAY" = "01" ] ) || \
+               ( [ "$MONTH" = "03" ] && [ "$DAY" = "15" ] ); then
+              MODE="full"
+            else
+              MODE="increment"
+            fi
+          fi
+          echo "mode=$MODE" >> "$GITHUB_OUTPUT"
+          echo "Running in $MODE mode"
+
+      - name: Run crawler
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          MAX_CONCURRENT_REQUESTS: "5"
+          DELAY_MIN: "1.5"
+          DELAY_MAX: "3.5"
+          LOG_LEVEL: "INFO"
+        run: |
+          cd crawler
+          # 写入 .env.crawler（从 GitHub Secrets 注入）
+          echo "SUPABASE_URL=$SUPABASE_URL" > .env.crawler
+          echo "SUPABASE_SERVICE_ROLE_KEY=$SUPABASE_SERVICE_ROLE_KEY" >> .env.crawler
+          python crawler.py --mode=${{ steps.mode.outputs.mode }}
+
+      - name: Upload logs as artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: crawler-logs-${{ github.run_number }}
+          path: crawler/crawler.log
+          retention-days: 30

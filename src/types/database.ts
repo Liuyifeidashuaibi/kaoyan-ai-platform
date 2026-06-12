@@ -47,79 +47,6 @@ export type Database = {
           updated_at?: string;
         };
       };
-      schools: {
-        Row: {
-          id: string;
-          name: string;
-          code: string | null;
-          province: string | null;
-          city: string | null;
-          level: string | null;
-          website: string | null;
-          description: string | null;
-          created_at: string;
-          updated_at: string;
-        };
-        Insert: {
-          id?: string;
-          name: string;
-          code?: string | null;
-          province?: string | null;
-          city?: string | null;
-          level?: string | null;
-          website?: string | null;
-          description?: string | null;
-          created_at?: string;
-          updated_at?: string;
-        };
-        Update: {
-          id?: string;
-          name?: string;
-          code?: string | null;
-          province?: string | null;
-          city?: string | null;
-          level?: string | null;
-          website?: string | null;
-          description?: string | null;
-          created_at?: string;
-          updated_at?: string;
-        };
-      };
-      majors: {
-        Row: {
-          id: string;
-          school_id: string;
-          name: string;
-          code: string | null;
-          category: string | null;
-          degree_type: string | null;
-          description: string | null;
-          created_at: string;
-          updated_at: string;
-        };
-        Insert: {
-          id?: string;
-          school_id: string;
-          name: string;
-          code?: string | null;
-          category?: string | null;
-          degree_type?: string | null;
-          description?: string | null;
-          created_at?: string;
-          updated_at?: string;
-        };
-        Update: {
-          id?: string;
-          school_id?: string;
-          name?: string;
-          code?: string | null;
-          category?: string | null;
-          degree_type?: string | null;
-          description?: string | null;
-          created_at?: string;
-          updated_at?: string;
-        };
-      };
       study_records: {
         Row: {
           id: string;
@@ -178,48 +105,250 @@ export type Database = {
           created_at?: string;
         };
       };
-      admission_data: {
+      universities: {
         Row: {
           id: string;
-          school_id: string;
-          major_id: string;
-          year: number;
-          enrollment_count: number | null;
-          applicant_count: number | null;
-          min_score: number | null;
-          max_score: number | null;
-          avg_score: number | null;
-          notes: string | null;
+          name: string;
+          code: string | null;
+          logo_url: string | null;
+          province: string | null;
+          city: string | null;
+          level_985: boolean;
+          level_211: boolean;
+          double_first_class: string | null;
+          school_type: string | null;
+          intro: string | null;
+          description: string | null;
+          address: string | null;
+          website: string | null;
           created_at: string;
           updated_at: string;
         };
         Insert: {
           id?: string;
-          school_id: string;
-          major_id: string;
-          year: number;
-          enrollment_count?: number | null;
-          applicant_count?: number | null;
-          min_score?: number | null;
-          max_score?: number | null;
-          avg_score?: number | null;
-          notes?: string | null;
+          name: string;
+          code?: string | null;
+          logo_url?: string | null;
+          province?: string | null;
+          city?: string | null;
+          level_985?: boolean;
+          level_211?: boolean;
+          double_first_class?: string | null;
+          school_type?: string | null;
+          intro?: string | null;
+          description?: string | null;
+          address?: string | null;
+          website?: string | null;
           created_at?: string;
           updated_at?: string;
         };
         Update: {
           id?: string;
-          school_id?: string;
-          major_id?: string;
-          year?: number;
-          enrollment_count?: number | null;
-          applicant_count?: number | null;
-          min_score?: number | null;
-          max_score?: number | null;
-          avg_score?: number | null;
-          notes?: string | null;
+          name?: string;
+          code?: string | null;
+          logo_url?: string | null;
+          province?: string | null;
+          city?: string | null;
+          level_985?: boolean;
+          level_211?: boolean;
+          double_first_class?: string | null;
+          school_type?: string | null;
+          intro?: string | null;
+          description?: string | null;
+          address?: string | null;
+          website?: string | null;
           created_at?: string;
           updated_at?: string;
+        };
+      };
+      majors: {
+        Row: {
+          id: string;
+          university_id: string;
+          college: string | null;
+          name: string;
+          code: string | null;
+          degree_type: string | null;
+          study_mode: string | null;
+          exam_type: string | null;
+          enrollment_count: number | null;
+          subject_category: string | null;
+          first_discipline: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          university_id: string;
+          college?: string | null;
+          name: string;
+          code?: string | null;
+          degree_type?: string | null;
+          study_mode?: string | null;
+          exam_type?: string | null;
+          enrollment_count?: number | null;
+          subject_category?: string | null;
+          first_discipline?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          university_id?: string;
+          college?: string | null;
+          name?: string;
+          code?: string | null;
+          degree_type?: string | null;
+          study_mode?: string | null;
+          exam_type?: string | null;
+          enrollment_count?: number | null;
+          subject_category?: string | null;
+          first_discipline?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+      };
+      scores: {
+        Row: {
+          id: string;
+          university_id: string;
+          major_id: string;
+          year: number;
+          total_score: number;
+          politics_score: number;
+          english_score: number;
+          professional1_score: number | null;
+          professional2_score: number | null;
+          line_diff: number | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          university_id: string;
+          major_id: string;
+          year: number;
+          total_score: number;
+          politics_score: number;
+          english_score: number;
+          professional1_score?: number | null;
+          professional2_score?: number | null;
+          line_diff?: number | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          university_id?: string;
+          major_id?: string;
+          year?: number;
+          total_score?: number;
+          politics_score?: number;
+          english_score?: number;
+          professional1_score?: number | null;
+          professional2_score?: number | null;
+          line_diff?: number | null;
+          created_at?: string;
+        };
+      };
+      announcements: {
+        Row: {
+          id: string;
+          university_id: string;
+          title: string;
+          publish_time: string;
+          url: string;
+          type: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          university_id: string;
+          title: string;
+          publish_time: string;
+          url: string;
+          type: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          university_id?: string;
+          title?: string;
+          publish_time?: string;
+          url?: string;
+          type?: string;
+          created_at?: string;
+        };
+      };
+      recommendations: {
+        Row: {
+          id: string;
+          university_id: string;
+          title: string;
+          type: string;
+          status: string;
+          start_time: string | null;
+          end_time: string | null;
+          url: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          university_id: string;
+          title: string;
+          type: string;
+          status: string;
+          start_time?: string | null;
+          end_time?: string | null;
+          url: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          university_id?: string;
+          title?: string;
+          type?: string;
+          status?: string;
+          start_time?: string | null;
+          end_time?: string | null;
+          url?: string;
+          created_at?: string;
+        };
+      };
+      adjustments: {
+        Row: {
+          id: string;
+          university_id: string;
+          major_id: string | null;
+          year: number;
+          major_name: string;
+          quota: number | null;
+          requirements: string | null;
+          contact: string | null;
+          url: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          university_id: string;
+          major_id?: string | null;
+          year: number;
+          major_name: string;
+          quota?: number | null;
+          requirements?: string | null;
+          contact?: string | null;
+          url?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          university_id?: string;
+          major_id?: string | null;
+          year?: number;
+          major_name?: string;
+          quota?: number | null;
+          requirements?: string | null;
+          contact?: string | null;
+          url?: string | null;
+          created_at?: string;
         };
       };
       study_subjects: {

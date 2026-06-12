@@ -1,10 +1,10 @@
-import { PagePlaceholder } from "@/components/layout/page-placeholder";
+import { SchoolsFilterProvider } from "./_context/schools-filter-context";
+import { SchoolsPageClient } from "./_components/schools-page-client";
 
 export default function SchoolsPage() {
   return (
-    <PagePlaceholder
-      title="择校"
-      description="查询院校与专业信息，对比历年录取数据，辅助制定报考策略。"
-    />
+    <SchoolsFilterProvider>
+      <SchoolsPageClient />
+    </SchoolsFilterProvider>
   );
 }

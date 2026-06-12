@@ -1,0 +1,57 @@
+name: 爬虫 — 招生季（9-11月每日）
+
+# 招生季：每年 9-11 月，每天 09:00 北京时间（01:00 UTC）自动运行
+# 重点更新：招生简章、招生目录、推免公告
+on:
+  schedule:
+    - cron: "0 1 * 9-11 *"   # 北京时间 09:00，每日（9、10、11月）
+
+  workflow_dispatch:
+    inputs:
+      force:
+        description: "是否强制全量更新（忽略哈希增量判断）"
+        required: false
+        default: "false"
+        type: choice
+        options: ["false", "true"]
+
+jobs:
+  update:
+    name: 招生季增量更新
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+          cache-dependency-path: crawler/requirements.txt
+
+      - name: Install dependencies
+        run: pip install -r crawler/requirements.txt
+
+      - name: Run update crawler (招生季)
+        env:
+          SUPABASE_URL:              ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          DASHSCOPE_API_KEY:         ${{ secrets.DASHSCOPE_API_KEY }}
+        run: |
+          cd crawler
+          FORCE_FLAG=""
+          if [ "${{ github.event.inputs.force }}" = "true" ]; then
+            FORCE_FLAG="--force"
+          fi
+          python crawl_updates_smart.py --season 招生季 $FORCE_FLAG
+
+      - name: Upload logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: updates-log-zhaooshengjie-${{ github.run_number }}
+          path: crawler/updates.log
+          retention-days: 14

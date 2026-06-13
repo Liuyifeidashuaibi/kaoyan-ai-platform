@@ -1,48 +1,197 @@
 "use client";
 
-import { useState } from "react";
-import { ChevronDown, ChevronUp, ExternalLink, MapPin } from "lucide-react";
+import { useEffect, useState } from "react";
+import { ChevronDown, ChevronUp, MapPin } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { getUniversityLevelTags, type University, type Major } from "@/lib/api/schools";
+import {
+  getScores,
+  getScoreYears,
+  getUniversityLevelTags,
+  isValidMajorRecord,
+  computeCollegeStats,
+  type University,
+  type Major,
+} from "@/lib/api/schools";
 
 interface OverviewTabProps {
   university: University;
   majors: Major[];
+  universityId: string;
+  dataVersion?: number;
+  highlightMajorCode?: string;
+  onGoMajors?: () => void;
+  onGoScores?: () => void;
+  onClearMajorHighlight?: () => void;
 }
 
-export function OverviewTab({ university, majors }: OverviewTabProps) {
+export function OverviewTab({
+  university,
+  majors,
+  universityId,
+  dataVersion = 0,
+  highlightMajorCode,
+  onGoMajors,
+  onGoScores,
+  onClearMajorHighlight,
+}: OverviewTabProps) {
   const [introExpanded, setIntroExpanded] = useState(false);
+  const [scoreCount, setScoreCount] = useState(0);
+  const [scoreYears, setScoreYears] = useState<number[]>([]);
+
   const intro = university.intro ?? "";
   const tags = getUniversityLevelTags(university);
 
-  const colleges = [...new Set(majors.map((m) => m.college).filter(Boolean))] as string[];
-  const degreeTypes = [...new Set(majors.map((m) => m.degree_type).filter(Boolean))] as string[];
-  const studyModes = [...new Set(majors.map((m) => m.study_mode).filter(Boolean))] as string[];
-  const totalEnrollment = majors.reduce((s, m) => s + (m.enrollment_count ?? 0), 0);
+  const validMajors = majors.filter((m) => isValidMajorRecord(m));
+  const degreeTypes = [...new Set(validMajors.map((m) => m.degree_type).filter(Boolean))] as string[];
+  const studyModes = [...new Set(validMajors.map((m) => m.study_mode).filter(Boolean))] as string[];
+  const totalEnrollment = validMajors.reduce((s, m) => s + (m.enrollment_count ?? 0), 0);
+  const collegeStats = computeCollegeStats(validMajors);
+
+  useEffect(() => {
+    let cancelled = false;
+    Promise.all([getScores(universityId), getScoreYears(universityId)])
+      .then(([scores, years]) => {
+        if (!cancelled) {
+          setScoreCount(scores.length);
+          setScoreYears(years);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setScoreCount(0);
+          setScoreYears([]);
+        }
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [universityId, dataVersion]);
+
+  const latestYear = scoreYears[0];
+
+  const highlightDigits = highlightMajorCode?.replace(/\D/g, "").slice(0, 6);
+  const highlightedMajor = highlightDigits
+    ? validMajors.find(
+        (m) => m.code?.replace(/\D/g, "").slice(0, 6) === highlightDigits
+      )
+    : undefined;
 
   return (
     <div className="space-y-3 p-4">
-      {/* 招生数据概览 */}
-      <div className="grid grid-cols-3 gap-2">
+      {highlightDigits && (onGoMajors || onGoScores) && (
+        <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-orange-100 bg-orange-50/60 px-4 py-2.5 text-xs">
+          <span className="text-orange-800">
+            已关联专业
+            {highlightedMajor ? `：${highlightedMajor.name}` : ` ${highlightDigits}`}
+          </span>
+          <div className="flex flex-wrap gap-2">
+            {onGoMajors && (
+              <button
+                type="button"
+                onClick={onGoMajors}
+                className="font-medium text-orange-600 hover:underline"
+              >
+                查看专业
+              </button>
+            )}
+            {onGoScores && (
+              <button
+                type="button"
+                onClick={onGoScores}
+                className="font-medium text-orange-600 hover:underline"
+              >
+                查看复试线
+              </button>
+            )}
+            {onClearMajorHighlight && (
+              <button
+                type="button"
+                onClick={onClearMajorHighlight}
+                className="text-muted-foreground hover:underline"
+              >
+                取消
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+
+      <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
         {[
-          { label: "招生专业", value: majors.length, unit: "个" },
-          { label: "开设学院", value: colleges.length, unit: "个" },
-          { label: "拟招生", value: totalEnrollment || "—", unit: totalEnrollment ? "人" : "" },
+          { label: "招生专业", value: validMajors.length, unit: "个", onClick: onGoMajors },
+          {
+            label: "已标注学院",
+            value: collegeStats.labeledColleges || "—",
+            unit: collegeStats.labeledColleges ? "个" : "",
+            onClick: onGoMajors,
+          },
+          {
+            label: "复试线",
+            value: scoreCount || "—",
+            unit: scoreCount ? "条" : "",
+            onClick: onGoScores,
+          },
+          {
+            label: "拟招生",
+            value: totalEnrollment || "—",
+            unit: totalEnrollment ? "人" : "",
+            onClick: undefined,
+          },
         ].map((item) => (
-          <div
+          <button
             key={item.label}
-            className="flex flex-col items-center rounded-xl border border-border bg-card py-3"
+            type="button"
+            onClick={item.onClick}
+            disabled={!item.onClick}
+            className={cn(
+              "flex flex-col items-center rounded-xl border border-border bg-card py-3",
+              item.onClick && "cursor-pointer hover:border-orange-200 hover:bg-orange-50/30"
+            )}
           >
             <p className="text-xl font-bold text-orange-500 leading-none">
               {item.value}
               <span className="text-xs font-normal text-muted-foreground">{item.unit}</span>
             </p>
             <p className="mt-1 text-xs text-muted-foreground">{item.label}</p>
-          </div>
+          </button>
         ))}
       </div>
 
-      {/* 基本信息 */}
+      {latestYear && scoreCount > 0 && (
+        <p className="text-xs text-muted-foreground px-1">
+          已收录 {scoreYears.join("、")} 年进复试线，最新为 {latestYear} 年
+        </p>
+      )}
+
+      {collegeStats.unlabeledMajors > 0 && (
+        <p className="text-xs text-muted-foreground px-1">
+          另有 {collegeStats.unlabeledMajors} 个专业尚未标注学院，专业 Tab 中归入「未标注学院」
+        </p>
+      )}
+
+      {(onGoMajors || onGoScores) && (
+        <div className="flex flex-wrap gap-2">
+          {onGoMajors && (
+            <button
+              type="button"
+              onClick={onGoMajors}
+              className="rounded-lg bg-orange-500 px-4 py-2 text-xs font-medium text-white hover:bg-orange-600"
+            >
+              查看全部专业
+            </button>
+          )}
+          {onGoScores && (
+            <button
+              type="button"
+              onClick={onGoScores}
+              className="rounded-lg border border-border px-4 py-2 text-xs font-medium hover:bg-muted/50"
+            >
+              查看复试线
+            </button>
+          )}
+        </div>
+      )}
+
       <Section title="基本信息">
         <InfoRow icon={<MapPin className="size-3.5 text-muted-foreground" />} label="所在地">
           {university.province}·{university.city}
@@ -70,21 +219,8 @@ export function OverviewTab({ university, majors }: OverviewTabProps) {
         {studyModes.length > 0 && (
           <InfoRow label="学习方式">{studyModes.join(" / ")}</InfoRow>
         )}
-        {university.website && (
-          <InfoRow label="官方网站">
-            <a
-              href={university.website}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1 text-orange-500 underline-offset-2 hover:underline text-xs"
-            >
-              访问官网 <ExternalLink className="size-3" />
-            </a>
-          </InfoRow>
-        )}
       </Section>
 
-      {/* 院校简介 */}
       {intro && (
         <Section title="院校简介">
           <p className={cn("text-sm text-muted-foreground leading-relaxed", !introExpanded && "line-clamp-4")}>
@@ -96,19 +232,6 @@ export function OverviewTab({ university, majors }: OverviewTabProps) {
           >
             {introExpanded ? <><ChevronUp className="size-3" />收起</> : <><ChevronDown className="size-3" />展开全文</>}
           </button>
-        </Section>
-      )}
-
-      {/* 开设学院 */}
-      {colleges.length > 0 && (
-        <Section title="开设学院">
-          <div className="flex flex-wrap gap-1.5">
-            {colleges.map((c) => (
-              <span key={c} className="rounded-lg border border-border bg-muted px-2.5 py-1 text-xs">
-                {c}
-              </span>
-            ))}
-          </div>
         </Section>
       )}
     </div>

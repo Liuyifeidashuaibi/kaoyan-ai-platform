@@ -4,7 +4,7 @@ crawl_basic_once.py — 一次性基础数据采集脚本
 ============================================================
 采集内容（只需运行一次）：
   1. 院校基础信息（简介、地址、院校代码、研究生院链接）← Jina Reader + 通义千问
-  2. 研招专业目录（专业代码、名称、学制、招生人数）    ← Jina Reader + 通义千问
+  2. 研招专业目录（专业代码、名称、学位类型）          ← 研招网 API + 官网兜底
 
 完成后生成 .basic_done 标志文件，防止重复运行。
 使用 --force 强制重跑所有院校，使用 --school 指定单所院校。
@@ -17,12 +17,14 @@ import asyncio
 import json
 import logging
 import os
+import random
 import re
 import sys
 import time
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Optional
+from urllib.parse import urljoin, urlparse
 
 import aiohttp
 from aiohttp import TCPConnector, ClientSession
@@ -38,8 +40,23 @@ load_dotenv(_here.parent / ".env")
 SUPABASE_URL = os.environ.get("SUPABASE_URL", "")
 SUPABASE_KEY = os.environ.get("SUPABASE_SERVICE_ROLE_KEY", "")
 DASHSCOPE_KEY = os.environ.get("DASHSCOPE_API_KEY", "")
-CRAWLER_MODEL = os.environ.get("CRAWLER_PARSE_MODEL", "qwen3.7-plus")
+CRAWLER_MODEL = os.environ.get("CRAWLER_PARSE_MODEL", "qwen-turbo")
+CRAWLER_FALLBACK_MODEL = os.environ.get("CRAWLER_FALLBACK_MODEL", "qwen-plus")
 DONE_FLAG = _here / ".basic_done"
+SCHOOL_CODES_PATH = _here / "data" / "school_codes.json"
+_qwen_disabled = False
+
+
+def load_school_codes() -> dict[str, str]:
+    try:
+        data = json.loads(SCHOOL_CODES_PATH.read_text(encoding="utf-8"))
+        return {str(k): str(v) for k, v in data.items()}
+    except Exception as exc:
+        log.warning("无法加载 school_codes.json: %s", exc)
+        return {}
+
+
+SCHOOL_CODES: dict[str, str] = load_school_codes()
 
 # ── 日志 ──────────────────────────────────────────────────────────────────────
 logging.basicConfig(
@@ -252,9 +269,20 @@ UNIVERSITIES: list[dict] = [
     {"name": "西安建筑科技大学","province": "陕西", "city": "西安", "school_type": "理工", "level_985": False, "level_211": False, "double_first_class": "一流学科",  "website": "https://www.xauat.edu.cn"},
 ]
 
-# ── Jina Reader（免 API Key，将任意网页转为 Markdown）────────────────────────
+# ── 网页抓取（Jina Reader + HTTP 回退）────────────────────────────────────────
 JINA_BASE = "https://r.jina.ai/"
 MAX_CHARS = 12_000  # ~3000 tokens，控制成本
+USER_AGENTS = [
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+    "(KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
+    "Mozilla/5.0 (compatible; KaoyanBot/2.0)",
+]
+_RETRY_STATUS = {429, 500, 502, 503, 504}
+
+
+def is_error_page(text: str) -> bool:
+    head = (text or "")[:400]
+    return "404 Not Found" in head or "403 Forbidden" in head or "openresty" in head and len(text) < 500
 
 
 async def jina_fetch(session: ClientSession, url: str) -> Optional[str]:
@@ -262,17 +290,60 @@ async def jina_fetch(session: ClientSession, url: str) -> Optional[str]:
     try:
         async with session.get(
             f"{JINA_BASE}{url}",
-            headers={"Accept": "text/plain", "X-Timeout": "25",
-                     "User-Agent": "Mozilla/5.0 (compatible; KaoyanBot/2.0)"},
-            timeout=aiohttp.ClientTimeout(total=45),
+            headers={
+                "Accept": "text/plain",
+                "X-Timeout": "30",
+                "User-Agent": random.choice(USER_AGENTS),
+            },
+            timeout=aiohttp.ClientTimeout(total=55),
         ) as resp:
             if resp.status == 200:
                 text = await resp.text()
+                if is_error_page(text):
+                    return None
                 return text[:MAX_CHARS]
             log.debug("Jina %s → HTTP %s", url, resp.status)
     except Exception as exc:
         log.debug("Jina fetch error %s: %s", url, exc)
     return None
+
+
+async def http_get(session: ClientSession, url: str, retries: int = 2) -> Optional[str]:
+    """直接 HTTP 抓取 HTML（Jina 失败时的回退）"""
+    for attempt in range(retries):
+        try:
+            await asyncio.sleep(random.uniform(0.5, 1.5))
+            async with session.get(
+                url,
+                headers={
+                    "User-Agent": random.choice(USER_AGENTS),
+                    "Accept": "text/html,*/*",
+                    "Accept-Language": "zh-CN,zh;q=0.9",
+                },
+                timeout=aiohttp.ClientTimeout(total=30),
+                allow_redirects=True,
+            ) as resp:
+                if resp.status in _RETRY_STATUS:
+                    await asyncio.sleep(2 ** attempt)
+                    continue
+                if resp.status == 200:
+                    raw = await resp.text(errors="ignore")
+                    # 粗略去标签，保留可读文本
+                    text = re.sub(r"<script[\s\S]*?</script>", " ", raw, flags=re.I)
+                    text = re.sub(r"<style[\s\S]*?</style>", " ", text, flags=re.I)
+                    text = re.sub(r"<[^>]+>", " ", text)
+                    text = re.sub(r"\s+", " ", text).strip()
+                    return text[:MAX_CHARS] if text else None
+        except Exception as exc:
+            log.debug("HTTP error %s: %s", url, exc)
+    return None
+
+
+async def fetch_page(session: ClientSession, url: str) -> Optional[str]:
+    text = await jina_fetch(session, url)
+    if text and len(text) >= 200:
+        return text
+    return await http_get(session, url)
 
 
 # ── 通义千问（DashScope OpenAI 兼容接口）─────────────────────────────────────
@@ -289,23 +360,40 @@ def get_qwen() -> AsyncOpenAI:
     return _qwen
 
 
+def _is_qwen_quota_error(exc: Exception) -> bool:
+    msg = str(exc)
+    return "403" in msg or "FreeTierOnly" in msg or "quota" in msg.lower()
+
+
 async def ask_qwen(prompt: str, max_retries: int = 3) -> Optional[str]:
-    for attempt in range(max_retries):
-        try:
-            resp = await get_qwen().chat.completions.create(
-                model=CRAWLER_MODEL,
-                messages=[{"role": "user", "content": prompt}],
-                max_tokens=3000,
-                temperature=0.05,
-            )
-            return resp.choices[0].message.content
-        except Exception as exc:
-            wait = 2 ** attempt
-            if attempt < max_retries - 1:
-                log.warning("Qwen retry %d/%d after %ds: %s", attempt + 1, max_retries, wait, exc)
-                await asyncio.sleep(wait)
-            else:
-                log.error("Qwen failed after %d retries: %s", max_retries, exc)
+    global _qwen_disabled
+    if _qwen_disabled or not DASHSCOPE_KEY:
+        return None
+    models = [CRAWLER_MODEL]
+    if CRAWLER_FALLBACK_MODEL and CRAWLER_FALLBACK_MODEL != CRAWLER_MODEL:
+        models.append(CRAWLER_FALLBACK_MODEL)
+    for model in models:
+        for attempt in range(max_retries):
+            try:
+                resp = await get_qwen().chat.completions.create(
+                    model=model,
+                    messages=[{"role": "user", "content": prompt}],
+                    max_tokens=3000,
+                    temperature=0.05,
+                )
+                return resp.choices[0].message.content
+            except Exception as exc:
+                if _is_qwen_quota_error(exc):
+                    log.warning("模型 %s 额度不足，尝试备用", model)
+                    break
+                wait = 2 ** attempt
+                if attempt < max_retries - 1:
+                    log.warning("Qwen retry %d/%d after %ds: %s", attempt + 1, max_retries, wait, exc)
+                    await asyncio.sleep(wait)
+                else:
+                    log.error("Qwen failed model=%s: %s", model, exc)
+    _qwen_disabled = True
+    log.warning("通义千问均不可用，后续将跳过 AI 步骤")
     return None
 
 
@@ -346,34 +434,67 @@ BASIC_INFO_PROMPT = """\
 {content}"""
 
 MAJOR_EXTRACT_PROMPT = """\
-你是考研招生信息提取专家。请从以下网页中提取研究生招生专业目录，输出 JSON 数组。
+你是考研招生信息提取专家。请从以下网页中提取硕士研究生招生专业目录，输出 JSON 数组。
 
 每个专业对象包含：
-- college: 所属学院（字符串）
-- code: 专业代码（6 位数字字符串，如"085401"）
-- name: 专业名称
+- college: 所属学院（字符串，找不到填"未知学院"）
+- code: 专业代码（6 位数字字符串，如"085401"、"081200"）
+- name: 专业名称（不含代码）
 - degree_type: "学硕" 或 "专硕"
-- study_mode: "全日制" 或 "非全日制"
+- study_mode: "全日制" 或 "非全日制"（默认全日制）
 - enrollment_count: 计划招生人数（整数，不确定填 null）
 
-若页面无专业目录信息，返回 []。只输出 JSON 数组，不输出其他内容。
+注意：
+1. 招生章程、专业目录表、院系招生说明中的专业都要提取
+2. 同一专业代码不同学院/方向可分别列出
+3. 只提取硕士专业，忽略博士
+4. 若页面确实无任何专业信息，返回 []
+
+只输出 JSON 数组，不输出其他内容。
+
+网页内容：
+{content}"""
+
+CATALOG_URL_PROMPT = """\
+你是考研信息专家。从以下研究生院网页中，找出最可能包含「硕士研究生招生专业目录/招生简章」的链接。
+
+输出 JSON 字符串数组（完整 URL，最多 8 个），按可能性从高到低排序。
+优先含「专业目录」「招生简章」「硕士招生」「zszyml」「zyml」「zsjzjml」的链接。
+只输出 JSON 数组，不输出其他内容。
 
 网页内容：
 {content}"""
 
 
 # ── Supabase 写入 ─────────────────────────────────────────────────────────────
+def _sb_retry(fn, label: str, retries: int = 4, base_delay: float = 2.0):
+    """Supabase 写入重试（应对 SSL 断连 / 连接被重置）"""
+    last_exc: Optional[Exception] = None
+    for attempt in range(retries):
+        try:
+            return fn()
+        except Exception as exc:
+            last_exc = exc
+            if attempt < retries - 1:
+                delay = base_delay * (attempt + 1)
+                log.warning("%s 失败，%ds 后重试 (%d/%d): %s", label, delay, attempt + 1, retries, exc)
+                time.sleep(delay)
+    log.error("%s: %s", label, last_exc)
+    return None
+
+
 class DB:
     def __init__(self) -> None:
         self._sb: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
     def upsert_university(self, row: dict) -> Optional[str]:
-        try:
-            res = self._sb.table("universities").upsert(row, on_conflict="name").execute()
-            return (res.data or [{}])[0].get("id")
-        except Exception as exc:
-            log.error("upsert_university [%s]: %s", row.get("name"), exc)
+        res = _sb_retry(
+            lambda: self._sb.table("universities").upsert(row, on_conflict="name").execute(),
+            f"upsert_university [{row.get('name')}]",
+        )
+        if res is None:
             return None
+        return (res.data or [{}])[0].get("id")
 
     def get_university_id(self, name: str) -> Optional[str]:
         try:
@@ -383,23 +504,670 @@ class DB:
         except Exception:
             return None
 
+    def get_university_meta(self, name: str) -> dict:
+        try:
+            res = (self._sb.table("universities")
+                   .select("id,graduate_url,website,school_code")
+                   .eq("name", name).maybe_single().execute())
+            return res.data or {}
+        except Exception:
+            return {}
+
     def upsert_majors(self, rows: list[dict]) -> int:
         if not rows:
             return 0
-        try:
-            res = self._sb.table("majors").upsert(
-                rows, on_conflict="university_id,code,degree_type,study_mode"
-            ).execute()
-            return len(res.data or [])
-        except Exception as exc:
-            log.error("upsert_majors: %s", exc)
+        deduped: dict[tuple[str, str, str, str], dict] = {}
+        for r in rows:
+            key = (
+                r["university_id"],
+                r["code"],
+                r["degree_type"],
+                r["study_mode"],
+            )
+            prev = deduped.get(key)
+            if not prev or len(r.get("name", "")) > len(prev.get("name", "")):
+                deduped[key] = r
+        payload = list(deduped.values())
+        res = _sb_retry(
+            lambda: self._sb.table("majors").upsert(
+                payload, on_conflict="university_id,code,degree_type,study_mode"
+            ).execute(),
+            "upsert_majors",
+        )
+        if res is None:
             return 0
+        return len(res.data or [])
+
+    def get_names_without_majors(self) -> set[str]:
+        """返回 majors 表中尚无记录的院校名称集合"""
+        try:
+            uni_res = self._sb.table("universities").select("id,name").execute()
+            if not uni_res.data:
+                return set()
+            has_majors: set[str] = set()
+            offset = 0
+            page = 1000
+            while True:
+                major_res = (
+                    self._sb.table("majors")
+                    .select("university_id")
+                    .range(offset, offset + page - 1)
+                    .execute()
+                )
+                rows = major_res.data or []
+                has_majors.update(r["university_id"] for r in rows)
+                if len(rows) < page:
+                    break
+                offset += page
+            return {
+                u["name"] for u in uni_res.data
+                if u["id"] not in has_majors
+            }
+        except Exception as exc:
+            log.warning("get_names_without_majors: %s", exc)
+            return set()
 
 
-# ── 单所院校处理 ──────────────────────────────────────────────────────────────
-_GRAD_PATHS = ["/yjszs/", "/yjsy/", "/graduate/", "/gs/", "/yjszs/zsxx/"]
+# ── 专业目录 URL 发现与解析 ───────────────────────────────────────────────────
+_GRAD_PATH_SUFFIXES = [
+    "/zsgz/sszs/zyml/",
+    "/zsgz/sszs/zsjzjml/",
+    "/zsxx/sszs/zszyml/",
+    "/yjszs/zsxx/sszszyml/",
+    "/yjszs/",
+    "/yjsy/",
+    "/graduate/",
+    "/gs/",
+    "/zsxx/sszs/",
+]
 
-_PROF_CODES = {"085", "125", "135", "045", "055", "065", "075", "095", "105"}
+_CATALOG_KEYWORDS = (
+    "专业目录", "招生专业", "招生简章", "硕士招生", "硕士研究生",
+    "招生章程", "目录", "zyml", "zszy", "zsjzj", "zsml", "sszs",
+)
+
+_MAJOR_PREFIXES = frozenset(
+    f"{a}{b}" for a in "0123456789" for b in "123456789"
+) | frozenset(("10", "11", "12", "13", "14", "15"))
+
+_PROF_CODES = {"025", "035", "045", "055", "065", "075", "085", "095", "105", "115", "125", "135", "145"}
+
+
+def normalize_major_code(raw: str) -> str:
+    digits = re.sub(r"\D", "", raw or "")
+    if len(digits) >= 6:
+        return digits[:6]
+    return ""
+
+
+def is_likely_major_code(code: str) -> bool:
+    if len(code) != 6 or not code.isdigit():
+        return False
+    if code[:2] not in _MAJOR_PREFIXES and code[:3] not in _PROF_CODES:
+        return False
+    # 排除常见 CMS 文章 ID（如 105271、107781）
+    if code.startswith("10") and int(code[2:4]) >= 50:
+        return False
+    return True
+
+
+_INVALID_MAJOR_RE = re.compile(
+    r"电话|手机|@\d|https?://|\.com|!\[|IE|浏览器|验证码|温馨提示|招生办|联系老师|导师"
+    r"|可接收|考生|本科毕业|浏览效果|建议使用|招生简章|专业目录|请点击",
+    re.I,
+)
+
+
+def is_valid_major_name(name: str) -> bool:
+    n = (name or "").strip()
+    if not n or len(n) < 2 or len(n) > 35:
+        return False
+    if _INVALID_MAJOR_RE.search(n):
+        return False
+    if re.match(r"^电话[：:]", n):
+        return False
+    if re.match(r"^0\d{2,3}[-\s]?\d{7,}", n):
+        return False
+    if re.match(r"^!\[", n):
+        return False
+    if re.match(r"^[\u4e00-\u9fa5]{1,3}老师$", n):
+        return False
+    if re.search(r"[\u4e00-\u9fa5]{1,2}老师", n) and len(n) <= 6:
+        return False
+    chinese = len(re.findall(r"[\u4e00-\u9fa5]", n))
+    if chinese < len(n) * 0.5:
+        return False
+    return True
+
+
+def _is_likely_college_name(name: str) -> bool:
+    return bool(re.search(r"学院|系|中心|部|研究所|研究院|实验室", name or ""))
+
+
+_ARTICLE_TITLE_KEYS = ("招生章程", "招生简章", "专业目录", "硕士招生", "招生计划", "招生专业")
+
+
+def discover_links_from_markdown(md: str, base_url: str) -> list[str]:
+    urls: list[str] = []
+    for title, href in re.findall(r"\[([^\]]+)\]\((https?://[^\)]+)\)", md):
+        low = (title + href).lower()
+        if any(k in title or k in low for k in _CATALOG_KEYWORDS):
+            urls.append(href.split("?")[0])
+    for href in re.findall(r"\((https?://[^\)]+\.(?:htm|html|shtml)[^\)]*)\)", md):
+        low = href.lower()
+        if any(k in low for k in ("zyml", "zszy", "zsjzj", "zsml", "sszs", "zsxx", "zsgz", "yjszs")):
+            urls.append(href.split("?")[0])
+    base = base_url.rstrip("/") + "/"
+    for suffix in _GRAD_PATH_SUFFIXES:
+        urls.append(urljoin(base, suffix.lstrip("/")))
+    return _dedupe_urls(urls)
+
+
+def discover_article_links(md: str) -> list[str]:
+    """从列表页中发现招生章程/专业目录详情页链接（高价值）"""
+    urls: list[str] = []
+    for title, href in re.findall(r"\[([^\]]+)\]\((https?://[^\)]+)\)", md):
+        if not any(k in title for k in _ARTICLE_TITLE_KEYS):
+            continue
+        if "博士" in title and "硕士" not in title:
+            continue
+        clean = href.split("?")[0]
+        if clean.endswith((".htm", ".html", ".shtml")):
+            urls.append(clean)
+    return _dedupe_urls(urls)
+
+
+def prioritize_urls(urls: list[str]) -> list[str]:
+    """招生目录类 URL 优先抓取"""
+
+    def rank(u: str) -> int:
+        low = u.lower()
+        score = 0
+        for i, frag in enumerate((
+            "zsjzjml", "zyml", "zszyml", "sszs", "/info/",
+            "招生", "zsgz", "yjszs", "yz.chsi",
+        )):
+            if frag in low:
+                score += 20 - i
+        return score
+
+    return sorted(urls, key=rank, reverse=True)
+
+
+def _dedupe_urls(urls: list[str]) -> list[str]:
+    seen: set[str] = set()
+    out: list[str] = []
+    for u in urls:
+        if not u.startswith("http"):
+            continue
+        key = u.rstrip("/").lower()
+        if key not in seen:
+            seen.add(key)
+            out.append(u)
+    return out
+
+
+def guess_grad_subdomains(website: str) -> list[str]:
+    """根据官网域名猜测研究生院子域名（如 www.whu.edu.cn → gs.whu.edu.cn）"""
+    parsed = urlparse(website)
+    host = parsed.netloc
+    if not host or "." not in host:
+        return []
+    parts = host.split(".")
+    base_domain = ".".join(parts[1:]) if parts[0] in ("www", "www2") else host
+    scheme = parsed.scheme or "https"
+    return [
+        f"{scheme}://{prefix}.{base_domain}"
+        for prefix in ("gs", "grs", "yjs", "graduate", "yz", "gsao", "admission")
+    ]
+
+
+def is_grad_portal_url(url: str) -> bool:
+    """判断 URL 是否像研究生院官网，而非新闻/文章页"""
+    if not url or not url.startswith("http"):
+        return False
+    parsed = urlparse(url)
+    host = parsed.netloc.lower()
+    path = parsed.path.lower()
+    if any(b in host for b in ("news.", "blog.", "media.", "xinwen", "xw.")):
+        return False
+    if re.search(r"/info/\d+/\d+\.htm", path):
+        return False
+    if any(p in host for p in ("gs.", "grs.", "yjs", "graduate", "gsao", "admission", "yz.")):
+        return True
+    return any(k in path for k in ("yjszs", "zsgz", "graduate", "sszs"))
+
+
+def discover_grad_portal_url(md: str) -> Optional[str]:
+    """从主页 Markdown 链接中识别研究生院官网"""
+    ranked: list[tuple[int, str]] = []
+    for title, href in re.findall(r"\[([^\]]+)\]\((https?://[^\)]+)\)", md):
+        if not href.startswith("http"):
+            continue
+        clean = href.split("?")[0].rstrip("/")
+        if not is_grad_portal_url(clean):
+            continue
+        blob = title + href
+        if not any(k in blob for k in ("研究生院", "研究生招生", "研究生部", "研招")):
+            continue
+        if "博士" in title and "硕士" not in title:
+            continue
+        score = 0
+        host = urlparse(clean).netloc.lower()
+        if "研究生院" in title:
+            score += 10
+        if any(p in host for p in ("gs.", "grs.", "gsao")):
+            score += 15
+        ranked.append((score, clean))
+    if not ranked:
+        return None
+    ranked.sort(key=lambda x: x[0], reverse=True)
+    return ranked[0][1]
+
+
+def build_grad_candidate_urls(
+    website: str,
+    grad_url: Optional[str],
+    school_name: str,
+    extra: Optional[list[str]] = None,
+) -> list[str]:
+    urls: list[str] = []
+    if extra:
+        urls.extend(extra)
+    if grad_url and grad_url.startswith("http"):
+        urls.append(grad_url.rstrip("/"))
+    if website and website.startswith("http"):
+        for guessed in guess_grad_subdomains(website):
+            urls.append(guessed)
+        base = website.rstrip("/")
+        for suffix in _GRAD_PATH_SUFFIXES:
+            urls.append(urljoin(base + "/", suffix.lstrip("/")))
+    urls.append(
+        f"https://yz.chsi.com.cn/sch/schInfo.do?searchType=1&keyword={school_name}"
+    )
+    return _dedupe_urls(urls)
+
+
+def score_catalog_page(text: str) -> int:
+    if not text or is_error_page(text) or len(text) < 200:
+        return 0
+    score = 0
+    for kw, pts in (
+        ("专业代码", 8), ("招生专业", 6), ("学科门类", 5), ("一级学科", 5),
+        ("招生人数", 4), ("学制", 3), ("硕士研究生", 4), ("专业目录", 6),
+        ("招生简章", 8), ("招生章程", 10), ("附表", 4), ("招生计划", 5),
+    ):
+        if kw in text:
+            score += pts
+    codes = re.findall(r"\b\d{6}\b", text)
+    score += min(sum(1 for c in codes if is_likely_major_code(c)), 25)
+    return score
+
+
+def _subject_category_from_code(code: str) -> Optional[str]:
+    prefix = re.sub(r"\D", "", code)[:2]
+    for name, cat_code in (
+        ("哲学", "01"), ("经济学", "02"), ("法学", "03"), ("教育学", "04"),
+        ("文学", "05"), ("历史学", "06"), ("理学", "07"), ("工学", "08"),
+        ("农学", "09"), ("医学", "10"), ("军事学", "11"), ("管理学", "12"),
+        ("艺术学", "13"),
+    ):
+        if cat_code == prefix:
+            return name
+    return None
+
+
+def majors_to_rows(majors_list: list, uid: str) -> list[dict]:
+    rows: list[dict] = []
+    seen: set[tuple[str, str, str]] = set()
+    for m in majors_list:
+        if not isinstance(m, dict):
+            continue
+        code = normalize_major_code(str(m.get("code", "")))
+        mname = str(m.get("name", "")).strip()
+        if not code or not mname or not is_likely_major_code(code):
+            continue
+        if not is_valid_major_name(mname):
+            continue
+        raw_degree = str(m.get("degree_type", ""))
+        degree = raw_degree if raw_degree in ("学硕", "专硕") else (
+            "专硕" if code[:3] in _PROF_CODES else "学硕"
+        )
+        raw_mode = str(m.get("study_mode", ""))
+        mode = raw_mode if raw_mode in ("全日制", "非全日制") else "全日制"
+        key = (code, degree, mode)
+        if key in seen:
+            continue
+        seen.add(key)
+        rows.append({
+            "university_id": uid,
+            "college": str(m.get("college") or "")[:100],
+            "name": mname[:100],
+            "code": code,
+            "degree_type": degree,
+            "study_mode": mode,
+            "subject_category": (
+                str(m.get("subject_category") or "")[:50]
+                or _subject_category_from_code(code)
+            ),
+            "first_discipline": (
+                str(m.get("first_discipline") or "")[:100] or None
+            ),
+            "enrollment_count": (
+                m.get("enrollment_count")
+                if isinstance(m.get("enrollment_count"), int) else None
+            ),
+        })
+    return rows
+
+
+def regex_extract_majors(text: str) -> list[dict]:
+    """AI 失败时，用正则从表格/列表文本中兜底提取"""
+    found: list[dict] = []
+    seen: set[str] = set()
+    patterns = [
+        re.compile(r"[\(（](\d{6})[\)）]\s*([^\s\(\[（\|,\n]{2,40})"),
+        re.compile(r"(?<![/\d])(0[1-9]\d{4})(?!\d)\s+([^\d\n\|]{2,40})"),
+        re.compile(r"(\d{6})\s*[|｜]\s*([^\|｜\n]{2,40})"),
+    ]
+    for pat in patterns:
+        for code, name in pat.findall(text):
+            code = normalize_major_code(code)
+            name = re.sub(r"\s+", " ", name).strip(" ：:，,")
+            if not is_likely_major_code(code) or len(name) < 2 or code in seen:
+                continue
+            seen.add(code)
+            found.append({
+                "college": "未知学院",
+                "code": code,
+                "name": name[:100],
+                "degree_type": "专硕" if code[:3] in _PROF_CODES else "学硕",
+                "study_mode": "全日制",
+            })
+    return found
+
+
+async def _score_urls(
+    session: ClientSession,
+    urls: list[str],
+    limit: int,
+) -> list[tuple[int, str, str]]:
+    scored: list[tuple[int, str, str]] = []
+    for url in urls[:limit]:
+        content = await fetch_page(session, url)
+        if not content:
+            continue
+        score = score_catalog_page(content)
+        if score > 0:
+            scored.append((score, url, content))
+    scored.sort(key=lambda x: x[0], reverse=True)
+    return scored
+
+
+async def collect_majors(
+    session: ClientSession,
+    uid: str,
+    name: str,
+    website: str,
+    grad_url: Optional[str],
+) -> tuple[list[dict], str]:
+    """抓取并解析专业目录，返回 (rows, debug_note)"""
+    candidate_urls = prioritize_urls(
+        build_grad_candidate_urls(website, grad_url, name)
+    )
+    article_urls: list[str] = []
+
+    # 研究生院首页 → 发现列表页链接
+    portal_bases: list[str] = []
+    if grad_url:
+        portal_bases.append(grad_url)
+    if website:
+        portal_bases.extend(guess_grad_subdomains(website))
+    portal_bases = _dedupe_urls(portal_bases)
+
+    portal_content: Optional[str] = None
+    portal_base = ""
+    for candidate in portal_bases[:3]:
+        content = await fetch_page(session, candidate)
+        if content and not is_error_page(content) and len(content) >= 200:
+            portal_content = content
+            portal_base = candidate
+            grad_url = grad_url or candidate
+            break
+
+    if portal_content and portal_base:
+        discovered = discover_links_from_markdown(portal_content, portal_base)
+        article_urls.extend(discover_article_links(portal_content))
+        candidate_urls = prioritize_urls(_dedupe_urls(discovered + candidate_urls))
+
+        for list_url in discovered[:5]:
+            if any(k in list_url for k in ("zsjzj", "zyml", "zszy", "sszs", "a20")):
+                list_md = await fetch_page(session, list_url)
+                if list_md:
+                    article_urls.extend(discover_article_links(list_md))
+
+        if len(discovered) < 4:
+            url_raw = await ask_qwen(
+                CATALOG_URL_PROMPT.format(content=portal_content[:8000])
+            )
+            url_list = parse_json_safe(url_raw)
+            if isinstance(url_list, list):
+                candidate_urls = prioritize_urls(_dedupe_urls(
+                    [str(u) for u in url_list
+                     if isinstance(u, str) and u.startswith("http")]
+                    + candidate_urls
+                ))
+
+    # 招生章程详情页最优先
+    candidate_urls = prioritize_urls(_dedupe_urls(article_urls + candidate_urls))
+    fetch_limit = min(len(candidate_urls), 12)
+    scored_pages = await _score_urls(session, candidate_urls, fetch_limit)
+
+    # 若首轮无高分页，再抓一批招生章程详情
+    if not scored_pages and article_urls:
+        scored_pages = await _score_urls(session, article_urls, 6)
+
+    if not scored_pages:
+        note = f"未找到含专业目录特征的页面（尝试 {fetch_limit} 个 URL）"
+        log.warning("[%s] %s", name, note)
+        return [], note
+
+    all_rows: list[dict] = []
+    tried_ai = 0
+    best_url = scored_pages[0][1]
+
+    for score, url, content in scored_pages[:5]:
+        if tried_ai >= 3 and all_rows:
+            break
+        maj_raw = await ask_qwen(MAJOR_EXTRACT_PROMPT.format(content=content))
+        tried_ai += 1
+        majors_list = parse_json_safe(maj_raw)
+        if isinstance(majors_list, list) and majors_list:
+            rows = majors_to_rows(majors_list, uid)
+            if rows:
+                log.info("[%s] AI 从 %s 提取 %d 个专业 (score=%d)",
+                         name, url[-55:], len(rows), score)
+                all_rows.extend(rows)
+
+    if not all_rows:
+        combined = "\n\n".join(c for _, _, c in scored_pages[:3])
+        regex_majors = regex_extract_majors(combined)
+        all_rows = majors_to_rows(regex_majors, uid)
+        if all_rows:
+            log.info("[%s] 正则兜底提取 %d 个专业 (from %s)",
+                     name, len(all_rows), best_url[-55:])
+
+    deduped: list[dict] = []
+    seen: set[tuple[str, str, str]] = set()
+    for row in all_rows:
+        key = (row["code"], row["degree_type"], row["study_mode"])
+        if key not in seen:
+            seen.add(key)
+            deduped.append(row)
+
+    note = f"最佳页面 score={scored_pages[0][0]}, 候选={fetch_limit}"
+    return deduped, note
+
+
+# ── 研招网专业目录 API（yz.chsi.com.cn/zsml）──────────────────────────────────
+CHSI_ZSML = "https://yz.chsi.com.cn/zsml"
+_CHSI_MLDMS = [f"{i:02d}" for i in range(1, 15)]
+_chsi_sem = asyncio.Semaphore(1)  # 研招网全局限流，避免并发触发「访问太频繁」
+
+
+def _chsi_headers() -> dict:
+    return {
+        "User-Agent": random.choice(USER_AGENTS),
+        "Referer": f"{CHSI_ZSML}/",
+        "Accept": "application/json, text/plain, */*",
+    }
+
+
+async def _chsi_init(session: ClientSession) -> None:
+    async with session.get(
+        f"{CHSI_ZSML}/",
+        headers=_chsi_headers(),
+        timeout=aiohttp.ClientTimeout(total=20),
+    ):
+        pass
+
+
+async def _chsi_query(
+    session: ClientSession,
+    dwdm: str,
+    dwmc: str,
+    mldm: str,
+    start: int,
+) -> Optional[dict]:
+    params = {
+        "dwdm": dwdm,
+        "dwmc": dwmc,
+        "mldm": mldm,
+        "xxfs": "1",
+        "start": str(start),
+    }
+    for attempt in range(3):
+        try:
+            async with session.get(
+                f"{CHSI_ZSML}/rs/zys.do",
+                params=params,
+                headers=_chsi_headers(),
+                timeout=aiohttp.ClientTimeout(total=30),
+            ) as resp:
+                if resp.status != 200:
+                    await asyncio.sleep(2)
+                    continue
+                data = await resp.json(content_type=None)
+                msg = data.get("msg")
+                if isinstance(msg, str):
+                    if "频繁" in msg:
+                        await asyncio.sleep(3 * (attempt + 1))
+                        continue
+                    return None
+                if isinstance(msg, dict) and msg.get("list"):
+                    return msg
+                return None
+        except Exception as exc:
+            log.debug("chsi %s mldm=%s: %s", dwmc, mldm, exc)
+        await asyncio.sleep(1.5)
+    return None
+
+
+def _chsi_items_to_rows(items: list[dict], uid: str) -> list[dict]:
+    rows: list[dict] = []
+    seen: set[tuple[str, str, str]] = set()
+    for item in items:
+        code = normalize_major_code(str(item.get("zydm", "")))
+        name = str(item.get("zymc", "")).strip()
+        if not code or not name or not is_likely_major_code(code):
+            continue
+        if not is_valid_major_name(name):
+            continue
+        xwlx = str(item.get("xwlx", ""))
+        degree = "专硕" if xwlx == "zyxw" else "学硕"
+        mode = "全日制" if str(item.get("mxxfs", "1")) == "1" else "非全日制"
+        key = (code, degree, mode)
+        if key in seen:
+            continue
+        seen.add(key)
+        yxsmc = str(item.get("yxsmc") or item.get("xymc") or "").strip()
+        college = yxsmc[:100] if _is_likely_college_name(yxsmc) else ""
+        first_disc = str(item.get("yjxkmc") or "").strip()[:100] or None
+        subject_cat = str(item.get("mlmc") or "").strip()[:50] or None
+        rows.append({
+            "university_id": uid,
+            "college": college,
+            "name": name[:100],
+            "code": code,
+            "degree_type": degree,
+            "study_mode": mode,
+            "subject_category": subject_cat,
+            "first_discipline": first_disc,
+        })
+    return rows
+
+
+async def fetch_majors_from_chsi(
+    session: ClientSession,
+    uid: str,
+    school_name: str,
+    dwdm: str,
+) -> list[dict]:
+    """从研招网按门类拉取院校硕士专业目录（需教育部院校代码 5 位）"""
+    code = re.sub(r"\D", "", dwdm)[:5]
+    if len(code) < 5:
+        return []
+
+    async with _chsi_sem:
+        return await _fetch_majors_from_chsi_locked(session, uid, school_name, code)
+
+
+async def _fetch_majors_from_chsi_locked(
+    session: ClientSession,
+    uid: str,
+    school_name: str,
+    code: str,
+) -> list[dict]:
+    await _chsi_init(session)
+    all_items: list[dict] = []
+
+    for mldm in _CHSI_MLDMS:
+        start = 0
+        while True:
+            msg = await _chsi_query(session, code, school_name, mldm, start)
+            if not msg:
+                break
+            batch = msg.get("list") or []
+            all_items.extend(batch)
+            total_page = int(msg.get("totalPage") or 1)
+            if start // 10 + 1 >= total_page:
+                break
+            start += 10
+            await asyncio.sleep(1.0)
+        await asyncio.sleep(1.2)
+
+    rows = _chsi_items_to_rows(all_items, uid)
+    if rows:
+        log.info("[%s] 研招网共获取 %d 个专业 (dwdm=%s)", school_name, len(rows), code)
+    return rows  # noqa: RET504 — locked helper
+
+
+def resolve_school_code(
+    name: str,
+    uni: dict,
+    existing: dict,
+    info: Optional[dict] = None,
+) -> str:
+    for src in (
+        (info or {}).get("school_code"),
+        existing.get("school_code"),
+        uni.get("school_code"),
+        SCHOOL_CODES.get(name),
+    ):
+        code = re.sub(r"\D", "", str(src or ""))[:5]
+        if len(code) >= 5:
+            return code
+    return ""
 
 
 async def process_university(
@@ -407,6 +1175,7 @@ async def process_university(
     db: DB,
     uni: dict,
     sem: asyncio.Semaphore,
+    majors_only: bool = False,
 ) -> dict:
     name = uni["name"]
     website = uni.get("website", "")
@@ -418,7 +1187,8 @@ async def process_university(
             base_row = {k: uni[k] for k in
                         ("name", "province", "city", "school_type",
                          "level_985", "level_211", "double_first_class", "website")}
-            uid = db.upsert_university(base_row)
+            existing = db.get_university_meta(name)
+            uid = db.upsert_university(base_row) or existing.get("id")
             if not uid:
                 uid = db.get_university_id(name)
             if not uid:
@@ -426,13 +1196,29 @@ async def process_university(
                 return stats
             log.info("[%s] 基础记录 uid=%s…", name, uid[:8])
 
-            # ── Step 2: Jina 抓取主页 → Qwen 提取 intro/address/graduate_url ──
-            if website:
-                hp_content = await jina_fetch(session, website)
+            seed_code = SCHOOL_CODES.get(name) or uni.get("school_code")
+            if seed_code and not existing.get("school_code"):
+                db.upsert_university({**base_row, "school_code": str(seed_code)[:10]})
+                existing = {**existing, "school_code": str(seed_code)[:10]}
+
+            raw_grad = existing.get("graduate_url") or ""
+            grad_url = raw_grad if is_grad_portal_url(raw_grad) else ""
+            info: dict = {}
+
+            # ── Step 2: 抓取主页 → Qwen 提取 intro/address/graduate_url ────────
+            if website and not majors_only:
+                hp_content = await fetch_page(session, website)
                 if hp_content:
+                    if not grad_url:
+                        portal = discover_grad_portal_url(hp_content)
+                        if portal:
+                            grad_url = portal
+                            log.info("[%s] 从主页发现研究生院 %s", name, portal[:60])
+
                     ai_raw = await ask_qwen(BASIC_INFO_PROMPT.format(content=hp_content))
-                    info = parse_json_safe(ai_raw) or {}
-                    if isinstance(info, dict):
+                    parsed = parse_json_safe(ai_raw)
+                    if isinstance(parsed, dict):
+                        info = parsed
                         patch: dict = {**base_row}
                         if info.get("intro"):
                             patch["intro"] = str(info["intro"])[:500]
@@ -440,63 +1226,63 @@ async def process_university(
                             patch["address"] = str(info["address"])[:200]
                         if info.get("school_code"):
                             patch["school_code"] = str(info["school_code"])[:10]
-                        if info.get("graduate_url"):
-                            patch["graduate_url"] = str(info["graduate_url"])[:300]
-                        if any(k in patch for k in ("intro", "address", "school_code", "graduate_url")):
+                        ai_grad = str(info.get("graduate_url") or "")
+                        if is_grad_portal_url(ai_grad):
+                            patch["graduate_url"] = ai_grad[:300]
+                            grad_url = ai_grad
+                        elif grad_url and is_grad_portal_url(grad_url):
+                            patch["graduate_url"] = grad_url[:300]
+                        updated = [k for k in ("intro", "address", "school_code", "graduate_url")
+                                   if patch.get(k) and patch.get(k) != existing.get(k)]
+                        if updated:
                             db.upsert_university(patch)
-                            log.info("[%s] 详细信息更新 (%s)", name,
-                                     ", ".join(k for k in patch if k != "name"))
+                            log.info("[%s] 详细信息更新 (%s)", name, ", ".join(updated))
 
-                        # ── Step 3: 抓取研招页面 → Qwen 提取专业目录 ──────────
-                        grad_url = info.get("graduate_url") or ""
-                        # 若 AI 未找到，尝试常见路径
-                        grad_content: Optional[str] = None
-                        if grad_url and grad_url.startswith("http"):
-                            grad_content = await jina_fetch(session, grad_url)
-                        if not grad_content:
-                            for path in _GRAD_PATHS:
-                                candidate = website.rstrip("/") + path
-                                gc = await jina_fetch(session, candidate)
-                                if gc and len(gc) > 300:
-                                    grad_content = gc
-                                    break
+            # ── Step 3: 专业目录（研招网优先，官网兜底）────────────────────────
+            school_code = resolve_school_code(name, uni, existing, info)
+            rows: list[dict] = []
 
-                        if grad_content:
-                            maj_raw = await ask_qwen(
-                                MAJOR_EXTRACT_PROMPT.format(content=grad_content)
-                            )
-                            majors_list = parse_json_safe(maj_raw)
-                            if isinstance(majors_list, list) and majors_list:
-                                rows = []
-                                for m in majors_list:
-                                    if not isinstance(m, dict):
-                                        continue
-                                    code = str(m.get("code", "")).strip()
-                                    mname = str(m.get("name", "")).strip()
-                                    if not code or not mname or len(code) < 6:
-                                        continue
-                                    raw_degree = str(m.get("degree_type", ""))
-                                    degree = raw_degree if raw_degree in ("学硕", "专硕") else (
-                                        "专硕" if code[:3] in _PROF_CODES else "学硕"
-                                    )
-                                    raw_mode = str(m.get("study_mode", ""))
-                                    mode = raw_mode if raw_mode in ("全日制", "非全日制") else "全日制"
-                                    rows.append({
-                                        "university_id": uid,
-                                        "college": str(m.get("college") or "未知学院")[:100],
-                                        "name": mname[:100],
-                                        "code": code[:10],
-                                        "degree_type": degree,
-                                        "study_mode": mode,
-                                        "enrollment_count": (
-                                            m.get("enrollment_count")
-                                            if isinstance(m.get("enrollment_count"), int) else None
-                                        ),
-                                    })
-                                if rows:
-                                    cnt = db.upsert_majors(rows)
-                                    stats["majors"] = cnt
-                                    log.info("[%s] 写入专业 %d 个", name, cnt)
+            if len(school_code) >= 5:
+                log.info("[%s] 研招网专业采集 dwdm=%s", name, school_code)
+                rows = await fetch_majors_from_chsi(
+                    session, uid, name, school_code,
+                )
+
+            if not rows and not majors_only and (website or grad_url):
+                log.info("[%s] 官网兜底采集 grad_url=%s",
+                         name, (grad_url or website)[:60])
+                rows, note = await collect_majors(
+                    session, uid, name, website, grad_url or None,
+                )
+                if not rows:
+                    log.warning("[%s] 未提取到专业 (%s)", name, note)
+
+            chsi_count = len(rows)
+            # 研招网通常只抓到每校约 90 条（分页受限），用 AI 多源补全官网目录
+            if chsi_count <= 95 and (website or grad_url):
+                log.info("[%s] 研招网 %d 个专业，启动 AI 多源补采", name, chsi_count)
+                ai_rows, ai_note = await collect_majors(
+                    session, uid, name, website, grad_url or None,
+                )
+                if ai_rows:
+                    merged: dict[tuple[str, str, str], dict] = {}
+                    for r in rows + ai_rows:
+                        k = (r["code"], r["degree_type"], r["study_mode"])
+                        prev = merged.get(k)
+                        if not prev or len(r.get("name", "")) > len(prev.get("name", "")):
+                            merged[k] = r
+                    rows = list(merged.values())
+                    log.info("[%s] 合并后共 %d 个专业 (研招网 %d + AI %d)",
+                             name, len(rows), chsi_count, len(ai_rows))
+                elif chsi_count == 0:
+                    log.warning("[%s] AI 也未提取到专业 (%s)", name, ai_note)
+
+            if rows:
+                cnt = db.upsert_majors(rows)
+                stats["majors"] = cnt
+                log.info("[%s] 写入专业 %d 个", name, cnt)
+            elif len(school_code) < 5:
+                log.warning("[%s] 缺少 school_code，无法查询研招网专业", name)
 
             stats["ok"] = True
 
@@ -508,16 +1294,21 @@ async def process_university(
 
 
 # ── 主入口 ────────────────────────────────────────────────────────────────────
-async def main(force: bool, only_school: Optional[str]) -> None:
+async def main(
+    force: bool,
+    only_school: Optional[str],
+    majors_only: bool,
+    resume_missing: bool,
+) -> None:
     if not SUPABASE_URL or not SUPABASE_KEY:
         log.error("缺少 SUPABASE_URL 或 SUPABASE_SERVICE_ROLE_KEY")
         sys.exit(1)
-    if not DASHSCOPE_KEY:
-        log.error("缺少 DASHSCOPE_API_KEY")
+    if not majors_only and not DASHSCOPE_KEY:
+        log.error("缺少 DASHSCOPE_API_KEY（专业补采请加 --majors-only）")
         sys.exit(1)
 
-    if DONE_FLAG.exists() and not force and not only_school:
-        log.info(".basic_done 已存在，跳过（用 --force 强制重跑）")
+    if DONE_FLAG.exists() and not force and not only_school and not resume_missing:
+        log.info(".basic_done 已存在，跳过（用 --force 或 --resume-missing）")
         return
 
     unis = UNIVERSITIES
@@ -527,15 +1318,24 @@ async def main(force: bool, only_school: Optional[str]) -> None:
             log.error("未找到包含 '%s' 的院校", only_school)
             sys.exit(1)
 
-    log.info("开始基础数据采集，共 %d 所院校", len(unis))
-    start = time.time()
     db = DB()
-    sem = asyncio.Semaphore(3)  # Qwen API 并发限制
+    if resume_missing:
+        missing = db.get_names_without_majors()
+        unis = [u for u in unis if u["name"] in missing]
+        log.info("续跑模式：%d 所院校尚无专业数据", len(unis))
+        if not unis:
+            log.info("所有院校均已有专业，无需续跑")
+            return
+
+    mode = "仅专业" if majors_only else "完整"
+    log.info("开始基础数据采集（%s），共 %d 所院校", mode, len(unis))
+    start = time.time()
+    sem = asyncio.Semaphore(1 if majors_only else 2)
 
     connector = TCPConnector(limit=20, ttl_dns_cache=300, enable_cleanup_closed=True)
     async with ClientSession(connector=connector) as session:
         results = await asyncio.gather(
-            *[process_university(session, db, u, sem) for u in unis],
+            *[process_university(session, db, u, sem, majors_only) for u in unis],
             return_exceptions=True,
         )
 
@@ -550,14 +1350,27 @@ async def main(force: bool, only_school: Optional[str]) -> None:
     if failed:
         log.warning("失败院校（%d 所）: %s", len(failed), "、".join(failed))
 
-    if ok == len(unis) and not only_school:
+    if ok == len(unis) and not only_school and not resume_missing:
         DONE_FLAG.write_text(f"completed at {datetime.now().isoformat()}\n", encoding="utf-8")
         log.info("已写入 %s，下次运行将自动跳过", DONE_FLAG)
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="一次性基础数据爬虫（Jina + 通义千问）")
-    parser.add_argument("--force",  action="store_true", help="强制重跑所有院校，忽略 .basic_done")
-    parser.add_argument("--school", default=None,        help="只处理指定院校（模糊匹配名称）")
+    parser = argparse.ArgumentParser(description="一次性基础数据爬虫（研招网 + Jina + 通义千问）")
+    parser.add_argument("--force", action="store_true", help="强制重跑所有院校，忽略 .basic_done")
+    parser.add_argument("--school", default=None, help="只处理指定院校（模糊匹配名称）")
+    parser.add_argument(
+        "--majors-only", action="store_true",
+        help="仅采集专业（走研招网，不调用通义千问）",
+    )
+    parser.add_argument(
+        "--resume-missing", action="store_true",
+        help="只处理 majors 表中尚无数据的院校",
+    )
     args = parser.parse_args()
-    asyncio.run(main(force=args.force, only_school=args.school))
+    asyncio.run(main(
+        force=args.force,
+        only_school=args.school,
+        majors_only=args.majors_only,
+        resume_missing=args.resume_missing,
+    ))

@@ -110,6 +110,8 @@ export type Database = {
           id: string;
           name: string;
           code: string | null;
+          school_code: string | null;
+          graduate_url: string | null;
           logo_url: string | null;
           province: string | null;
           city: string | null;
@@ -128,6 +130,8 @@ export type Database = {
           id?: string;
           name: string;
           code?: string | null;
+          school_code?: string | null;
+          graduate_url?: string | null;
           logo_url?: string | null;
           province?: string | null;
           city?: string | null;
@@ -146,6 +150,8 @@ export type Database = {
           id?: string;
           name?: string;
           code?: string | null;
+          school_code?: string | null;
+          graduate_url?: string | null;
           logo_url?: string | null;
           province?: string | null;
           city?: string | null;
@@ -249,6 +255,74 @@ export type Database = {
           created_at?: string;
         };
       };
+      major_statistics: {
+        Row: {
+          id: string;
+          university_id: string;
+          college_id: string | null;
+          major_id: string;
+          year: number;
+          min_score: number | null;
+          avg_score: number | null;
+          max_score: number | null;
+          admitted_count: number;
+          retest_count: number | null;
+          admission_rate: number | null;
+          retest_line: number | null;
+          quota: number | null;
+          exempt_count: number | null;
+          source_url: string | null;
+          source_title: string | null;
+          publish_date: string | null;
+          raw_file_path: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          university_id: string;
+          college_id?: string | null;
+          major_id: string;
+          year: number;
+          min_score?: number | null;
+          avg_score?: number | null;
+          max_score?: number | null;
+          admitted_count?: number;
+          retest_count?: number | null;
+          admission_rate?: number | null;
+          retest_line?: number | null;
+          quota?: number | null;
+          exempt_count?: number | null;
+          source_url?: string | null;
+          source_title?: string | null;
+          publish_date?: string | null;
+          raw_file_path?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          university_id?: string;
+          college_id?: string | null;
+          major_id?: string;
+          year?: number;
+          min_score?: number | null;
+          avg_score?: number | null;
+          max_score?: number | null;
+          admitted_count?: number;
+          retest_count?: number | null;
+          admission_rate?: number | null;
+          retest_line?: number | null;
+          quota?: number | null;
+          exempt_count?: number | null;
+          source_url?: string | null;
+          source_title?: string | null;
+          publish_date?: string | null;
+          raw_file_path?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+      };
       announcements: {
         Row: {
           id: string;
@@ -257,6 +331,9 @@ export type Database = {
           publish_time: string;
           url: string;
           type: string;
+          content: string | null;
+          content_hash: string | null;
+          last_updated: string | null;
           created_at: string;
         };
         Insert: {
@@ -266,6 +343,9 @@ export type Database = {
           publish_time: string;
           url: string;
           type: string;
+          content?: string | null;
+          content_hash?: string | null;
+          last_updated?: string | null;
           created_at?: string;
         };
         Update: {
@@ -275,6 +355,9 @@ export type Database = {
           publish_time?: string;
           url?: string;
           type?: string;
+          content?: string | null;
+          content_hash?: string | null;
+          last_updated?: string | null;
           created_at?: string;
         };
       };
@@ -288,6 +371,9 @@ export type Database = {
           start_time: string | null;
           end_time: string | null;
           url: string;
+          content: string | null;
+          content_hash: string | null;
+          last_updated: string | null;
           created_at: string;
         };
         Insert: {
@@ -299,6 +385,9 @@ export type Database = {
           start_time?: string | null;
           end_time?: string | null;
           url: string;
+          content?: string | null;
+          content_hash?: string | null;
+          last_updated?: string | null;
           created_at?: string;
         };
         Update: {
@@ -310,6 +399,9 @@ export type Database = {
           start_time?: string | null;
           end_time?: string | null;
           url?: string;
+          content?: string | null;
+          content_hash?: string | null;
+          last_updated?: string | null;
           created_at?: string;
         };
       };
@@ -324,6 +416,8 @@ export type Database = {
           requirements: string | null;
           contact: string | null;
           url: string | null;
+          content_hash: string | null;
+          last_updated: string | null;
           created_at: string;
         };
         Insert: {
@@ -336,6 +430,8 @@ export type Database = {
           requirements?: string | null;
           contact?: string | null;
           url?: string | null;
+          content_hash?: string | null;
+          last_updated?: string | null;
           created_at?: string;
         };
         Update: {
@@ -348,7 +444,29 @@ export type Database = {
           requirements?: string | null;
           contact?: string | null;
           url?: string | null;
+          content_hash?: string | null;
+          last_updated?: string | null;
           created_at?: string;
+        };
+      };
+      schools_sync_meta: {
+        Row: {
+          id: number;
+          revision: number;
+          updated_at: string;
+          note: string | null;
+        };
+        Insert: {
+          id?: number;
+          revision?: number;
+          updated_at?: string;
+          note?: string | null;
+        };
+        Update: {
+          id?: number;
+          revision?: number;
+          updated_at?: string;
+          note?: string | null;
         };
       };
       study_subjects: {

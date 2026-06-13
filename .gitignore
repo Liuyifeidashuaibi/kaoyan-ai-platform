@@ -44,6 +44,34 @@ build/
 .env.development.local
 .env.production.local
 
+# 爬虫 LLM 解析缓存与临时文件
+crawler/parse_cache.json
+crawler/crawler_checkpoint.json
+crawler/_*.html
+crawler/*_sample.*
+crawler/zxgg.txt
+crawler/raw/
+crawler/logs/
+crawler/.basic_done
+
+# 爬虫调试/探测脚本（不入库）
+crawler/_probe_*.py
+crawler/_find_*.py
+crawler/_dump_*.py
+crawler/_brute_*.py
+crawler/_check_*.py
+crawler/_audit*.py
+crawler/_audit*.json
+crawler/_*.js
+crawler/_kaoyan_js_snippets.txt
+
+# 第三方复试线 CSV（掌上考研，已禁用导入）
+crawler/data/kaoyan_scores*.csv
+crawler/data/kaoyan_school_id_map.json
+crawler/data/eol_score_index.json
+crawler/data/_*.csv
+crawler/data/_*.json
+
 # 日志
 *.log
 npm-debug.log*

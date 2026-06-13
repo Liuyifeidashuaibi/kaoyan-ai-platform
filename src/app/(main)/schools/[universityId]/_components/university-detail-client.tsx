@@ -1,69 +1,142 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import { ArrowLeft, RefreshCw } from "lucide-react";
+import { Suspense, useCallback, useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { ArrowLeft, RefreshCw, ExternalLink } from "lucide-react";
 import { TabNav } from "@/components/schools/tab-nav";
 import { SkeletonDetail } from "@/components/schools/skeleton-list";
 import { EmptyState } from "@/components/schools/empty-state";
+import { LevelTags } from "@/components/schools/level-tags";
 import {
   getUniversity,
   getMajors,
-  getUniversityLevelTags,
+  getScoredMajorCodes,
   getUniversityInitial,
+  getExamZone,
   type University,
   type Major,
 } from "@/lib/api/schools";
+import { useSchoolsSync } from "../../_context/schools-sync-context";
 import { OverviewTab } from "./overview-tab";
 import { MajorsTab } from "./majors-tab";
 import { ScoresTab } from "./scores-tab";
-import { AnnouncementsTab } from "./announcements-tab";
-import { AdjustmentTab } from "./adjustment-tab";
-import { RecommendationTab } from "./recommendation-tab";
-import { cn } from "@/lib/utils";
 
 const DETAIL_TABS = [
-  { value: "overview", label: "概况" },
-  { value: "majors", label: "专业" },
-  { value: "scores", label: "分数" },
-  { value: "announcements", label: "公告" },
-  { value: "adjustment", label: "调剂" },
-  { value: "recommendation", label: "推免" },
-];
+  { value: "scores", label: "进复试最低分" },
+  { value: "overview", label: "院校概况" },
+  { value: "majors", label: "开设专业" },
+] as const;
 
-const LEVEL_TAG_STYLE: Record<string, string> = {
-  "985": "bg-orange-100 text-orange-700 border-orange-200",
-  "211": "bg-blue-100 text-blue-700 border-blue-200",
-  双一流A: "bg-purple-100 text-purple-700 border-purple-200",
-  双一流B: "bg-violet-100 text-violet-700 border-violet-200",
-  一流学科: "bg-teal-100 text-teal-700 border-teal-200",
-};
+type DetailTab = (typeof DETAIL_TABS)[number]["value"];
+
+function isDetailTab(v: string | null): v is DetailTab {
+  return v === "overview" || v === "majors" || v === "scores";
+}
+
+function resolveInitialTab(tabParam: string | null, majorParam: string | null): DetailTab {
+  if (isDetailTab(tabParam)) return tabParam;
+  if (majorParam) return "majors";
+  return "scores";
+}
 
 interface UniversityDetailClientProps {
   universityId: string;
 }
 
-export function UniversityDetailClient({
-  universityId,
-}: UniversityDetailClientProps) {
+function UniversityDetailContent({ universityId }: UniversityDetailClientProps) {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const tabParam = searchParams.get("tab");
+  const majorParam = searchParams.get("major");
+
   const [university, setUniversity] = useState<University | null>(null);
   const [majors, setMajors] = useState<Major[]>([]);
+  const [scoredMajorCodes, setScoredMajorCodes] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState("overview");
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<DetailTab>(() =>
+    resolveInitialTab(tabParam, majorParam)
+  );
+  const { version, refresh: syncRefresh, syncing } = useSchoolsSync();
   const [refreshKey, setRefreshKey] = useState(0);
+
+  const updateUrl = useCallback(
+    (tab: DetailTab, major?: string | null) => {
+      const params = new URLSearchParams(searchParams.toString());
+      params.set("tab", tab);
+      if (major) {
+        params.set("major", major);
+      } else {
+        params.delete("major");
+      }
+      router.replace(`?${params.toString()}`, { scroll: false });
+    },
+    [router, searchParams]
+  );
+
+  const handleTabChange = useCallback(
+    (tab: string) => {
+      if (!isDetailTab(tab)) return;
+      setActiveTab(tab);
+      if (majorParam) {
+        updateUrl(tab, majorParam);
+      } else {
+        updateUrl(tab);
+      }
+    },
+    [majorParam, updateUrl]
+  );
+
+  const handleViewScores = useCallback(
+    (majorCode: string) => {
+      setActiveTab("scores");
+      updateUrl("scores", majorCode);
+    },
+    [updateUrl]
+  );
+
+  const handleViewMajors = useCallback(
+    (majorCode: string) => {
+      setActiveTab("majors");
+      updateUrl("majors", majorCode);
+    },
+    [updateUrl]
+  );
+
+  const handleSelectMajor = useCallback(
+    (majorCode: string) => {
+      if (activeTab === "majors") {
+        updateUrl("majors", majorCode);
+      }
+    },
+    [activeTab, updateUrl]
+  );
+
+  const handleClearMajorHighlight = useCallback(() => {
+    updateUrl(activeTab);
+  }, [activeTab, updateUrl]);
+
+  useEffect(() => {
+    if (isDetailTab(tabParam)) setActiveTab(tabParam);
+  }, [tabParam]);
 
   const load = async () => {
     setLoading(true);
+    setLoadError(null);
     try {
-      const [uni, ms] = await Promise.all([
+      const [uni, ms, scored] = await Promise.all([
         getUniversity(universityId),
         getMajors(universityId),
+        getScoredMajorCodes(universityId),
       ]);
       setUniversity(uni);
       setMajors(ms);
+      setScoredMajorCodes(scored);
+      if (!uni) setLoadError("not_found");
     } catch (err) {
       console.error("加载院校详情失败:", err);
+      setLoadError("failed");
+      setUniversity(null);
     } finally {
       setLoading(false);
     }
@@ -72,12 +145,11 @@ export function UniversityDetailClient({
   useEffect(() => {
     load();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [universityId, refreshKey]);
+  }, [universityId, refreshKey, version]);
 
   if (loading) {
     return (
-      <div className="flex flex-col h-full bg-background">
-        <TopBar title="加载中..." onBack={() => router.back()} />
+      <div className="min-h-full bg-[#f5f6f8]">
         <SkeletonDetail />
       </div>
     );
@@ -85,133 +157,177 @@ export function UniversityDetailClient({
 
   if (!university) {
     return (
-      <div className="flex flex-col h-full bg-background">
-        <TopBar title="院校详情" onBack={() => router.back()} />
-        <EmptyState title="院校不存在" description="请返回重新选择" icon="school" />
+      <div className="min-h-full bg-[#f5f6f8] p-6">
+        <EmptyState
+          title={loadError === "failed" ? "加载失败" : "院校不存在"}
+          description={
+            loadError === "failed"
+              ? "网络或数据库异常，请稍后重试"
+              : "请返回重新选择"
+          }
+          icon="school"
+          action={
+            loadError === "failed" ? (
+              <button
+                type="button"
+                onClick={() => load()}
+                className="rounded-lg bg-orange-500 px-4 py-2 text-sm font-medium text-white hover:bg-orange-600"
+              >
+                重试
+              </button>
+            ) : undefined
+          }
+        />
       </div>
     );
   }
 
-  const tags = getUniversityLevelTags(university);
   const initial = getUniversityInitial(university.name);
+  const zone = getExamZone(university.province);
+  const gradUrl = university.graduate_url;
+  const websiteUrl = university.website;
 
   return (
-    <div className="flex flex-col h-full bg-muted/30">
-      {/* ── 顶部导航 ── */}
-      <TopBar
-        title={university.name}
-        onBack={() => router.back()}
-        onRefresh={() => setRefreshKey((k) => k + 1)}
-      />
+    <div className="relative min-h-full bg-[#f5f6f8] pb-8">
+      <div className="mx-auto max-w-5xl">
+        <div className="flex items-center gap-2 px-4 py-3 lg:px-0">
+          <button
+            type="button"
+            onClick={() => router.back()}
+            className="rounded-lg p-2 hover:bg-white/80"
+            aria-label="返回"
+          >
+            <ArrowLeft className="size-5" />
+          </button>
+          <h1 className="flex-1 truncate text-sm font-semibold lg:text-base">
+            {university.name}
+          </h1>
+          <button
+            type="button"
+            onClick={() => {
+              void syncRefresh();
+              setRefreshKey((k) => k + 1);
+            }}
+            disabled={syncing}
+            className="rounded-lg p-2 hover:bg-white/80 disabled:opacity-50"
+            aria-label="刷新"
+          >
+            <RefreshCw className={`size-5 ${syncing ? "animate-spin" : ""}`} />
+          </button>
+        </div>
 
-      {/* ── 院校头部信息卡 ── */}
-      <div className="bg-background px-4 pt-4 pb-3 border-b border-border">
-        <div className="flex items-center gap-4">
-          {university.logo_url ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={university.logo_url}
-              alt={university.name}
-              className="size-20 rounded-full object-cover border-2 border-border shadow-sm"
-            />
-          ) : (
-            <div className="size-20 rounded-full bg-orange-50 border-2 border-orange-100 flex items-center justify-center shadow-sm">
-              <span className="text-xl font-bold text-orange-600">
-                {initial}
-              </span>
-            </div>
-          )}
-          <div className="flex-1 min-w-0">
-            <h2 className="text-base font-bold mb-2">{university.name}</h2>
-            <div className="flex flex-wrap gap-1.5">
-              {tags.map((tag) => (
-                <span
-                  key={tag}
-                  className={cn(
-                    "inline-flex items-center rounded px-2 py-0.5 text-xs font-semibold border",
-                    LEVEL_TAG_STYLE[tag] ??
-                      "bg-muted text-muted-foreground border-border"
-                  )}
-                >
-                  {tag}
-                </span>
-              ))}
-              <span className="inline-flex items-center rounded px-2 py-0.5 text-xs font-medium border bg-muted text-muted-foreground border-border">
-                {university.province}·{university.city}
-              </span>
-              <span className="inline-flex items-center rounded px-2 py-0.5 text-xs font-medium border bg-muted text-muted-foreground border-border">
-                {university.school_type}
-              </span>
+        <div className="relative mx-4 overflow-hidden rounded-2xl bg-gradient-to-r from-orange-400 to-orange-600 lg:mx-0">
+          <div className="absolute inset-0 bg-black/20" />
+          <div className="relative flex items-end gap-4 px-6 py-8">
+            {university.logo_url ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={university.logo_url}
+                alt={university.name}
+                className="size-20 rounded-full border-4 border-white object-cover shadow-lg"
+              />
+            ) : (
+              <div className="flex size-20 items-center justify-center rounded-full border-4 border-white bg-white shadow-lg">
+                <span className="text-2xl font-bold text-orange-600">{initial}</span>
+              </div>
+            )}
+            <div className="min-w-0 flex-1 pb-1 text-white">
+              <h2 className="text-xl font-bold lg:text-2xl">{university.name}</h2>
+              <p className="mt-1 text-sm text-white/90">
+                {university.province} · {university.city} · {zone}
+              </p>
+              <div className="mt-2 flex flex-wrap gap-1.5">
+                <LevelTags university={university} variant="light" />
+              </div>
             </div>
           </div>
         </div>
-      </div>
 
-      {/* ── 标签导航（固定） ── */}
-      <div className="bg-background border-b border-border shrink-0">
-        <TabNav
-          tabs={DETAIL_TABS}
-          active={activeTab}
-          onChange={setActiveTab}
-          activeColor="orange"
-        />
-      </div>
+        <div className="mx-4 mt-4 flex gap-2 lg:mx-0">
+          <a
+            href={websiteUrl ?? "#"}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={(e) => !websiteUrl && e.preventDefault()}
+            aria-disabled={!websiteUrl}
+            className={`flex flex-1 items-center justify-center gap-1.5 rounded-xl border border-border bg-white py-3 text-sm font-medium text-foreground hover:bg-muted/50 ${!websiteUrl ? "pointer-events-none opacity-40" : ""}`}
+          >
+            访问官网
+            <ExternalLink className="size-3.5 text-muted-foreground" />
+          </a>
+          <a
+            href={gradUrl ?? "#"}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={(e) => !gradUrl && e.preventDefault()}
+            aria-disabled={!gradUrl}
+            className={`flex flex-1 items-center justify-center gap-1.5 rounded-xl bg-orange-500 py-3 text-sm font-medium text-white hover:bg-orange-600 ${!gradUrl ? "pointer-events-none opacity-40" : ""}`}
+          >
+            访问研究生官网
+            <ExternalLink className="size-3.5" />
+          </a>
+        </div>
 
-      {/* ── 内容区 ── */}
-      <div className="flex-1 min-h-0 overflow-hidden flex flex-col">
-        {activeTab === "overview" && (
-          <div className="flex-1 overflow-y-auto">
-            <OverviewTab university={university} majors={majors} />
-          </div>
-        )}
-        {activeTab === "majors" && <MajorsTab majors={majors} />}
-        {activeTab === "scores" && <ScoresTab universityId={universityId} />}
-        {activeTab === "announcements" && (
-          <AnnouncementsTab universityId={universityId} />
-        )}
-        {activeTab === "adjustment" && (
-          <AdjustmentTab universityId={universityId} />
-        )}
-        {activeTab === "recommendation" && (
-          <RecommendationTab universityId={universityId} />
-        )}
+        <div className="mx-4 mt-4 overflow-hidden rounded-t-2xl bg-white shadow-sm lg:mx-0">
+          <TabNav
+            tabs={[...DETAIL_TABS]}
+            active={activeTab}
+            onChange={handleTabChange}
+            activeColor="orange"
+            className="border-none"
+          />
+        </div>
+
+        <div className="mx-4 min-h-[400px] rounded-b-2xl bg-white shadow-sm lg:mx-0">
+          {activeTab === "overview" && (
+            <OverviewTab
+              university={university}
+              majors={majors}
+              universityId={universityId}
+              dataVersion={version}
+              highlightMajorCode={majorParam ?? undefined}
+              onGoMajors={() => handleTabChange("majors")}
+              onGoScores={() => handleTabChange("scores")}
+              onClearMajorHighlight={
+                majorParam ? handleClearMajorHighlight : undefined
+              }
+            />
+          )}
+          {activeTab === "majors" && (
+            <MajorsTab
+              majors={majors}
+              scoredMajorCodes={scoredMajorCodes}
+              highlightMajorCode={majorParam ?? undefined}
+              onViewScores={handleViewScores}
+              onSelectMajor={handleSelectMajor}
+              onClearHighlight={majorParam ? handleClearMajorHighlight : undefined}
+            />
+          )}
+          {activeTab === "scores" && (
+            <ScoresTab
+              universityId={universityId}
+              dataVersion={version}
+              highlightMajorCode={majorParam ?? undefined}
+              onViewMajors={handleViewMajors}
+              onClearHighlight={majorParam ? handleClearMajorHighlight : undefined}
+            />
+          )}
+        </div>
       </div>
     </div>
   );
 }
 
-function TopBar({
-  title,
-  onBack,
-  onRefresh,
-}: {
-  title: string;
-  onBack: () => void;
-  onRefresh?: () => void;
-}) {
+export function UniversityDetailClient(props: UniversityDetailClientProps) {
   return (
-    <div className="flex items-center h-12 px-2 gap-1 bg-background border-b border-border shrink-0">
-      <button
-        onClick={onBack}
-        className="p-2 rounded-lg hover:bg-muted active:bg-muted/80 transition-colors"
-        aria-label="返回"
-      >
-        <ArrowLeft className="size-5" />
-      </button>
-      <h1 className="flex-1 text-sm font-semibold text-center truncate px-2">
-        {title}
-      </h1>
-      {onRefresh ? (
-        <button
-          onClick={onRefresh}
-          className="p-2 rounded-lg hover:bg-muted active:bg-muted/80 transition-colors"
-          aria-label="刷新"
-        >
-          <RefreshCw className="size-5" />
-        </button>
-      ) : (
-        <div className="size-9" />
-      )}
-    </div>
+    <Suspense
+      fallback={
+        <div className="min-h-full bg-[#f5f6f8]">
+          <SkeletonDetail />
+        </div>
+      }
+    >
+      <UniversityDetailContent {...props} />
+    </Suspense>
   );
 }

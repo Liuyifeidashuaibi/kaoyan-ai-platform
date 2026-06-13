@@ -6,6 +6,7 @@ interface EmptyStateProps {
   description?: string;
   icon?: "search" | "school";
   className?: string;
+  action?: React.ReactNode;
 }
 
 export function EmptyState({
@@ -13,6 +14,7 @@ export function EmptyState({
   description = "没有找到符合条件的内容",
   icon = "search",
   className,
+  action,
 }: EmptyStateProps) {
   const Icon = icon === "school" ? GraduationCap : SearchX;
 
@@ -28,6 +30,7 @@ export function EmptyState({
       </div>
       <p className="text-sm font-medium text-foreground">{title}</p>
       <p className="mt-1 text-xs text-muted-foreground">{description}</p>
+      {action && <div className="mt-4">{action}</div>}
     </div>
   );
 }

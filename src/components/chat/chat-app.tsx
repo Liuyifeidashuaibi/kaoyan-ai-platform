@@ -42,6 +42,7 @@ export function ChatApp() {
   const autoReplyTriggeredRef = useRef<string | null>(null);
   const isStreamingRef = useRef(false);
   const skipNextMessageLoadRef = useRef(false);
+  const ttsAudioRef = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => {
     void initApiBaseUrl();
@@ -108,6 +109,8 @@ export function ChatApp() {
       content: string,
       options?: {
         imageFile?: File | null;
+        audioFile?: Blob | null;
+        enableTts?: boolean;
         imagePath?: string | null;
         localPreview?: string | null;
         skipOptimisticUser?: boolean;
@@ -115,6 +118,8 @@ export function ChatApp() {
       }
     ) => {
       const imageFile = options?.imageFile ?? null;
+      const audioFile = options?.audioFile ?? null;
+      const enableTts = options?.enableTts ?? false;
       const imagePath = options?.imagePath ?? null;
       const localPreview = options?.localPreview ?? null;
 
@@ -144,11 +149,27 @@ export function ChatApp() {
           sessionId,
           content,
           imageFile,
+          audioFile,
           imagePath,
           skipUserSave: options?.skipUserSave,
+          enableTts,
           signal: controller.signal,
           onToken: (token) => {
             setStreamingContent((prev) => prev + token);
+          },
+          onDone: (payload) => {
+            if (!payload.ttsAudioBase64) return;
+            try {
+              const src = `data:audio/wav;base64,${payload.ttsAudioBase64}`;
+              if (ttsAudioRef.current) {
+                ttsAudioRef.current.pause();
+              }
+              const audio = new Audio(src);
+              ttsAudioRef.current = audio;
+              void audio.play();
+            } catch {
+              /* ignore playback errors */
+            }
           },
         });
         const data = await getChatMessages(sessionId);
@@ -253,9 +274,17 @@ export function ChatApp() {
     }
   };
 
-  const handleSend = async ({ content, imageFile, previewUrl }: ChatSendPayload) => {
+  const handleSend = async ({
+    content,
+    imageFile,
+    previewUrl,
+    audioFile,
+    enableTts,
+  }: ChatSendPayload) => {
     const sendPayload = {
       imageFile: imageFile ?? null,
+      audioFile: audioFile ?? null,
+      enableTts,
       localPreview: previewUrl,
     };
 

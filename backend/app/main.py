@@ -16,7 +16,8 @@ from fastapi.staticfiles import StaticFiles
 
 from app.config import get_settings
 from app.database import init_db
-from app.routers import chat, wrong_questions
+from app.routers import chat, schools, wrong_questions
+from app.services.vector_sync_service import get_vector_sync_service
 from app.utils.file_utils import ensure_dir
 from app.utils.response import success_response
 
@@ -66,12 +67,29 @@ app.add_middleware(
 
 # 注册路由
 app.include_router(chat.router)
+app.include_router(schools.router)
 app.include_router(wrong_questions.router)
 
 # 静态文件服务 — 提供上传图片访问（确保目录存在后再挂载）
 _uploads_root = get_settings().root / "uploads"
 _uploads_root.mkdir(parents=True, exist_ok=True)
 app.mount("/uploads", StaticFiles(directory=str(_uploads_root)), name="uploads")
+
+
+@app.post("/api/admin/vector-sync")
+async def trigger_vector_sync():
+    """手动触发 Supabase → Chroma 增量向量同步（需配置 Supabase）。"""
+    settings = get_settings()
+    if not settings.supabase_url or not settings.supabase_service_key:
+        return {"success": False, "message": "未配置 Supabase"}
+    if not settings.dashscope_api_key:
+        return {"success": False, "message": "未配置 DASHSCOPE_API_KEY"}
+    try:
+        result = get_vector_sync_service().sync()
+        return {"success": True, "data": result}
+    except Exception as exc:
+        logger.exception("向量同步失败")
+        return {"success": False, "message": str(exc)}
 
 
 @app.get("/api/health")
@@ -84,7 +102,11 @@ async def health_check():
             "status": "ok",
             "llm_model": settings.llm_model,
             "vl_model": settings.vl_model,
+            "asr_model": settings.asr_model,
+            "embedding_model": settings.embedding_model,
+            "rag_top_k": settings.rag_top_k,
             "max_image_upload_mb": settings.max_image_upload_bytes // (1024 * 1024),
+            "max_audio_seconds": settings.max_audio_seconds,
             "api_key_configured": api_key_ok,
             "public_data_dir": str(settings.public_data_path),
         }
@@ -125,6 +147,11 @@ async def root():
             "endpoints": {
                 "chat": "/api/chat",
                 "wrong_questions": "/api/wrong-questions",
+                "schools": "/api/schools",
+                "majors": "/api/majors",
+                "statistics": "/api/statistics",
+                "admissions": "/api/admissions",
+                "score_lines": "/api/score-lines",
                 "health": "/api/health",
             },
         }

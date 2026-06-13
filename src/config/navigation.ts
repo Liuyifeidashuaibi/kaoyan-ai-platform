@@ -39,7 +39,7 @@ export const navItems: NavItem[] = [
     href: "/schools",
     label: "择校",
     icon: GraduationCap,
-    description: "院校与专业查询",
+    description: "院校与专业查询（/choose-school）",
   },
   {
     href: "/study/tomato",

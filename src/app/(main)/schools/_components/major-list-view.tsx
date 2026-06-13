@@ -1,174 +1,211 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
-import Link from "next/link";
-import { ChevronDown, ChevronRight } from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { MajorCard } from "@/components/schools/major-card";
 import { EmptyState } from "@/components/schools/empty-state";
 import { SkeletonList } from "@/components/schools/skeleton-list";
+import { TabNav } from "@/components/schools/tab-nav";
 import {
-  getMajorsByCategory,
   SUBJECT_CATEGORIES,
-  type MajorWithSchool,
+  SUBJECT_CATEGORY_CODES,
+  aggregateMajorsClient,
+  buildDisciplineTreeClient,
+  prefetchMajorsCatalog,
 } from "@/lib/api/schools";
 import { useSchoolsFilter } from "../_context/schools-filter-context";
-import { cn } from "@/lib/utils";
-
-type MajorWithUniversity = MajorWithSchool;
+import { useSchoolsSync } from "../_context/schools-sync-context";
 
 interface MajorListViewProps {
   search: string;
+  onLoadingChange?: (loading: boolean) => void;
+  onClearInjectedSearch?: () => void;
 }
 
-export function MajorListView({ search }: MajorListViewProps) {
-  const { filter } = useSchoolsFilter();
-  const [activeCategory, setActiveCategory] = useState<string | null>(null);
-  const [majors, setMajors] = useState<MajorWithSchool[]>([]);
-  const [loading, setLoading] = useState(false);
+const DEGREE_TABS = [
+  { value: "学硕", label: "学术型硕士" },
+  { value: "专硕", label: "专业型硕士" },
+];
 
-  const fetchMajors = useCallback(
-    async (category: string) => {
-      setLoading(true);
-      try {
-        const data = await getMajorsByCategory(category, {
-          level985: filter.level985,
-          level211: filter.level211,
-          doubleFirstClass: filter.doubleFirstClass,
-        });
-        setMajors(data);
-      } catch (err) {
-        console.error("加载专业列表失败:", err);
-        setMajors([]);
-      } finally {
-        setLoading(false);
-      }
-    },
-    [filter]
+export function MajorListView({
+  search,
+  onLoadingChange,
+  onClearInjectedSearch,
+}: MajorListViewProps) {
+  const { filter } = useSchoolsFilter();
+  const [degreeType, setDegreeType] = useState<"学硕" | "专硕">("学硕");
+  const [subjectCategory, setSubjectCategory] = useState("全部");
+  const { version } = useSchoolsSync();
+  const [catalog, setCatalog] = useState<Awaited<ReturnType<typeof prefetchMajorsCatalog>>>([]);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
+  const onLoadingChangeRef = useRef(onLoadingChange);
+  onLoadingChangeRef.current = onLoadingChange;
+
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    setLoadError(false);
+    onLoadingChangeRef.current?.(true);
+    prefetchMajorsCatalog()
+      .then((rows) => {
+        if (!cancelled) setCatalog(rows);
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setCatalog([]);
+          setLoadError(true);
+        }
+      })
+      .finally(() => {
+        if (!cancelled) {
+          setLoading(false);
+          onLoadingChangeRef.current?.(false);
+        }
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [version]);
+
+  const disciplineTree = useMemo(
+    () => (catalog.length > 0 ? buildDisciplineTreeClient(catalog) : {}),
+    [catalog]
   );
 
-  const handleCategoryClick = (cat: string) => {
-    if (activeCategory === cat) {
-      setActiveCategory(null);
-      setMajors([]);
-    } else {
-      setActiveCategory(cat);
-      fetchMajors(cat);
-    }
+  const majors = useMemo(
+    () =>
+      aggregateMajorsClient(catalog, {
+        level985: filter.level985,
+        level211: filter.level211,
+        doubleFirstClass: filter.doubleFirstClass,
+        degreeType,
+        subjectCategory: subjectCategory !== "全部" ? subjectCategory : undefined,
+        search,
+      }),
+    [catalog, filter, degreeType, subjectCategory, search]
+  );
+
+  const categoryTabs = useMemo(
+    () => [
+      { value: "全部", label: "全部" },
+      ...SUBJECT_CATEGORIES.map((cat) => ({
+        value: cat,
+        label: `${SUBJECT_CATEGORY_CODES[cat] ?? ""} ${cat}`.trim(),
+      })),
+    ],
+    []
+  );
+
+  const disciplineCount =
+    subjectCategory !== "全部"
+      ? (disciplineTree[subjectCategory] ?? []).length
+      : 0;
+
+  const hasActiveFilters =
+    subjectCategory !== "全部" ||
+    !!search ||
+    !filter.level985 ||
+    !filter.level211 ||
+    !filter.doubleFirstClass;
+
+  const resetFilters = () => {
+    setSubjectCategory("全部");
+    onClearInjectedSearch?.();
   };
 
-  // filter 变化时重新获取
-  useEffect(() => {
-    if (activeCategory) {
-      fetchMajors(activeCategory);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filter]);
-
-  const filteredMajors = search.trim()
-    ? majors.filter(
-        (m) =>
-          m.name.toLowerCase().includes(search.toLowerCase()) ||
-          (m.code ?? "").toLowerCase().includes(search.toLowerCase()) ||
-          (m.university?.name ?? "").toLowerCase().includes(search.toLowerCase())
-      )
-    : majors;
-
   return (
-    <div className="flex-1 overflow-y-auto">
-      <div className="bg-card">
-        {SUBJECT_CATEGORIES.map((cat) => (
-          <div key={cat} className="border-b border-border last:border-0">
-            {/* 学科门类行 */}
-            <button
-              onClick={() => handleCategoryClick(cat)}
-              className="flex w-full items-center justify-between px-4 py-3.5 active:bg-muted/50 transition-colors"
-            >
-              <span className="text-sm font-medium">{cat}</span>
-              {activeCategory === cat ? (
-                <ChevronDown className="size-4 text-muted-foreground" />
-              ) : (
-                <ChevronRight className="size-4 text-muted-foreground" />
-              )}
-            </button>
-
-            {/* 专业列表（展开态） */}
-            {activeCategory === cat && (
-              <div className="bg-muted/30 border-t border-border">
-                {loading ? (
-                  <SkeletonList count={4} className="rounded-none" />
-                ) : filteredMajors.length === 0 ? (
-                  <EmptyState
-                    title="暂无数据"
-                    description={
-                      search
-                        ? `无"${search}"相关专业`
-                        : "该学科门类暂无招生专业"
-                    }
-                    className="py-8"
-                  />
-                ) : (
-                  filteredMajors.map((major) => (
-                    <Link
-                      key={major.id}
-                      href={`/schools/${major.university_id}`}
-                      className="flex items-start gap-3 px-4 py-3 border-b border-border/50 last:border-0 active:bg-muted/50 transition-colors"
-                    >
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-1">
-                          <span className="text-xs font-mono text-muted-foreground">
-                            {major.code}
-                          </span>
-                          <span className="text-sm font-medium truncate">
-                            {major.name}
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                          <span>{major.university?.name ?? "—"}</span>
-                          <span>·</span>
-                          <span>{major.university?.province}</span>
-                        </div>
-                      </div>
-                      <div className="flex flex-col gap-1 shrink-0">
-                        <DegreeTag type={major.degree_type ?? "学硕"} />
-                        <ModeTag mode={major.study_mode ?? "全日制"} />
-                      </div>
-                    </Link>
-                  ))
-                )}
-              </div>
-            )}
-          </div>
-        ))}
+    <div>
+      <div className="mb-3 overflow-hidden rounded-2xl bg-white shadow-sm">
+        <TabNav
+          tabs={DEGREE_TABS}
+          active={degreeType}
+          onChange={(v) => setDegreeType(v as "学硕" | "专硕")}
+          activeColor="orange"
+          className="border-none"
+        />
       </div>
+
+      <div className="mb-4 overflow-hidden rounded-2xl bg-white shadow-sm">
+        <TabNav
+          tabs={categoryTabs}
+          active={subjectCategory}
+          onChange={setSubjectCategory}
+          activeColor="orange"
+          className="border-none"
+        />
+        {subjectCategory !== "全部" && disciplineCount > 0 && (
+          <p className="border-t border-border/60 px-4 py-2 text-xs text-muted-foreground">
+            {subjectCategory} 下设 {disciplineCount} 个一级学科
+          </p>
+        )}
+      </div>
+
+      {!loading && search && (
+        <p className="mb-3 text-xs text-orange-700">
+          关键词筛选：「{search}」
+          <button
+            type="button"
+            onClick={resetFilters}
+            className="ml-2 font-medium hover:underline"
+          >
+            清除
+          </button>
+        </p>
+      )}
+
+      {!loading && (
+        <p className="mb-3 text-sm text-muted-foreground">
+          共找到{" "}
+          <span className="font-semibold text-orange-500">{majors.length}</span>{" "}
+          个{degreeType === "学硕" ? "学术型" : "专业型"}招生专业
+        </p>
+      )}
+
+      {loading ? (
+        <>
+          <p className="mb-3 text-xs text-muted-foreground">
+            专业目录数据量较大，首次加载可能需要一些时间…
+          </p>
+          <SkeletonList count={6} />
+        </>
+      ) : loadError ? (
+        <EmptyState
+          title="专业数据加载失败"
+          description="网络异常或数据库连接超时，请点击右上角刷新重试"
+          icon="school"
+        />
+      ) : majors.length === 0 ? (
+        <EmptyState
+          title={catalog.length === 0 ? "暂无专业数据" : "未找到相关专业"}
+          description={
+            catalog.length === 0
+              ? "数据同步中或网络异常，请稍后刷新"
+              : hasActiveFilters
+                ? "当前筛选条件下无匹配专业，可尝试放宽筛选"
+                : "暂无符合条件的专业"
+          }
+          action={
+            hasActiveFilters && catalog.length > 0 ? (
+              <button
+                type="button"
+                onClick={resetFilters}
+                className="rounded-lg border border-border bg-white px-4 py-2 text-sm font-medium hover:bg-muted/50"
+              >
+                清除筛选
+              </button>
+            ) : undefined
+          }
+        />
+      ) : (
+        <div className="flex flex-col gap-3">
+          {majors.map((major) => (
+            <MajorCard
+              key={`${major.code}-${major.degree_type}`}
+              major={major}
+            />
+          ))}
+        </div>
+      )}
     </div>
-  );
-}
-
-function DegreeTag({ type }: { type: string }) {
-  return (
-    <span
-      className={cn(
-        "inline-flex items-center rounded px-1.5 py-px text-[10px] font-medium border",
-        type === "学硕"
-          ? "bg-blue-50 text-blue-600 border-blue-200"
-          : "bg-orange-50 text-orange-600 border-orange-200"
-      )}
-    >
-      {type}
-    </span>
-  );
-}
-
-function ModeTag({ mode }: { mode: string }) {
-  return (
-    <span
-      className={cn(
-        "inline-flex items-center rounded px-1.5 py-px text-[10px] font-medium border",
-        mode === "全日制"
-          ? "bg-green-50 text-green-600 border-green-200"
-          : "bg-gray-50 text-gray-500 border-gray-200"
-      )}
-    >
-      {mode}
-    </span>
   );
 }

@@ -26,10 +26,7 @@ kaoyan-ai-platform/
 │   │           ├── university-detail-client.tsx  # 详情主组件
 │   │           ├── overview-tab.tsx              # 概况标签
 │   │           ├── majors-tab.tsx                # 专业标签
-│   │           ├── scores-tab.tsx                # 分数线标签
-│   │           ├── announcements-tab.tsx         # 公告标签
-│   │           ├── adjustment-tab.tsx            # 调剂标签
-│   │           └── recommendation-tab.tsx        # 推免标签
+│   │           └── scores-tab.tsx                # 分数线标签
 │   └── components/schools/
 │       ├── university-card.tsx         # 院校卡片（全局复用）
 │       ├── tab-nav.tsx                 # 横向标签导航
@@ -72,9 +69,10 @@ npx supabase db push
 - `universities` - 院校主表
 - `majors` - 专业表
 - `scores` - 分数线表
-- `announcements` - 公告表
 - `recommendations` - 推免信息表
 - `adjustments` - 调剂信息表
+
+> 注：`announcements` 表仍存在于历史迁移中，但择校前端已不再展示公告数据。
 
 ---
 
@@ -109,7 +107,7 @@ cp .env.example .env
 ### 步骤 3：首次全量爬取
 
 ```bash
-# 全量模式：爬取所有院校基础信息 + 专业 + 分数线 + 公告
+# 全量模式：爬取所有院校基础信息 + 专业 + 分数线
 python crawler.py --mode=full
 ```
 
@@ -161,7 +159,7 @@ on:
     - cron: '0 0 1-30 3,4 *'
     # 每年9月1日至10月31日 每天早8点运行（专业目录更新期）
     - cron: '0 0 1-31 9,10 *'
-    # 全年每周三早8点运行（公告/推免增量更新）
+    # 全年每周三早8点运行（数据增量更新）
     - cron: '0 0 * * 3'
   workflow_dispatch:
     inputs:
@@ -226,7 +224,7 @@ jobs:
 |------|----------|------|
 | **每年 9-10 月** | 各院校发布次年招生简章和专业目录 | 自动（GitHub Actions）|
 | **每年 3-4 月** | 各院校公布当年复试分数线 | 自动（GitHub Actions）|
-| **全年持续** | 公告/推免/夏令营通知 | 每周自动（GitHub Actions）|
+| **全年持续** | 院校/专业/学院/复试线增量更新 | 每周自动（GitHub Actions）|
 | **按需** | 手动添加/修正院校信息 | Supabase Dashboard |
 
 ### 手动维护操作

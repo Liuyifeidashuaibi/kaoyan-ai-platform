@@ -1,8 +1,10 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { ImagePlus, Send, Square, X } from "lucide-react";
+import { ImagePlus, Loader2, Mic, Send, Square, Volume2, X } from "lucide-react";
 
+import { transcribeAudio } from "@/lib/api/chat";
+import { WavRecorder } from "@/lib/audio/wav-recorder";
 import { cn } from "@/lib/utils";
 
 const ALLOWED_MIME = new Set([
@@ -14,7 +16,8 @@ const ALLOWED_MIME = new Set([
 const ALLOWED_EXT = new Set(["jpg", "jpeg", "png", "gif", "webp"]);
 const HEIC_EXT = new Set(["heic", "heif"]);
 const HEIC_MIME = new Set(["image/heic", "image/heif"]);
-const MAX_IMAGE_BYTES = 10 * 1024 * 1024;
+const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
+const MAX_AUDIO_SECONDS = 30;
 
 type ImageAttachState = "idle" | "loading" | "ready" | "error";
 
@@ -22,6 +25,8 @@ export type ChatSendPayload = {
   content: string;
   imageFile: File | null;
   previewUrl: string | null;
+  audioFile: Blob | null;
+  enableTts: boolean;
 };
 
 type ChatInputProps = {
@@ -38,6 +43,20 @@ function isAllowedImageFile(file: File): boolean {
   return ALLOWED_EXT.has(ext);
 }
 
+function formatSeconds(sec: number): string {
+  const m = Math.floor(sec / 60);
+  const s = sec % 60;
+  return `${m}:${s.toString().padStart(2, "0")}`;
+}
+
+function appendTranscript(prev: string, next: string): string {
+  const a = prev.trimEnd();
+  const b = next.trim();
+  if (!b) return a;
+  if (!a) return b;
+  return `${a} ${b}`;
+}
+
 export function ChatInput({
   onSend,
   onStop,
@@ -50,9 +69,16 @@ export function ChatInput({
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [imageState, setImageState] = useState<ImageAttachState>("idle");
   const [imageHint, setImageHint] = useState<string | null>(null);
+  const [isRecording, setIsRecording] = useState(false);
+  const [isTranscribing, setIsTranscribing] = useState(false);
+  const [recordSeconds, setRecordSeconds] = useState(0);
+  const [enableTts, setEnableTts] = useState(false);
+
   const fileRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const previewUrlRef = useRef<string | null>(null);
+  const wavRecorderRef = useRef<WavRecorder | null>(null);
+  const recordTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const revokePreview = useCallback(() => {
     if (previewUrlRef.current) {
@@ -62,7 +88,13 @@ export function ChatInput({
     setPreviewUrl(null);
   }, []);
 
-  useEffect(() => () => revokePreview(), [revokePreview]);
+  useEffect(() => () => {
+    revokePreview();
+    if (recordTimerRef.current) clearInterval(recordTimerRef.current);
+    if (wavRecorderRef.current?.isActive) {
+      wavRecorderRef.current.stop();
+    }
+  }, [revokePreview]);
 
   const resizeTextarea = useCallback(() => {
     const el = textareaRef.current;
@@ -82,6 +114,71 @@ export function ChatInput({
     setImageHint(null);
   }, [revokePreview]);
 
+  const transcribeAndAppend = useCallback(async (wav: Blob) => {
+    setIsTranscribing(true);
+    setImageHint("正在识别语音…");
+    try {
+      const text = await transcribeAudio(wav);
+      setContent((prev) => appendTranscript(prev, text));
+      setImageHint(null);
+      requestAnimationFrame(() => {
+        textareaRef.current?.focus();
+        const el = textareaRef.current;
+        if (el) {
+          el.selectionStart = el.selectionEnd = el.value.length;
+        }
+      });
+    } catch (e) {
+      setImageHint(e instanceof Error ? e.message : "语音识别失败，请重试");
+    } finally {
+      setIsTranscribing(false);
+      setRecordSeconds(0);
+    }
+  }, []);
+
+  const stopRecording = useCallback(async () => {
+    if (recordTimerRef.current) {
+      clearInterval(recordTimerRef.current);
+      recordTimerRef.current = null;
+    }
+    const recorder = wavRecorderRef.current;
+    wavRecorderRef.current = null;
+    setIsRecording(false);
+
+    if (!recorder?.isActive) return;
+
+    const wav = recorder.stop();
+    if (wav.size > 0) {
+      await transcribeAndAppend(wav);
+    } else {
+      setImageHint("录音过短，请重试");
+      setRecordSeconds(0);
+    }
+  }, [transcribeAndAppend]);
+
+  const startRecording = useCallback(async () => {
+    if (isRecording || isTranscribing || disabled || isStreaming) return;
+    try {
+      const recorder = new WavRecorder();
+      await recorder.start();
+      wavRecorderRef.current = recorder;
+      setIsRecording(true);
+      setRecordSeconds(0);
+      setImageHint(null);
+      recordTimerRef.current = setInterval(() => {
+        setRecordSeconds((s) => {
+          if (s + 1 >= MAX_AUDIO_SECONDS) {
+            void stopRecording();
+            return MAX_AUDIO_SECONDS;
+          }
+          return s + 1;
+        });
+      }, 1000);
+    } catch {
+      setImageHint("无法访问麦克风，请检查浏览器权限");
+    }
+  }, [disabled, isRecording, isStreaming, isTranscribing, stopRecording]);
+
   const handleFileChange = useCallback(
     async (e: React.ChangeEvent<HTMLInputElement>) => {
       const file = e.target.files?.[0];
@@ -93,7 +190,7 @@ export function ChatInput({
         clearImage();
         setImageState("error");
         setImageHint(
-          "iPhone 的 HEIC 格式暂不支持。请在相册选「最兼容」/ JPEG，或：设置 → 相机 → 格式 → 兼容性最佳"
+          "iPhone 的 HEIC 格式暂不支持。请在相册选「最兼容」/ JPEG"
         );
         return;
       }
@@ -108,7 +205,7 @@ export function ChatInput({
       if (file.size > MAX_IMAGE_BYTES) {
         clearImage();
         setImageState("error");
-        setImageHint("图片过大（超过 10MB），请压缩后重试");
+        setImageHint("图片过大（超过 5MB），请压缩后重试");
         return;
       }
 
@@ -123,9 +220,7 @@ export function ChatInput({
 
       try {
         const buffer = await file.arrayBuffer();
-        if (buffer.byteLength === 0) {
-          throw new Error("empty file");
-        }
+        if (buffer.byteLength === 0) throw new Error("empty");
         setImageFile(file);
         setImageState("ready");
         setImageHint(null);
@@ -143,16 +238,17 @@ export function ChatInput({
   const hasImageSelection = imageState !== "idle";
   const imageReady = imageState === "ready" && imageFile !== null;
   const imagePending = imageState === "loading";
+  const voiceBusy = isRecording || isTranscribing;
 
-  const canSendTextOnly = !!trimmed && !hasImageSelection;
-  const canSendWithImage = imageReady;
-  const canSend = canSendTextOnly || canSendWithImage;
+  const canSend =
+    (!!trimmed && !hasImageSelection) || imageReady || (!!trimmed && imageReady);
 
   const handleSend = useCallback(() => {
     if (isStreaming) {
       onStop?.();
       return;
     }
+    if (voiceBusy) return;
     if (imagePending) return;
     if (hasImageSelection && !imageReady) return;
     if (!canSend) return;
@@ -165,6 +261,8 @@ export function ChatInput({
       content: text,
       imageFile: fileToSend,
       previewUrl: previewToSend,
+      audioFile: null,
+      enableTts,
     });
 
     setContent("");
@@ -181,6 +279,7 @@ export function ChatInput({
   }, [
     canSend,
     clearImage,
+    enableTts,
     hasImageSelection,
     imageFile,
     imagePending,
@@ -189,6 +288,7 @@ export function ChatInput({
     onSend,
     onStop,
     trimmed,
+    voiceBusy,
   ]);
 
   const handleKeyDown = useCallback(
@@ -204,17 +304,29 @@ export function ChatInput({
   const showStop = isStreaming;
   const sendDisabled =
     !showStop &&
-    (disabled || imagePending || (hasImageSelection && !imageReady) || !canSend);
+    (disabled ||
+      voiceBusy ||
+      imagePending ||
+      (hasImageSelection && !imageReady) ||
+      !canSend);
 
   const footerHint = (() => {
+    if (isRecording) {
+      return `录音中 ${formatSeconds(recordSeconds)} / 最长 ${MAX_AUDIO_SECONDS}s，再次点击麦克风结束`;
+    }
+    if (isTranscribing) return "正在将语音转为文字…";
     if (imagePending) return "请等待图片加载完成";
     if (hasImageSelection && imageState === "error") return imageHint;
     if (imageHint) return imageHint;
-    return "Enter 发送 · Shift+Enter 换行 · 可上传数学题图片";
+    return "麦克风录音后自动转文字到输入框，可编辑、可继续录音追加 · Enter 发送";
   })();
 
   const footerHintWarning =
-    imagePending || (hasImageSelection && imageState === "error");
+    isRecording ||
+    isTranscribing ||
+    imagePending ||
+    (hasImageSelection && imageState === "error") ||
+    !!imageHint;
 
   return (
     <div className="shrink-0 border-t border-border bg-background/95 px-4 py-3 backdrop-blur md:px-6">
@@ -258,16 +370,60 @@ export function ChatInput({
           <button
             type="button"
             onClick={() => fileRef.current?.click()}
-            disabled={disabled || isStreaming || imagePending}
+            disabled={disabled || isStreaming || imagePending || voiceBusy}
             className={cn(
               "mb-0.5 flex size-8 shrink-0 items-center justify-center rounded-lg transition-colors",
-              disabled || isStreaming || imagePending
+              disabled || isStreaming || imagePending || voiceBusy
                 ? "cursor-not-allowed text-muted-foreground/40"
                 : "text-muted-foreground hover:bg-muted hover:text-foreground"
             )}
             aria-label="上传图片"
           >
             <ImagePlus className="size-4.5" />
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              if (isRecording) void stopRecording();
+              else void startRecording();
+            }}
+            disabled={disabled || isStreaming || imagePending || isTranscribing}
+            className={cn(
+              "mb-0.5 flex size-8 shrink-0 items-center justify-center rounded-lg transition-colors",
+              isRecording
+                ? "bg-destructive text-destructive-foreground animate-pulse"
+                : isTranscribing
+                  ? "cursor-wait text-muted-foreground"
+                  : disabled || isStreaming || imagePending
+                    ? "cursor-not-allowed text-muted-foreground/40"
+                    : "text-muted-foreground hover:bg-muted hover:text-foreground"
+            )}
+            aria-label={isRecording ? "停止录音并转文字" : "语音输入"}
+          >
+            {isTranscribing ? (
+              <Loader2 className="size-4.5 animate-spin" />
+            ) : (
+              <Mic className="size-4.5" />
+            )}
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setEnableTts((v) => !v)}
+            disabled={disabled || isStreaming}
+            title="回答完成后朗读（可选）"
+            className={cn(
+              "mb-0.5 flex size-8 shrink-0 items-center justify-center rounded-lg transition-colors",
+              enableTts
+                ? "bg-primary/15 text-primary"
+                : "text-muted-foreground hover:bg-muted hover:text-foreground",
+              (disabled || isStreaming) && "cursor-not-allowed opacity-40"
+            )}
+            aria-label="语音播放开关"
+            aria-pressed={enableTts}
+          >
+            <Volume2 className="size-4.5" />
           </button>
 
           <textarea
@@ -278,11 +434,13 @@ export function ChatInput({
             placeholder={
               isStreaming
                 ? "AI 正在回答中…"
-                : imageReady
-                  ? "可补充文字说明，或直接发送图片…"
-                  : placeholder
+                : isTranscribing
+                  ? "语音识别中…"
+                  : imageReady
+                    ? "可补充文字说明，或直接发送图片…"
+                    : placeholder
             }
-            disabled={disabled && !isStreaming}
+            disabled={(disabled && !isStreaming) || isRecording || isTranscribing}
             rows={1}
             className="flex-1 resize-none bg-transparent py-1.5 text-sm leading-relaxed outline-none placeholder:text-muted-foreground/60 disabled:cursor-not-allowed"
             style={{ maxHeight: "200px" }}
@@ -296,12 +454,11 @@ export function ChatInput({
               "mb-0.5 flex size-8 shrink-0 items-center justify-center rounded-lg transition-colors",
               showStop
                 ? "bg-foreground text-background hover:bg-foreground/80"
-                : canSend && !disabled && !imagePending
+                : canSend && !disabled && !imagePending && !voiceBusy
                   ? "bg-primary text-primary-foreground hover:bg-primary/90"
                   : "cursor-not-allowed bg-muted text-muted-foreground/40"
             )}
             aria-label={showStop ? "停止生成" : "发送"}
-            title={imagePending ? "请等待图片加载完成" : undefined}
           >
             {showStop ? (
               <Square className="size-3.5 fill-current" />

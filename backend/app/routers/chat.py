@@ -18,7 +18,9 @@ from sqlalchemy.orm import Session
 from app.config import get_settings
 from app.database import get_db
 from app.schemas.chat import ChatSearchRequest, ChatSendRequest, ChatSessionCreate
+from app.services.chat_context import strip_ocr_for_display
 from app.services.chat_service import ChatService
+from app.services.media_service import get_media_service
 from app.utils.file_utils import ensure_dir, save_upload_image
 from app.utils.image_url import ImageProcessingError, ResolvedImage, resolve_chat_image
 from app.utils.response import error_response, success_response
@@ -30,6 +32,31 @@ logger = logging.getLogger(__name__)
 
 def _get_chat_service(db: Session = Depends(get_db)) -> ChatService:
     return ChatService(db)
+
+
+async def _read_audio_file(
+    audio_file: UploadFile | None,
+) -> tuple[bytes | None, str | None]:
+    if not audio_file:
+        return None, None
+    filename = audio_file.filename or "recording.wav"
+    try:
+        content = await audio_file.read()
+    except Exception as exc:
+        raise ImageProcessingError("读取语音失败，请重试。", log_detail=str(exc)) from exc
+    if not content:
+        return None, None
+    logger.info(
+        "[Router] 收到语音: filename=%s bytes=%d head=%s",
+        filename,
+        len(content),
+        content[:4].hex(),
+    )
+    if len(content) > settings.max_audio_upload_bytes:
+        raise ImageProcessingError(
+            f"语音文件过大（上限 {settings.max_audio_upload_bytes // 1024 // 1024}MB）"
+        )
+    return content, filename
 
 
 async def _read_image_file(
@@ -120,6 +147,11 @@ async def get_messages(
             "id": m.id,
             "role": m.role,
             "content": m.content,
+            "display_content": (
+                strip_ocr_for_display(m.content or "")
+                if m.role == "user"
+                else (m.content or "")
+            ),
             "image_path": m.image_path,
             "created_at": m.created_at.isoformat(),
         }
@@ -128,13 +160,37 @@ async def get_messages(
     return success_response(data)
 
 
+@router.post("/transcribe")
+async def transcribe_audio_only(
+    audio_file: UploadFile = File(...),
+):
+    """
+    仅语音识别：将录音转为文字，供前端展示在输入框供用户校对、编辑。
+    不创建会话、不调用大模型。
+    """
+    try:
+        audio_bytes, filename = await _read_audio_file(audio_file)
+        if not audio_bytes:
+            return error_response("语音文件为空")
+        text = await get_media_service().transcribe_audio(
+            audio_bytes,
+            filename or "recording.wav",
+        )
+        return success_response({"text": text})
+    except ImageProcessingError as exc:
+        logger.warning("[Router] transcribe 失败: %s", exc.user_message)
+        return error_response(exc.user_message)
+
+
 @router.post("/send/stream")
 async def send_message_stream(
     session_id: str = Form(...),
-    content: str = Form(...),
+    content: str = Form(default=""),
     image_file: UploadFile | None = File(default=None),
+    audio_file: UploadFile | None = File(default=None),
     image_url: str | None = Form(default=None),
     image_path: str | None = Form(default=None),
+    enable_tts: bool = Form(default=False),
     skip_user_save: bool = Form(default=False),
     service: ChatService = Depends(_get_chat_service),
 ):
@@ -152,7 +208,14 @@ async def send_message_stream(
     if not session:
         return error_response("会话不存在")
 
+    audio_bytes: bytes | None = None
+    audio_filename: str | None = None
+    image_bytes: bytes | None = None
+    image_filename: str | None = None
+    resolved: ResolvedImage | None = None
+
     try:
+        audio_bytes, audio_filename = await _read_audio_file(audio_file)
         image_bytes, image_filename = await _read_image_file(image_file)
 
         # ── 聊天图片落盘（uploads/chat/），确保刷新后仍可显示 ──
@@ -168,7 +231,7 @@ async def send_message_stream(
             )
             logger.info("[Router] 图片已落盘: %s", saved_image_path)
 
-        resolved: ResolvedImage | None = await resolve_chat_image(
+        resolved = await resolve_chat_image(
             content=content,
             image_bytes=image_bytes,
             image_filename=image_filename,
@@ -185,6 +248,9 @@ async def send_message_stream(
         logger.warning("[Router] 图片处理失败: %s | %s", exc.user_message, exc.log_detail)
         return error_response(exc.user_message)
 
+    if not content.strip() and not resolved and not audio_bytes:
+        return error_response("请输入文字、上传图片或语音")
+
     logger.info(
         "[Router] send/stream | session=%s | has_image=%s | source=%s | storage_ref=%s | content=%r",
         session_id,
@@ -200,6 +266,11 @@ async def send_message_stream(
             content,
             resolved,
             skip_user_save=skip_user_save,
+            audio_bytes=audio_bytes,
+            audio_filename=audio_filename or "audio.wav",
+            image_bytes=image_bytes,
+            image_disk_path=saved_image_path,
+            enable_tts=enable_tts or settings.enable_tts_default,
         ):
             yield chunk
 

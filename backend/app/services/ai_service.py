@@ -46,31 +46,7 @@ logger = logging.getLogger(__name__)
 
 
 
-LLM_MODEL_FALLBACKS = (
-
-    "qwen-max-latest",
-
-    "qwen-max",
-
-    "qwen-plus",
-
-    "qwen-turbo",
-
-)
-
-
-
-VL_MODEL_FALLBACKS = (
-
-    "qwen2.5-vl-72b-instruct",
-
-    "qwen2.5-vl-7b-instruct",
-
-    "qwen-vl-max",
-
-    "qwen-vl-plus",
-
-)
+# 固定单模型，不做 fallback 切换以控制额度
 
 
 
@@ -117,6 +93,8 @@ SYSTEM_PROMPT = """你是专为考研学生定制的 AI 助手，覆盖数学、
 
 
 **先给结论，再解释，最后扩展。** 禁止废话、鸡汤、无意义鼓励、小红书风格表达。
+
+**多轮对话**：用户可能在上一轮已上传图片（正文含「[图片内容]」或「[沿用上文图片]」）。追问如「第二题」「继续解答」时，务必结合历史消息与图片文字作答，勿声称用户未上传图片。
 
 
 
@@ -246,41 +224,6 @@ class AIService:
 
         self._openai_client: AsyncOpenAI | None = None
 
-        self._resolved_llm_model: str | None = None
-
-        self._resolved_vl_model: str | None = None
-
-
-
-    def _llm_models_to_try(self) -> list[str]:
-
-        primary = self.settings.llm_model.strip()
-
-        models: list[str] = []
-
-        for name in [primary, *LLM_MODEL_FALLBACKS]:
-
-            if name and name not in models:
-
-                models.append(name)
-
-        return models
-
-
-
-    def _vl_models_to_try(self) -> list[str]:
-
-        primary = self.settings.vl_model.strip()
-
-        models: list[str] = []
-
-        for name in [primary, *VL_MODEL_FALLBACKS]:
-
-            if name and name not in models:
-
-                models.append(name)
-
-        return models
 
 
 
@@ -436,20 +379,6 @@ class AIService:
 
 
 
-        log_image_event(
-
-            request_type="text",
-
-            source="none",
-
-            model=self.settings.llm_model,
-
-            status="start",
-
-        )
-
-
-
         api_messages = [
 
             {"role": "system", "content": self._system_with_rag(rag_context)},
@@ -458,109 +387,59 @@ class AIService:
 
         ]
 
-        models = (
+        model = self.settings.llm_model.strip()
 
-            [self._resolved_llm_model]
+        try:
 
-            if self._resolved_llm_model
+            stream = await asyncio.wait_for(
 
-            else self._llm_models_to_try()
-
-        )
-
-
-
-        last_error: Exception | None = None
-
-        for model in models:
-
-            if not model:
-
-                continue
-
-            try:
-
-                stream = await asyncio.wait_for(
-
-                    self.openai_client.chat.completions.create(
-
-                        model=model,
-
-                        messages=api_messages,
-
-                        stream=True,
-
-                        temperature=0.7,
-
-                        max_tokens=4096,
-
-                    ),
-
-                    timeout=self.settings.model_timeout_seconds,
-
-                )
-
-                self._resolved_llm_model = model
-
-                log_image_event(
-
-                    request_type="text",
-
-                    source="none",
+                self.openai_client.chat.completions.create(
 
                     model=model,
 
-                    status="streaming",
+                    messages=api_messages,
 
-                )
+                    stream=True,
 
-                async for chunk in stream:
+                    temperature=self.settings.llm_temperature,
 
-                    delta = chunk.choices[0].delta.content
+                    max_tokens=self.settings.llm_max_tokens,
 
-                    if delta:
+                ),
 
-                        yield delta
+                timeout=self.settings.model_timeout_seconds,
 
-                log_image_event(
+            )
 
-                    request_type="text",
+            async for chunk in stream:
 
-                    source="none",
+                delta = chunk.choices[0].delta.content
 
-                    model=model,
+                if delta:
 
-                    status="done",
+                    yield delta
 
-                )
+            return
 
-                return
+        except Exception as exc:
 
-            except Exception as exc:
+            log_image_event(
 
-                last_error = exc
+                request_type="text",
 
-                logger.warning("LLM 模型 %s 失败: %s", model, exc)
+                source="none",
 
+                model=model,
 
+                status="failed",
 
-        log_image_event(
+                detail=str(exc),
 
-            request_type="text",
+            )
 
-            source="none",
+            logger.error("LLM 调用失败: %s", exc)
 
-            model=self.settings.llm_model,
-
-            status="failed",
-
-            detail=str(last_error),
-
-        )
-
-        logger.exception("流式对话全部模型失败")
-
-        yield f"\n\n[错误] {_friendly_api_error(last_error or Exception('unknown'))}"
+            yield f"\n\n[错误] {_friendly_api_error(exc)}"
 
 
 
@@ -596,109 +475,59 @@ class AIService:
 
         ]
 
-        models = (
+        model = self.settings.vl_model.strip()
 
-            [self._resolved_vl_model]
+        try:
 
-            if self._resolved_vl_model
+            stream = await asyncio.wait_for(
 
-            else self._vl_models_to_try()
-
-        )
-
-
-
-        last_error: Exception | None = None
-
-        for model in models:
-
-            if not model:
-
-                continue
-
-            try:
-
-                stream = await asyncio.wait_for(
-
-                    self.openai_client.chat.completions.create(
-
-                        model=model,
-
-                        messages=api_messages,
-
-                        stream=True,
-
-                        temperature=0.7,
-
-                        max_tokens=4096,
-
-                    ),
-
-                    timeout=self.settings.model_timeout_seconds,
-
-                )
-
-                self._resolved_vl_model = model
-
-                log_image_event(
-
-                    request_type="vision",
-
-                    source=source_label,
+                self.openai_client.chat.completions.create(
 
                     model=model,
 
-                    status="streaming",
+                    messages=api_messages,
 
-                )
+                    stream=True,
 
-                async for chunk in stream:
+                    temperature=0.01,
 
-                    delta = chunk.choices[0].delta.content
+                    max_tokens=1500,
 
-                    if delta:
+                ),
 
-                        yield delta
+                timeout=self.settings.model_timeout_seconds,
 
-                log_image_event(
+            )
 
-                    request_type="vision",
+            async for chunk in stream:
 
-                    source=source_label,
+                delta = chunk.choices[0].delta.content
 
-                    model=model,
+                if delta:
 
-                    status="done",
+                    yield delta
 
-                )
+            return
 
-                return
+        except Exception as exc:
 
-            except Exception as exc:
+            log_image_event(
 
-                last_error = exc
+                request_type="vision",
 
-                logger.warning("VL 模型 %s 失败: %s", model, exc)
+                source=source_label,
 
+                model=model,
 
+                status="failed",
 
-        log_image_event(
+                detail=str(exc),
 
-            request_type="vision",
+            )
 
-            source=source_label,
+            logger.error("VL 调用失败: %s", exc)
 
-            model=self.settings.vl_model,
-
-            status="failed",
-
-            detail=str(last_error),
-
-        )
-
-        logger.exception("视觉流式对话全部模型失败")
-
-        yield f"\n\n[错误] {_friendly_api_error(last_error or Exception('unknown'))}"
+            yield f"\n\n[错误] {_friendly_api_error(exc)}"
 
 
 

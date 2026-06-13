@@ -16,6 +16,8 @@ export type ChatMessage = {
   id: number;
   role: "user" | "assistant" | "system";
   content: string;
+  /** 用户消息展示文案（不含 OCR），由后端计算 */
+  display_content?: string | null;
   image_path: string | null;
   /** 本地上传图片的临时预览（仅前端会话内展示，不落盘） */
   local_preview?: string | null;

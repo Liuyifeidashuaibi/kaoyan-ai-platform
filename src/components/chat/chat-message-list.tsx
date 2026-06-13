@@ -17,6 +17,7 @@ import { Bot, Check, ChevronDown, Copy, RefreshCw, ThumbsDown, ThumbsUp, User } 
 
 import { Button } from "@/components/ui/button";
 import type { ChatMessage } from "@/lib/api/types";
+import { userMessageDisplayText } from "@/lib/chat/display";
 import { resolveUploadUrl } from "@/lib/config/api";
 import { cn } from "@/lib/utils";
 
@@ -34,6 +35,7 @@ type MessageActionsProps = {
 type MessageBubbleProps = {
   role: string;
   content: string;
+  displayContent?: string | null;
   imagePath?: string | null;
   localPreview?: string | null;
   isStreaming?: boolean;
@@ -240,6 +242,7 @@ function ThinkingDots() {
 const MessageBubble = memo(function MessageBubble({
   role,
   content,
+  displayContent,
   imagePath,
   localPreview,
   isStreaming,
@@ -247,6 +250,12 @@ const MessageBubble = memo(function MessageBubble({
 }: MessageBubbleProps) {
   const isUser = role === "user";
   const imageSrc = localPreview || (imagePath ? resolveUploadUrl(imagePath) : "");
+  const userText = isUser ? userMessageDisplayText(content, displayContent) : content;
+  const [imageBroken, setImageBroken] = useState(false);
+
+  useEffect(() => {
+    setImageBroken(false);
+  }, [imageSrc]);
 
   return (
     <div className={cn("group flex gap-3", isUser ? "flex-row-reverse" : "flex-row")}>
@@ -272,16 +281,24 @@ const MessageBubble = memo(function MessageBubble({
               : "rounded-tl-sm bg-muted/60 text-foreground"
           )}
         >
-          {imageSrc && (
+          {imageSrc && !imageBroken && (
             // eslint-disable-next-line @next/next/no-img-element
             <img
               src={imageSrc}
               alt="上传图片"
-              className="mb-2 max-h-52 rounded-lg object-contain"
+              className="mb-2 max-h-52 max-w-full rounded-lg border border-black/10 bg-white object-contain"
+              onError={() => setImageBroken(true)}
             />
           )}
+          {imageSrc && imageBroken && (
+            <div className="mb-2 rounded-lg border border-dashed border-black/20 bg-white/90 px-3 py-2 text-xs text-muted-foreground">
+              图片加载失败，请刷新或重新上传
+            </div>
+          )}
           {isUser ? (
-            <div className="whitespace-pre-wrap break-words">{content}</div>
+            userText ? (
+              <div className="whitespace-pre-wrap break-words">{userText}</div>
+            ) : null
           ) : (
             <div className="prose-sm max-w-none break-words">
               <MarkdownContent content={content} />
@@ -386,6 +403,7 @@ export function ChatMessageList({
               key={msg.id}
               role={msg.role}
               content={msg.content}
+              displayContent={msg.display_content}
               imagePath={msg.image_path}
               localPreview={msg.local_preview}
               onRegenerate={

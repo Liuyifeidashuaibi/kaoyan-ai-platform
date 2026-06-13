@@ -51,6 +51,20 @@ export function SkeletonScoreRow() {
   );
 }
 
+/** 顶部 indeterminate 加载条，用于列表/搜索/刷新 */
+export function LoadingProgressBar({ active }: { active?: boolean }) {
+  if (!active) return null;
+  return (
+    <div
+      role="progressbar"
+      aria-label="加载中"
+      className="pointer-events-none fixed inset-x-0 top-0 z-50 h-0.5 overflow-hidden bg-orange-100"
+    >
+      <div className="h-full w-full animate-pulse bg-orange-500" />
+    </div>
+  );
+}
+
 export function SkeletonDetail() {
   return (
     <div className="space-y-4 p-4">

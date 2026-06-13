@@ -7,20 +7,23 @@ const { Client } = pg;
 
 loadEnv({ path: path.join(process.cwd(), ".env.local") });
 loadEnv({ path: path.join(process.cwd(), ".env") });
+loadEnv({ path: path.join(process.cwd(), "crawler", ".env") });
 
 const PROJECT_REF = "zlgogxuzkmirxinorert";
+const migrationArg = process.argv[2] ?? "001_core_schema.sql";
 const SQL_PATH = path.join(
   process.cwd(),
   "supabase",
   "migrations",
-  "001_core_schema.sql"
+  migrationArg
 );
 
-function getConnectionCandidates(): string[] {
-  const candidates: string[] = [];
+function getConnectionCandidates() {
+  const candidates = [];
 
-  if (process.env.DATABASE_URL) {
-    candidates.push(process.env.DATABASE_URL);
+  const dbUrl = process.env.DATABASE_URL || "";
+  if (dbUrl.startsWith("postgresql")) {
+    candidates.push(dbUrl);
   }
 
   const password = process.env.SUPABASE_DB_PASSWORD;
@@ -36,7 +39,7 @@ function getConnectionCandidates(): string[] {
   return candidates;
 }
 
-async function runWithClient(connectionString: string, sql: string) {
+async function runWithClient(connectionString, sql) {
   const client = new Client({
     connectionString,
     ssl: { rejectUnauthorized: false },
@@ -50,7 +53,7 @@ async function runWithClient(connectionString: string, sql: string) {
   }
 }
 
-async function runWithManagementApi(accessToken: string, sql: string) {
+async function runWithManagementApi(accessToken, sql) {
   const response = await fetch(
     `https://api.supabase.com/v1/projects/${PROJECT_REF}/database/query`,
     {
@@ -70,7 +73,12 @@ async function runWithManagementApi(accessToken: string, sql: string) {
 }
 
 async function main() {
+  if (!fs.existsSync(SQL_PATH)) {
+    throw new Error(`Migration file not found: ${SQL_PATH}`);
+  }
+
   const sql = fs.readFileSync(SQL_PATH, "utf8");
+  console.log(`Running migration: ${migrationArg}`);
 
   const accessToken = process.env.SUPABASE_ACCESS_TOKEN;
   if (accessToken) {
@@ -83,11 +91,12 @@ async function main() {
   const candidates = getConnectionCandidates();
   if (candidates.length === 0) {
     throw new Error(
-      "Missing DATABASE_URL, SUPABASE_DB_PASSWORD, or SUPABASE_ACCESS_TOKEN for remote migration."
+      "Missing DATABASE_URL, SUPABASE_DB_PASSWORD, or SUPABASE_ACCESS_TOKEN.\n" +
+        "Add one to .env.local — see .env.local.example"
     );
   }
 
-  let lastError: unknown;
+  let lastError;
   for (const connectionString of candidates) {
     try {
       console.log("Trying database connection...");

@@ -11,9 +11,9 @@ services:
       - key: DASHSCOPE_API_KEY
         sync: false
       - key: LLM_MODEL
-        value: qwen-max-latest
+        value: qwen-plus
       - key: VL_MODEL
-        value: qwen2.5-vl-72b-instruct
+        value: qwen-vl-ocr-latest
       - key: PUBLIC_BASE_URL
         sync: false
       - key: CORS_ORIGINS

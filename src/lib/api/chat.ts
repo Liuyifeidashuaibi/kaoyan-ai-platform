@@ -60,28 +60,51 @@ export async function getChatMessages(
 
 
 
+/** 录音转文字（仅 ASR，结果填入输入框） */
+export async function transcribeAudio(audio: Blob | File): Promise<string> {
+  const base = await ensureApiBaseUrl();
+  const form = new FormData();
+  const name = audio instanceof File ? audio.name : "recording.wav";
+  form.append("audio_file", audio, name);
+
+  const res = await fetch(`${base}/api/chat/transcribe`, {
+    method: "POST",
+    body: form,
+  });
+
+  if (!res.ok) {
+    let message = `语音识别失败 (${res.status})`;
+    try {
+      const body = (await res.json()) as { message?: string };
+      if (body.message) message = body.message;
+    } catch {
+      /* ignore */
+    }
+    throw new Error(message);
+  }
+
+  const body = (await res.json()) as { data?: { text?: string }; message?: string };
+  const text = body.data?.text?.trim();
+  if (!text) throw new Error(body.message || "未识别到语音内容");
+  return text;
+}
+
+export type StreamChatDonePayload = {
+  ttsAudioBase64?: string;
+};
+
 export type StreamChatOptions = {
-
   sessionId: string;
-
   content: string;
-
-  /** 本地上传图片，随消息一并发送（内存 Base64，不落盘） */
-
   imageFile?: File | null;
-
-  /** 错题本追问等已落盘路径 */
-
+  audioFile?: Blob | File | null;
   imagePath?: string | null;
-
-  /** 用户消息已存在（如错题本一键追问）时设为 true */
-
   skipUserSave?: boolean;
-
+  /** 开启后服务端合成语音，在 onDone 中返回 base64 */
+  enableTts?: boolean;
   onToken: (token: string) => void;
-
+  onDone?: (payload: StreamChatDonePayload) => void;
   signal?: AbortSignal;
-
 };
 
 
@@ -93,23 +116,17 @@ export type StreamChatOptions = {
  */
 
 export async function streamChatMessage({
-
   sessionId,
-
   content,
-
   imageFile,
-
+  audioFile,
   imagePath,
-
   skipUserSave,
-
+  enableTts,
   onToken,
-
+  onDone,
   signal,
-
 }: StreamChatOptions): Promise<void> {
-
   const form = new FormData();
   form.append("session_id", sessionId);
   form.append("content", content);
@@ -118,9 +135,15 @@ export async function streamChatMessage({
     form.append("image_file", imageFile, imageFile.name || "image.jpg");
   }
 
-  if (imagePath) form.append("image_path", imagePath);
+  if (audioFile) {
+    const name =
+      audioFile instanceof File ? audioFile.name : "recording.wav";
+    form.append("audio_file", audioFile, name);
+  }
 
+  if (imagePath) form.append("image_path", imagePath);
   if (skipUserSave) form.append("skip_user_save", "true");
+  if (enableTts) form.append("enable_tts", "true");
 
 
 
@@ -204,18 +227,19 @@ export async function streamChatMessage({
       try {
 
         const data = JSON.parse(payload) as {
-
           token?: string;
-
           done?: boolean;
-
           error?: string;
-
+          tts_audio_base64?: string;
         };
 
         if (data.error) throw new Error(data.error);
-
         if (data.token) onToken(data.token);
+        if (data.done) {
+          onDone?.({
+            ttsAudioBase64: data.tts_audio_base64,
+          });
+        }
 
       } catch (e) {
 

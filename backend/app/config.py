@@ -5,6 +5,7 @@
 from functools import lru_cache
 from pathlib import Path
 
+from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -24,17 +25,34 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(
         env_file_encoding="utf-8",
         extra="ignore",
+        populate_by_name=True,
     )
 
     # 百炼 / DashScope
     dashscope_api_key: str = ""
-    llm_model: str = "qwen-max-latest"
-    vl_model: str = "qwen2.5-vl-72b-instruct"
+    llm_model: str = "qwen-plus"
+    vl_model: str = "qwen-vl-ocr-latest"
+    asr_model: str = "paraformer-realtime-v2"
+    tts_model: str = "sambert-zhida-v1"
     dashscope_base_url: str = "https://dashscope.aliyuncs.com/compatible-mode/v1"
+    llm_max_tokens: int = 2048
+    llm_temperature: float = 0.1
     # 聊天图片上传大小上限（字节）
-    max_image_upload_bytes: int = 10 * 1024 * 1024
+    max_image_upload_bytes: int = 5 * 1024 * 1024
+    max_audio_upload_bytes: int = 5 * 1024 * 1024
+    max_audio_seconds: int = 30
+    vision_max_width: int = 1920
+    max_query_chars: int = 2000
+    tts_max_chars: int = 500
+    enable_tts_default: bool = False
     # 模型 API 调用超时（秒）
     model_timeout_seconds: int = 120
+    # Supabase（向量同步）
+    supabase_url: str = ""
+    supabase_service_key: str = Field(
+        default="",
+        validation_alias="SUPABASE_SERVICE_ROLE_KEY",
+    )
 
     # 服务
     api_host: str = "0.0.0.0"
@@ -49,9 +67,19 @@ class Settings(BaseSettings):
     database_url: str = "sqlite:///./kaoyan.db"
 
     # RAG
-    rag_top_k: int = 5
+    rag_top_k: int = 4
+    rag_snippet_max_chars: int = 280
     embedding_model: str = "text-embedding-v3"
     embedding_dim: int = 1024
+    vector_chunk_size: int = 900
+    vector_chunk_overlap: int = 80
+    response_cache_ttl_seconds: int = 3600
+    # 多轮对话记忆
+    chat_history_max_turns: int = 12
+    chat_history_max_chars: int = 18000
+    chat_assistant_msg_max_chars: int = 4000
+    chat_image_context_turns: int = 8
+    chat_image_ocr_max_chars: int = 6000
 
     @property
     def root(self) -> Path:

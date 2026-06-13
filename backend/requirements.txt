@@ -28,3 +28,7 @@ langchain-core>=0.3.0
 # 文档解析
 pypdf>=5.1.0
 aiofiles>=24.1.0
+
+# Supabase 向量同步 / 图片压缩
+supabase>=2.5.0
+Pillow>=10.4.0

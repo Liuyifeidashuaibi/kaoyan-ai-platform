@@ -3,6 +3,7 @@
 """
 
 import json
+import logging
 import uuid
 from datetime import datetime
 
@@ -10,7 +11,11 @@ from sqlalchemy.orm import Session
 
 from app.database import ChatMessage, ChatSession
 from app.services.agent_service import run_agent_stream
-from app.utils.image_url import ResolvedImage, log_image_event
+from app.services.chat_context import build_history_for_llm, prepare_user_turn
+from app.services.media_service import get_media_service
+from app.utils.image_url import ResolvedImage
+
+logger = logging.getLogger(__name__)
 
 
 class ChatService:
@@ -20,7 +25,6 @@ class ChatService:
         self.db = db
 
     def create_session(self, title: str = "新对话") -> ChatSession:
-        """创建新的聊天会话。"""
         session = ChatSession(
             id=str(uuid.uuid4()),
             title=title,
@@ -33,7 +37,6 @@ class ChatService:
         return session
 
     def list_sessions(self, keyword: str = "") -> list[ChatSession]:
-        """列出会话，支持标题关键词搜索。"""
         q = self.db.query(ChatSession).order_by(ChatSession.updated_at.desc())
         if keyword.strip():
             q = q.filter(ChatSession.title.contains(keyword.strip()))
@@ -65,7 +68,6 @@ class ChatService:
         content: str,
         image_path: str | None = None,
     ) -> ChatMessage:
-        """持久化单条消息。"""
         msg = ChatMessage(
             session_id=session_id,
             role=role,
@@ -78,19 +80,11 @@ class ChatService:
         if session:
             session.updated_at = datetime.utcnow()
             if role == "user" and session.title == "新对话" and content:
-                session.title = content[:50] + ("..." if len(content) > 50 else "")
+                title_src = content.split("\n", 1)[0].strip()
+                session.title = title_src[:50] + ("..." if len(title_src) > 50 else "")
         self.db.commit()
         self.db.refresh(msg)
         return msg
-
-    def build_history_for_llm(self, session_id: str) -> list[dict]:
-        """将数据库消息转为 OpenAI 格式历史。"""
-        messages = self.get_messages(session_id)
-        history: list[dict] = []
-        for m in messages:
-            if m.role in ("user", "assistant"):
-                history.append({"role": m.role, "content": m.content})
-        return history
 
     async def stream_reply(
         self,
@@ -99,56 +93,77 @@ class ChatService:
         image: ResolvedImage | None = None,
         *,
         skip_user_save: bool = False,
+        audio_bytes: bytes | None = None,
+        audio_filename: str = "audio.wav",
+        image_bytes: bytes | None = None,
+        image_disk_path: str | None = None,
+        enable_tts: bool = False,
     ):
-        """
-        保存用户消息 → 调用 Agent 流式生成 → 保存助手回复。
-        yield SSE 格式数据块。
-        """
         session = self.get_session(session_id)
         if not session:
             yield 'data: {"error": "会话不存在"}\n\n'
             return
 
-        storage_ref = image.storage_ref if image else None
-        if not skip_user_save:
-            self.save_message(session_id, "user", user_content, storage_ref)
+        storage_ref = image_disk_path or (image.storage_ref if image else None)
+        prior_messages = self.get_messages(session_id)
 
-        history = self.build_history_for_llm(session_id)
+        try:
+            prepared = await prepare_user_turn(
+                prior_messages,
+                user_content,
+                image,
+                image_bytes,
+                get_media_service(),
+            )
+        except Exception as exc:
+            logger.error("准备对话上下文失败: %s", exc)
+            yield f"data: {json.dumps({'error': '图片解析失败，请重新上传'}, ensure_ascii=False)}\n\n"
+            return
+
+        if not prepared.llm_query and not audio_bytes:
+            yield f"data: {json.dumps({'error': '请输入内容或上传图片/语音'}, ensure_ascii=False)}\n\n"
+            return
+
+        if not skip_user_save:
+            self.save_message(session_id, "user", prepared.db_content, storage_ref)
+            prior_messages = self.get_messages(session_id)
+
+        history = build_history_for_llm(prior_messages)
         if history and history[-1]["role"] == "user":
             history = history[:-1]
 
-        request_type = "vision" if image else "text"
-        log_image_event(
-            request_type=request_type,
-            source=image.source_type if image else "none",
-            model="-",
-            status="stream_start",
-            detail=f"session={session_id}",
-        )
-
         full_response: list[str] = []
+        tts_payload: str | None = None
         try:
-            async for token in run_agent_stream(user_content, history, image):
-                full_response.append(token)
-                yield f"data: {json.dumps({'token': token}, ensure_ascii=False)}\n\n"
+            async for token in run_agent_stream(
+                prepared.llm_query or user_content,
+                history,
+                image=None,
+                audio_bytes=audio_bytes,
+                audio_filename=audio_filename,
+                image_bytes=None,
+                enable_tts=enable_tts,
+                use_history_cache=True,
+            ):
+                if "__META__" in token:
+                    meta_part = token.split("__META__", 1)[-1]
+                    try:
+                        meta = json.loads(meta_part)
+                        tts_payload = meta.get("tts_audio_base64")
+                    except json.JSONDecodeError:
+                        pass
+                    token = token.split("__META__")[0]
+                if token:
+                    full_response.append(token)
+                    yield f"data: {json.dumps({'token': token}, ensure_ascii=False)}\n\n"
         except Exception as exc:
-            logger_msg = str(exc)
-            log_image_event(
-                request_type=request_type,
-                source=image.source_type if image else "none",
-                model="-",
-                status="stream_error",
-                detail=logger_msg,
-            )
+            logger.error("流式回复失败: %s", exc)
             yield f"data: {json.dumps({'error': '对话生成失败，请稍后重试'}, ensure_ascii=False)}\n\n"
             return
 
         assistant_text = "".join(full_response)
         self.save_message(session_id, "assistant", assistant_text)
-        log_image_event(
-            request_type=request_type,
-            source=image.source_type if image else "none",
-            model="-",
-            status="stream_done",
-        )
-        yield 'data: {"done": true}\n\n'
+        done_obj: dict = {"done": True}
+        if tts_payload:
+            done_obj["tts_audio_base64"] = tts_payload
+        yield f"data: {json.dumps(done_obj, ensure_ascii=False)}\n\n"

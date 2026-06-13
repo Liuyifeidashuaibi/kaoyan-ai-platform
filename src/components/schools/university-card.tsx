@@ -1,108 +1,103 @@
 "use client";
 
 import Link from "next/link";
-import { MapPin, BookOpen } from "lucide-react";
+import { Flame } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
   type UniversityWithMajorCount,
-  getUniversityLevelTags,
   getUniversityInitial,
+  isHotUniversity,
 } from "@/lib/api/schools";
+import { LevelTags } from "./level-tags";
 
 interface UniversityCardProps {
   university: UniversityWithMajorCount;
   className?: string;
+  showAskButton?: boolean;
 }
 
-const LEVEL_TAG_STYLE: Record<string, string> = {
-  "985": "bg-orange-100 text-orange-700 border-orange-200",
-  "211": "bg-blue-100 text-blue-700 border-blue-200",
-  双一流A: "bg-purple-100 text-purple-700 border-purple-200",
-  双一流B: "bg-violet-100 text-violet-700 border-violet-200",
-  一流学科: "bg-teal-100 text-teal-700 border-teal-200",
-};
-
-export function UniversityCard({ university, className }: UniversityCardProps) {
-  const tags = getUniversityLevelTags(university);
+export function UniversityCard({
+  university,
+  className,
+  showAskButton = true,
+}: UniversityCardProps) {
   const initial = getUniversityInitial(university.name);
+  const hot = isHotUniversity(university);
+  const gradUrl = university.graduate_url;
 
   return (
     <Link
-      href={`/schools/${university.id}`}
+      href={`/schools/${university.id}?tab=scores`}
       className={cn(
-        "flex items-center gap-3 px-4 py-3.5 border-b border-border",
-        "last:border-0 active:bg-muted/50 transition-colors",
+        "group relative flex flex-col rounded-2xl bg-white p-4 shadow-sm transition-shadow hover:shadow-md",
         className
       )}
     >
-      {/* Logo / 占位符 */}
-      <div className="shrink-0">
-        {university.logo_url ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={university.logo_url}
-            alt={university.name}
-            className="size-12 rounded-full object-cover border border-border"
-          />
-        ) : (
-          <div className="size-12 rounded-full bg-orange-50 border border-orange-100 flex items-center justify-center">
-            <span className="text-sm font-bold text-orange-600">{initial}</span>
-          </div>
-        )}
-      </div>
-
-      {/* 信息 */}
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-1.5 mb-1">
-          <span className="text-sm font-semibold text-foreground truncate">
-            {university.name}
-          </span>
+      <div className="flex flex-1 gap-3">
+        <div className="shrink-0">
+          {university.logo_url ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={university.logo_url}
+              alt={university.name}
+              className="size-14 rounded-full object-cover ring-2 ring-orange-50"
+            />
+          ) : (
+            <div className="flex size-14 items-center justify-center rounded-full bg-orange-50 ring-2 ring-orange-100">
+              <span className="text-base font-bold text-orange-600">{initial}</span>
+            </div>
+          )}
         </div>
 
-        {/* 标签组 */}
-        {tags.length > 0 && (
-          <div className="flex flex-wrap gap-1 mb-1">
-            {tags.map((tag) => (
-              <span
-                key={tag}
-                className={cn(
-                  "inline-flex items-center rounded px-1.5 py-px text-[10px] font-medium border",
-                  LEVEL_TAG_STYLE[tag] ??
-                    "bg-muted text-muted-foreground border-border"
-                )}
-              >
-                {tag}
-              </span>
-            ))}
-            <span className="inline-flex items-center rounded px-1.5 py-px text-[10px] font-medium border bg-muted text-muted-foreground border-border">
-              {university.school_type}
-            </span>
+        <div className="min-w-0 flex-1">
+          <div className="mb-1.5 flex items-center gap-1.5">
+            <h3 className="truncate text-base font-bold text-foreground">
+              {university.name}
+            </h3>
+            {hot && <Flame className="size-4 shrink-0 fill-orange-500 text-orange-500" />}
           </div>
-        )}
-
-        {/* 地区 + 专业数 */}
-        <div className="flex items-center gap-3 text-xs text-muted-foreground">
-          <span className="flex items-center gap-0.5">
-            <MapPin className="size-3" />
-            {university.province}·{university.city}
-          </span>
-          <span className="flex items-center gap-0.5">
-            <BookOpen className="size-3" />
-            {university.major_count} 个招生专业
-          </span>
+          <LevelTags university={university} />
         </div>
       </div>
 
-      {/* 箭头 */}
-      <svg
-        className="size-4 text-muted-foreground shrink-0"
-        fill="none"
-        viewBox="0 0 24 24"
-        stroke="currentColor"
-        strokeWidth={2}
-      >
-        <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-      </svg>
+      <div className="mt-4 flex items-end justify-between border-t border-border/40 pt-3">
+        <div className="flex gap-6">
+          <div>
+            <p className="text-lg font-bold text-foreground leading-none">
+              {university.major_count}
+            </p>
+            <p className="mt-1 text-xs text-muted-foreground">招生专业数</p>
+          </div>
+          <div>
+            <p className="text-lg font-bold text-foreground leading-none">
+              {university.enrollment_total > 0 ? university.enrollment_total : "—"}
+            </p>
+            <p className="mt-1 text-xs text-muted-foreground">招生人数</p>
+          </div>
+        </div>
+
+        {showAskButton && gradUrl && (
+          <span
+            role="button"
+            tabIndex={0}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              window.open(gradUrl, "_blank", "noopener,noreferrer");
+            }}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                e.stopPropagation();
+                window.open(gradUrl, "_blank", "noopener,noreferrer");
+              }
+            }}
+            className="shrink-0 rounded-full bg-orange-500 px-4 py-1.5 text-xs font-medium text-white transition-colors hover:bg-orange-600"
+          >
+            访问研究生官网
+          </span>
+        )}
+      </div>
     </Link>
   );
 }

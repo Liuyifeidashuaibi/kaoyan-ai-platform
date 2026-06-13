@@ -55,10 +55,11 @@ export function resolveUploadUrl(path: string | null | undefined): string {
   if (!path) return "";
   if (path.startsWith("http://") || path.startsWith("https://")) return path;
   const normalized = path.replace(/^\//, "");
+  // 浏览器走同源 Next.js /uploads rewrite，避免跨域与 BACKEND_URL 不一致导致图片加载失败
+  if (typeof window !== "undefined") {
+    return `/${normalized}`;
+  }
   const base =
-    getApiBaseUrl() ||
-    (typeof window !== "undefined"
-      ? window.location.origin
-      : "http://localhost:3000");
+    getApiBaseUrl().replace(/\/$/, "") || "http://127.0.0.1:8000";
   return `${base}/${normalized}`;
 }

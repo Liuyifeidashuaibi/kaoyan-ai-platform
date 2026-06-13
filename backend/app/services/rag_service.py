@@ -17,12 +17,14 @@ from llama_index.embeddings.dashscope import DashScopeEmbedding
 from llama_index.vector_stores.chroma import ChromaVectorStore
 
 from app.config import get_settings
+from app.utils.text_utils import compress_rag_snippet
 
 logger = logging.getLogger(__name__)
 
 # Chroma 集合名称
 COLLECTION_PUBLIC = "public_knowledge"
 COLLECTION_PRIVATE = "private_wrong_questions"
+COLLECTION_SCHOOL = "school_knowledge"
 
 
 class RAGService:
@@ -33,6 +35,7 @@ class RAGService:
         self._client: chromadb.PersistentClient | None = None
         self._public_index: VectorStoreIndex | None = None
         self._private_index: VectorStoreIndex | None = None
+        self._school_index: VectorStoreIndex | None = None
         self._embed_model: DashScopeEmbedding | None = None
 
     def _get_embed_model(self) -> DashScopeEmbedding:
@@ -75,6 +78,12 @@ class RAGService:
         if self._private_index is None:
             self._private_index = self._build_index(COLLECTION_PRIVATE)
         return self._private_index
+
+    @property
+    def school_index(self) -> VectorStoreIndex:
+        if self._school_index is None:
+            self._school_index = self._build_index(COLLECTION_SCHOOL)
+        return self._school_index
 
     def _load_documents_from_dir(self, directory: Path) -> list[Document]:
         """
@@ -194,35 +203,47 @@ class RAGService:
 
     def retrieve(self, query: str, top_k: int | None = None) -> str:
         """
-        混合检索：先查用户错题私有库，再查公共知识库。
-
-        返回拼接后的上下文文本，供 LLM 参考。
+        混合检索：错题私有库 → 院校招生库 → 公共资料库。
+        Top3~4，召回文本经短句压缩后拼接。
         """
         k = top_k or self.settings.rag_top_k
+        max_snip = self.settings.rag_snippet_max_chars
         contexts: list[str] = []
 
-        # 1. 优先检索用户错题私有库
+        def _add(label: str, nodes: list) -> None:
+            for node in nodes:
+                snippet = compress_rag_snippet(node.get_content(), max_snip)
+                if snippet:
+                    contexts.append(f"[{label}] {snippet}")
+
+        # 1. 用户错题
         try:
-            private_retriever = self.private_index.as_retriever(similarity_top_k=k)
-            private_nodes = private_retriever.retrieve(query)
-            for node in private_nodes:
-                contexts.append(f"[用户错题] {node.get_content()}")
+            nodes = self.private_index.as_retriever(similarity_top_k=k).retrieve(query)
+            _add("用户错题", nodes)
         except Exception as exc:
             logger.warning("私有库检索失败: %s", exc)
 
-        # 2. 再检索公共知识库
+        # 2. Supabase 同步的院校招生知识
         try:
-            public_retriever = self.public_index.as_retriever(similarity_top_k=k)
-            public_nodes = public_retriever.retrieve(query)
-            for node in public_nodes:
-                source = node.metadata.get("source", "未知来源")
-                contexts.append(f"[公共资料-{source}] {node.get_content()}")
+            nodes = self.school_index.as_retriever(similarity_top_k=k).retrieve(query)
+            _add("院校数据", nodes)
+        except Exception as exc:
+            logger.warning("院校库检索失败: %s", exc)
+
+        # 3. 公共考研资料
+        try:
+            nodes = self.public_index.as_retriever(similarity_top_k=k).retrieve(query)
+            for node in nodes:
+                source = node.metadata.get("source", "未知")
+                snippet = compress_rag_snippet(node.get_content(), max_snip)
+                if snippet:
+                    contexts.append(f"[公共资料-{source}] {snippet}")
         except Exception as exc:
             logger.warning("公共库检索失败: %s", exc)
 
         if not contexts:
             return ""
-        return "\n\n---\n\n".join(contexts)
+        return "\n\n".join(contexts[:k])
 
 
 # 全局单例

@@ -76,7 +76,7 @@ export function GlobalFilterDrawer({ open, onClose }: GlobalFilterDrawerProps) {
           >
             重置
           </button>
-          <span className="text-sm font-semibold">筛选院校</span>
+          <span className="text-sm font-semibold">院校层次</span>
           <button
             onClick={onClose}
             className="p-1 rounded-full hover:bg-muted"

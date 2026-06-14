@@ -2,14 +2,25 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
 import { GraduationCap } from "lucide-react";
 
 import { UserBadge } from "@/components/layout/user-badge";
 import { navItems } from "@/config/navigation";
 import { cn } from "@/lib/utils";
 
+function isNavActive(pathname: string, href: string) {
+  if (href === "/") return pathname === "/";
+  return pathname === href || pathname.startsWith(`${href}/`);
+}
+
 export function AppHeader() {
   const pathname = usePathname();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   return (
     <header className="sticky top-0 z-40 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
@@ -23,10 +34,7 @@ export function AppHeader() {
 
         <nav className="flex flex-1 items-center gap-1 overflow-x-auto md:hidden">
           {navItems.map((item) => {
-            const isActive =
-              item.href === "/"
-                ? pathname === "/"
-                : pathname.startsWith(item.href);
+            const isActive = mounted && isNavActive(pathname, item.href);
 
             return (
               <Link

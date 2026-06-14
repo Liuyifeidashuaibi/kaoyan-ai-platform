@@ -1,7 +1,7 @@
 /**
  * FastAPI 后端地址。
- * - 浏览器优先读 NEXT_PUBLIC_API_URL；否则拉 /api/runtime-config（BACKEND_URL）
- * - 均未配置时走同源 Next.js rewrite
+ * - 浏览器优先读 NEXT_PUBLIC_API_URL；未配置时走同源 Next.js rewrite
+ * - BACKEND_URL 仅用于 next.config 服务端代理，不下发给浏览器
  */
 let runtimeBaseUrl: string | null = null;
 let runtimeInitPromise: Promise<void> | null = null;

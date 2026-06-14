@@ -1,12 +1,19 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, ChevronLeft, FolderPlus, ImagePlus, Plus } from "lucide-react";
+import { useRouter } from "next/navigation";
+import {
+  ArrowLeft,
+  ChevronLeft,
+  FolderPlus,
+  Plus,
+  Upload,
+} from "lucide-react";
 
 import { CategoryFolderCard } from "@/components/wrong-questions/category-folder-card";
 import { ImageViewer, buildSlides } from "@/components/wrong-questions/image-viewer";
-import { QuestionCard } from "@/components/wrong-questions/question-card";
+import { MaterialTimelineItem } from "@/components/wrong-questions/question-card";
 import { QuestionDetailDialog } from "@/components/wrong-questions/question-detail-dialog";
 import { UploadDialog } from "@/components/wrong-questions/upload-dialog";
 import { Button } from "@/components/ui/button";
@@ -28,13 +35,26 @@ import {
   updateWrongQuestion,
   uploadWrongQuestion,
 } from "@/lib/api/wrong-questions";
-import type { WrongQuestion, WrongQuestionCategory } from "@/lib/api/types";
+import type {
+  MaterialFileType,
+  WrongQuestion,
+  WrongQuestionCategory,
+} from "@/lib/api/types";
+import { MATERIAL_TYPE_FILTERS } from "@/lib/wrong-questions/material-utils";
+import { cn } from "@/lib/utils";
 
-export function WrongQuestionsApp() {
+type WrongQuestionsAppProps = {
+  initialFolder?: string;
+};
+
+export function WrongQuestionsApp({ initialFolder }: WrongQuestionsAppProps = {}) {
+  const router = useRouter();
+  const openedFromUrl = useRef(false);
   const [categories, setCategories] = useState<WrongQuestionCategory[]>([]);
   const [questions, setQuestions] = useState<WrongQuestion[]>([]);
   const [activeCategory, setActiveCategory] =
     useState<WrongQuestionCategory | null>(null);
+  const [typeFilter, setTypeFilter] = useState<MaterialFileType | "all">("all");
   const [selectedQuestion, setSelectedQuestion] = useState<WrongQuestion | null>(
     null
   );
@@ -69,6 +89,26 @@ export function WrongQuestionsApp() {
     void refreshCategories();
   }, [refreshCategories]);
 
+  const openCategory = useCallback(async (category: WrongQuestionCategory) => {
+    setTypeFilter("all");
+    setActiveCategory(category);
+  }, []);
+
+  useEffect(() => {
+    if (!initialFolder || openedFromUrl.current || loading) return;
+
+    const openByName = async () => {
+      const cats = categories.length > 0 ? categories : await loadCategories();
+      const existing = cats.find((c) => c.name === initialFolder);
+      if (existing) {
+        await openCategory(existing);
+        openedFromUrl.current = true;
+      }
+    };
+
+    void openByName();
+  }, [initialFolder, categories, loading, loadCategories, openCategory]);
+
   const activeCategoryId = activeCategory?.id ?? null;
 
   useEffect(() => {
@@ -82,11 +122,12 @@ export function WrongQuestionsApp() {
 
     (async () => {
       try {
-        const qs = await listWrongQuestions(activeCategoryId);
+        const fileType = typeFilter === "all" ? null : typeFilter;
+        const qs = await listWrongQuestions(activeCategoryId, fileType);
         if (!cancelled) setQuestions(qs);
       } catch (e) {
         if (!cancelled) {
-          setError(e instanceof Error ? e.message : "加载错题失败");
+          setError(e instanceof Error ? e.message : "加载资料失败");
         }
       } finally {
         if (!cancelled) setLoading(false);
@@ -96,14 +137,13 @@ export function WrongQuestionsApp() {
     return () => {
       cancelled = true;
     };
-  }, [activeCategoryId]);
-
-  const openCategory = (category: WrongQuestionCategory) => {
-    setActiveCategory(category);
-  };
+  }, [activeCategoryId, typeFilter]);
 
   const backToFolders = () => {
     setActiveCategory(null);
+    setTypeFilter("all");
+    openedFromUrl.current = false;
+    router.replace("/wrong-questions");
     void refreshCategories();
   };
 
@@ -179,6 +219,17 @@ export function WrongQuestionsApp() {
     }
   };
 
+  const handleTogglePublic = async (id: number, isPublic: boolean) => {
+    const updated = await updateWrongQuestion(id, { is_public: isPublic });
+    setQuestions((prev) =>
+      prev.map((q) => (q.id === id ? updated : q))
+    );
+    if (selectedQuestion?.id === id) {
+      setSelectedQuestion(updated);
+    }
+  };
+
+  const imageQuestions = questions.filter((q) => q.file_type === "image");
   const inFolder = activeCategory !== null;
 
   return (
@@ -203,16 +254,16 @@ export function WrongQuestionsApp() {
               </h1>
               <p className="text-sm text-muted-foreground">
                 {inFolder
-                  ? `${questions.length} 道错题 · 点击图片查看介绍与 AI 解析`
-                  : "按科目分文件夹整理，上传图片并记录介绍"}
+                  ? `${questions.length} 条资料 · 按时间顺序排列`
+                  : "按科目整理，可存储图片、视频、文档、音频等学习资料"}
               </p>
             </div>
           </div>
           <div className="flex gap-2">
             {inFolder ? (
               <Button size="sm" onClick={() => setUploadOpen(true)}>
-                <ImagePlus className="size-4" />
-                添加图片
+                <Upload className="size-4" />
+                添加资料
               </Button>
             ) : (
               <>
@@ -230,7 +281,7 @@ export function WrongQuestionsApp() {
                   disabled={categories.length === 0}
                 >
                   <Plus className="size-4" />
-                  上传错题
+                  上传资料
                 </Button>
               </>
             )}
@@ -265,7 +316,7 @@ export function WrongQuestionsApp() {
                 </div>
                 <p className="text-muted-foreground">还没有科目文件夹</p>
                 <p className="mt-1 text-sm text-muted-foreground">
-                  先创建「高等数学」「英语」等科目，再往里添加错题图片
+                  先创建「高等数学」「英语」等科目，再往里添加学习资料
                 </p>
                 <Button
                   className="mt-6"
@@ -285,30 +336,61 @@ export function WrongQuestionsApp() {
                 ))}
               </div>
             )
-          ) : questions.length === 0 ? (
-            <div className="flex flex-col items-center py-20 text-center">
-              <p className="text-muted-foreground">
-                「{activeCategory.name}」里还没有错题
-              </p>
-              <Button className="mt-4" onClick={() => setUploadOpen(true)}>
-                添加第一道错题
-              </Button>
-            </div>
           ) : (
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
-              {questions.map((q, idx) => (
-                <QuestionCard
-                  key={q.id}
-                  question={q}
-                  onClick={() => setSelectedQuestion(q)}
-                  onImageClick={(e) => {
-                    e.stopPropagation();
-                    setViewerIndex(idx);
-                    setViewerOpen(true);
-                  }}
-                />
-              ))}
-            </div>
+            <>
+              <div className="mb-6 flex flex-wrap gap-2">
+                {MATERIAL_TYPE_FILTERS.map((item) => (
+                  <button
+                    key={item.value}
+                    type="button"
+                    onClick={() => setTypeFilter(item.value)}
+                    className={cn(
+                      "rounded-full border px-3 py-1 text-sm transition-colors",
+                      typeFilter === item.value
+                        ? "border-primary bg-primary text-primary-foreground"
+                        : "border-border bg-background text-muted-foreground hover:bg-muted"
+                    )}
+                  >
+                    {item.label}
+                  </button>
+                ))}
+              </div>
+
+              {questions.length === 0 ? (
+                <div className="flex flex-col items-center py-20 text-center">
+                  <p className="text-muted-foreground">
+                    {typeFilter === "all"
+                      ? `「${activeCategory.name}」里还没有资料`
+                      : `「${activeCategory.name}」里没有${MATERIAL_TYPE_FILTERS.find((f) => f.value === typeFilter)?.label ?? ""}类型的资料`}
+                  </p>
+                  <Button className="mt-4" onClick={() => setUploadOpen(true)}>
+                    添加第一条资料
+                  </Button>
+                </div>
+              ) : (
+                <div className="max-w-3xl">
+                  {questions.map((q, idx) => (
+                    <MaterialTimelineItem
+                      key={q.id}
+                      question={q}
+                      isLast={idx === questions.length - 1}
+                      onClick={() => setSelectedQuestion(q)}
+                      onPreviewClick={(e) => {
+                        if (q.file_type !== "image") return;
+                        e.stopPropagation();
+                        const imageIdx = imageQuestions.findIndex(
+                          (item) => item.id === q.id
+                        );
+                        if (imageIdx >= 0) {
+                          setViewerIndex(imageIdx);
+                          setViewerOpen(true);
+                        }
+                      }}
+                    />
+                  ))}
+                </div>
+              )}
+            </>
           )}
         </div>
       </div>
@@ -316,7 +398,7 @@ export function WrongQuestionsApp() {
       <ImageViewer
         open={viewerOpen}
         index={viewerIndex}
-        slides={buildSlides(questions)}
+        slides={buildSlides(imageQuestions)}
         onClose={() => setViewerOpen(false)}
       />
 
@@ -337,6 +419,7 @@ export function WrongQuestionsApp() {
         onAnalyze={handleAnalyze}
         onStartChat={handleStartChat}
         onUpdateNotes={handleUpdateNotes}
+        onTogglePublic={handleTogglePublic}
         analyzing={analyzing}
         startingChat={startingChat}
       />

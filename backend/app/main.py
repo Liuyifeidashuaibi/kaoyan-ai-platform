@@ -14,16 +14,21 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
+# 必须先加载 .env，再初始化 Settings（避免读到旧环境变量）
+_project_root = Path(__file__).resolve().parents[2]
+load_dotenv(_project_root / ".env")
+load_dotenv(_project_root / ".env.local")
+load_dotenv(_project_root / "crawler" / ".env")
+
 from app.config import get_settings
 from app.database import init_db
-from app.routers import chat, schools, wrong_questions
+from app.routers import chat, community, schools, wrong_questions
 from app.services.vector_sync_service import get_vector_sync_service
 from app.utils.file_utils import ensure_dir
 from app.utils.response import success_response
 
-# 从项目根目录加载 .env
+# Settings 已在上方 load_dotenv 后导入
 _settings = get_settings()
-load_dotenv(_settings.root / ".env")
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(name)s: %(message)s")
 logger = logging.getLogger(__name__)
@@ -69,6 +74,7 @@ app.add_middleware(
 app.include_router(chat.router)
 app.include_router(schools.router)
 app.include_router(wrong_questions.router)
+app.include_router(community.router)
 
 # 静态文件服务 — 提供上传图片访问（确保目录存在后再挂载）
 _uploads_root = get_settings().root / "uploads"
@@ -80,7 +86,7 @@ app.mount("/uploads", StaticFiles(directory=str(_uploads_root)), name="uploads")
 async def trigger_vector_sync():
     """手动触发 Supabase → Chroma 增量向量同步（需配置 Supabase）。"""
     settings = get_settings()
-    if not settings.supabase_url or not settings.supabase_service_key:
+    if not settings.effective_supabase_url or not settings.effective_supabase_service_key:
         return {"success": False, "message": "未配置 Supabase"}
     if not settings.dashscope_api_key:
         return {"success": False, "message": "未配置 DASHSCOPE_API_KEY"}
@@ -147,6 +153,7 @@ async def root():
             "endpoints": {
                 "chat": "/api/chat",
                 "wrong_questions": "/api/wrong-questions",
+                "community": "/api/community",
                 "schools": "/api/schools",
                 "majors": "/api/majors",
                 "statistics": "/api/statistics",

@@ -19,6 +19,8 @@ export type Database = {
           target_year: number | null;
           target_school_id: string | null;
           target_major_id: string | null;
+          display_id: string | null;
+          subject_category: string | null;
           created_at: string;
           updated_at: string;
         };
@@ -31,6 +33,8 @@ export type Database = {
           target_year?: number | null;
           target_school_id?: string | null;
           target_major_id?: string | null;
+          display_id?: string | null;
+          subject_category?: string | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -43,8 +47,8 @@ export type Database = {
           target_year?: number | null;
           target_school_id?: string | null;
           target_major_id?: string | null;
-          created_at?: string;
-          updated_at?: string;
+          display_id?: string | null;
+          subject_category?: string | null;
         };
       };
       study_records: {

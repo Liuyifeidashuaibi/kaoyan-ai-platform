@@ -52,6 +52,22 @@ logger = logging.getLogger(__name__)
 
 
 
+def _is_retriable_model_error(exc: Exception) -> bool:
+    text = str(exc).lower()
+    return any(
+        k in text
+        for k in (
+            "403",
+            "access_denied",
+            "access denied",
+            "free tier",
+            "quota",
+            "exhausted",
+            "insufficient",
+        )
+    )
+
+
 def _friendly_api_error(exc: Exception) -> str:
 
     text = str(exc)
@@ -60,17 +76,15 @@ def _friendly_api_error(exc: Exception) -> str:
 
         return "模型响应超时，请稍后重试或缩短问题内容。"
 
-    if "access_denied" in text or "403" in text:
+    if _is_retriable_model_error(exc):
 
         return (
 
-            "千问 API 访问被拒绝（403）。请检查：\n"
+            "千问 API 访问被拒绝（403），常见原因是当前模型免费额度已用尽。\n"
 
-            "1. DASHSCOPE_API_KEY 是否正确\n"
+            "请在 .env 中将 LLM_MODEL 改为 qwen3.5-plus 或 qwen-turbo，"
 
-            "2. 阿里云百炼控制台是否已开通对应文本/视觉模型\n"
-
-            "3. 尝试在 .env 中将 VL_MODEL 改为 qwen2.5-vl-7b-instruct"
+            "或配置 LLM_FALLBACK_MODELS 作为备用模型链。"
 
         )
 
@@ -255,6 +269,17 @@ class AIService:
 
 
 
+    def _llm_model_chain(self) -> list[str]:
+        chain: list[str] = []
+        for name in (
+            self.settings.llm_model,
+            *self.settings.llm_fallback_models.split(","),
+        ):
+            model = name.strip()
+            if model and model not in chain:
+                chain.append(model)
+        return chain or ["qwen3.5-plus", "qwen-turbo"]
+
     def _system_with_rag(self, rag_context: str = "") -> str:
 
         content = SYSTEM_PROMPT
@@ -387,59 +412,45 @@ class AIService:
 
         ]
 
-        model = self.settings.llm_model.strip()
-
-        try:
-
-            stream = await asyncio.wait_for(
-
-                self.openai_client.chat.completions.create(
-
+        last_exc: Exception | None = None
+        for model in self._llm_model_chain():
+            try:
+                stream = await asyncio.wait_for(
+                    self.openai_client.chat.completions.create(
+                        model=model,
+                        messages=api_messages,
+                        stream=True,
+                        temperature=self.settings.llm_temperature,
+                        max_tokens=self.settings.llm_max_tokens,
+                    ),
+                    timeout=self.settings.model_timeout_seconds,
+                )
+                async for chunk in stream:
+                    if not chunk.choices:
+                        continue
+                    delta = chunk.choices[0].delta.content
+                    if delta:
+                        yield delta
+                return
+            except Exception as exc:
+                last_exc = exc
+                if _is_retriable_model_error(exc):
+                    logger.warning("LLM 模型 %s 不可用，尝试备用: %s", model, exc)
+                    continue
+                log_image_event(
+                    request_type="text",
+                    source="none",
                     model=model,
+                    status="failed",
+                    detail=str(exc),
+                )
+                logger.error("LLM 调用失败: %s", exc)
+                yield f"\n\n[错误] {_friendly_api_error(exc)}"
+                return
 
-                    messages=api_messages,
-
-                    stream=True,
-
-                    temperature=self.settings.llm_temperature,
-
-                    max_tokens=self.settings.llm_max_tokens,
-
-                ),
-
-                timeout=self.settings.model_timeout_seconds,
-
-            )
-
-            async for chunk in stream:
-
-                delta = chunk.choices[0].delta.content
-
-                if delta:
-
-                    yield delta
-
-            return
-
-        except Exception as exc:
-
-            log_image_event(
-
-                request_type="text",
-
-                source="none",
-
-                model=model,
-
-                status="failed",
-
-                detail=str(exc),
-
-            )
-
-            logger.error("LLM 调用失败: %s", exc)
-
-            yield f"\n\n[错误] {_friendly_api_error(exc)}"
+        if last_exc is not None:
+            logger.error("LLM 全部模型不可用: %s", last_exc)
+            yield f"\n\n[错误] {_friendly_api_error(last_exc)}"
 
 
 
@@ -501,6 +512,8 @@ class AIService:
 
             async for chunk in stream:
 
+                if not chunk.choices:
+                    continue
                 delta = chunk.choices[0].delta.content
 
                 if delta:

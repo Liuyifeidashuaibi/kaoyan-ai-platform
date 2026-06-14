@@ -1,7 +1,13 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { ImagePlus } from "lucide-react";
+import {
+  FileAudio,
+  FileText,
+  FileVideo,
+  ImagePlus,
+  Upload,
+} from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -14,13 +20,16 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import type { WrongQuestionCategory } from "@/lib/api/types";
+import type { MaterialFileType, WrongQuestionCategory } from "@/lib/api/types";
+import {
+  MATERIAL_TYPE_LABELS,
+  UPLOAD_ACCEPT,
+} from "@/lib/wrong-questions/material-utils";
 
 type UploadDialogProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   categories: WrongQuestionCategory[];
-  /** 从某个科目文件夹内打开时，锁定分类 */
   lockedCategory?: WrongQuestionCategory | null;
   onUpload: (params: {
     file: File;
@@ -31,6 +40,67 @@ type UploadDialogProps = {
   }) => Promise<void>;
 };
 
+function detectClientFileType(file: File): MaterialFileType {
+  if (file.type.startsWith("image/")) return "image";
+  if (file.type.startsWith("video/")) return "video";
+  if (file.type.startsWith("audio/")) return "audio";
+  const ext = file.name.split(".").pop()?.toLowerCase() || "";
+  if (["pdf", "doc", "docx", "xls", "xlsx", "ppt", "pptx", "txt", "md", "csv"].includes(ext)) {
+    return "document";
+  }
+  return "other";
+}
+
+function FilePreview({
+  file,
+  preview,
+  fileType,
+}: {
+  file: File;
+  preview: string | null;
+  fileType: MaterialFileType;
+}) {
+  if (fileType === "image" && preview) {
+    return (
+      /* eslint-disable-next-line @next/next/no-img-element */
+      <img
+        src={preview}
+        alt="预览"
+        className="max-h-44 w-full rounded-lg border object-contain"
+      />
+    );
+  }
+
+  if (fileType === "video" && preview) {
+    return (
+      <video
+        src={preview}
+        controls
+        className="max-h-44 w-full rounded-lg border bg-black object-contain"
+      />
+    );
+  }
+
+  const Icon =
+    fileType === "video"
+      ? FileVideo
+      : fileType === "audio"
+        ? FileAudio
+        : fileType === "document"
+          ? FileText
+          : Upload;
+
+  return (
+    <div className="flex h-36 w-full flex-col items-center justify-center gap-2 rounded-lg border bg-muted/40 px-4 text-center">
+      <Icon className="size-10 text-muted-foreground" />
+      <p className="truncate text-sm font-medium">{file.name}</p>
+      <p className="text-xs text-muted-foreground">
+        {MATERIAL_TYPE_LABELS[fileType]} · {(file.size / 1024 / 1024).toFixed(2)} MB
+      </p>
+    </div>
+  );
+}
+
 export function UploadDialog({
   open,
   onOpenChange,
@@ -40,6 +110,7 @@ export function UploadDialog({
 }: UploadDialogProps) {
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
+  const [fileType, setFileType] = useState<MaterialFileType>("image");
   const [title, setTitle] = useState("");
   const [notes, setNotes] = useState("");
   const [categoryId, setCategoryId] = useState<string>("");
@@ -69,6 +140,7 @@ export function UploadDialog({
   const reset = () => {
     setFile(null);
     setPreview(null);
+    setFileType("image");
     setTitle("");
     setNotes("");
     setCategoryId("");
@@ -78,10 +150,17 @@ export function UploadDialog({
   };
 
   const handleFile = (f: File) => {
+    const type = detectClientFileType(f);
     setFile(f);
-    setPreview(URL.createObjectURL(f));
+    setFileType(type);
+    if (preview) URL.revokeObjectURL(preview);
+    if (type === "image" || type === "video") {
+      setPreview(URL.createObjectURL(f));
+    } else {
+      setPreview(null);
+    }
     if (!title.trim()) {
-      setTitle(f.name.replace(/\.[^.]+$/, "") || "未命名错题");
+      setTitle(f.name.replace(/\.[^.]+$/, "") || "未命名资料");
     }
   };
 
@@ -111,7 +190,7 @@ export function UploadDialog({
         file,
         categoryId: resolvedCategoryId,
         categoryName: resolvedCategoryName,
-        title: title.trim() || "未命名错题",
+        title: title.trim() || "未命名资料",
         notes,
       });
       reset();
@@ -141,7 +220,7 @@ export function UploadDialog({
           <DialogTitle>
             {lockedCategory
               ? `上传到「${lockedCategory.name}」`
-              : "上传错题图片"}
+              : "上传学习资料"}
           </DialogTitle>
         </DialogHeader>
 
@@ -150,25 +229,20 @@ export function UploadDialog({
             <input
               ref={fileRef}
               type="file"
-              accept="image/*"
+              accept={UPLOAD_ACCEPT}
               className="hidden"
               onChange={(e) => {
                 const f = e.target.files?.[0];
                 if (f) handleFile(f);
               }}
             />
-            {preview ? (
+            {file ? (
               <button
                 type="button"
                 className="block w-full"
                 onClick={() => fileRef.current?.click()}
               >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={preview}
-                  alt="预览"
-                  className="max-h-44 w-full rounded-lg border object-contain"
-                />
+                <FilePreview file={file} preview={preview} fileType={fileType} />
               </button>
             ) : (
               <button
@@ -177,7 +251,10 @@ export function UploadDialog({
                 className="flex h-36 w-full flex-col items-center justify-center gap-2 rounded-lg border border-dashed border-border text-muted-foreground hover:bg-muted/50"
               >
                 <ImagePlus className="size-8" />
-                <span className="text-sm">点击选择错题图片</span>
+                <span className="text-sm">选择图片、视频、文档或音频</span>
+                <span className="text-xs text-muted-foreground">
+                  支持 PDF、Word、PPT、MP4、MP3 等常见格式
+                </span>
               </button>
             )}
           </div>
@@ -188,7 +265,7 @@ export function UploadDialog({
               id="wq-title"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder="如：极限求导第 3 题"
+              placeholder="如：极限求导第 3 题、英语听力 Unit 5"
             />
           </div>
 
@@ -227,12 +304,15 @@ export function UploadDialog({
 
           {lockedCategory && (
             <p className="text-sm text-muted-foreground">
-              将保存到科目：<span className="font-medium text-foreground">{lockedCategory.name}</span>
+              将保存到科目：
+              <span className="font-medium text-foreground">
+                {lockedCategory.name}
+              </span>
             </p>
           )}
 
           <div className="space-y-2">
-            <Label htmlFor="wq-notes">介绍</Label>
+            <Label htmlFor="wq-notes">介绍 / 笔记</Label>
             <Textarea
               id="wq-notes"
               value={notes}
@@ -242,9 +322,7 @@ export function UploadDialog({
             />
           </div>
 
-          {error ? (
-            <p className="text-sm text-destructive">{error}</p>
-          ) : null}
+          {error ? <p className="text-sm text-destructive">{error}</p> : null}
         </div>
 
         <DialogFooter>

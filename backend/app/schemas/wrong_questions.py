@@ -23,26 +23,31 @@ class CategoryOut(BaseModel):
 
 
 class WrongQuestionOut(BaseModel):
-    """错题条目输出。"""
+    """学习资料条目输出。"""
 
     id: int
     category_id: int
     category_name: str
     title: str
     image_path: str
+    file_path: str
+    file_type: str
+    original_filename: str | None = None
     notes: str
     ai_analysis: str | None
+    is_public: bool = False
     created_at: datetime
 
     model_config = {"from_attributes": True}
 
 
 class WrongQuestionUpdate(BaseModel):
-    """更新错题笔记 / 标题。"""
+    """更新错题笔记 / 标题 / 可见性。"""
 
     title: str | None = None
     notes: str | None = None
     category_id: int | None = None
+    is_public: bool | None = None
 
 
 class WrongQuestionAnalyzeRequest(BaseModel):

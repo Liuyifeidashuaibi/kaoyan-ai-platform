@@ -29,6 +29,8 @@ langchain-core>=0.3.0
 pypdf>=5.1.0
 aiofiles>=24.1.0
 
-# Supabase 向量同步 / 图片压缩
+# Supabase 向量同步 / 图片压缩 / 社区模块
 supabase>=2.5.0
+PyJWT>=2.8.0
+httpx>=0.27.0
 Pillow>=10.4.0

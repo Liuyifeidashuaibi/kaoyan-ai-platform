@@ -3,6 +3,7 @@
 """
 
 from functools import lru_cache
+import os
 from pathlib import Path
 
 from pydantic import Field
@@ -30,7 +31,8 @@ class Settings(BaseSettings):
 
     # 百炼 / DashScope
     dashscope_api_key: str = ""
-    llm_model: str = "qwen-plus"
+    llm_model: str = "qwen3.5-plus"
+    llm_fallback_models: str = "qwen-turbo"
     vl_model: str = "qwen-vl-ocr-latest"
     asr_model: str = "paraformer-realtime-v2"
     tts_model: str = "sambert-zhida-v1"
@@ -57,7 +59,7 @@ class Settings(BaseSettings):
     # 服务
     api_host: str = "0.0.0.0"
     api_port: int = 8000
-    cors_origins: str = "http://localhost:3000"
+    cors_origins: str = "http://localhost:3000,http://127.0.0.1:3000"
 
     # 路径
     project_root: str = ""
@@ -101,6 +103,14 @@ class Settings(BaseSettings):
         return self.root / self.chroma_persist_dir
 
     @property
+    def effective_supabase_url(self) -> str:
+        return self.supabase_url or os.environ.get("NEXT_PUBLIC_SUPABASE_URL", "").strip()
+
+    @property
+    def effective_supabase_service_key(self) -> str:
+        return self.supabase_service_key.strip()
+
+    @property
     def cors_origin_list(self) -> list[str]:
         return [o.strip() for o in self.cors_origins.split(",") if o.strip()]
 
@@ -109,5 +119,11 @@ class Settings(BaseSettings):
 def get_settings() -> Settings:
     """单例配置，避免重复解析 .env。"""
     root = _detect_project_root()
-    env_file = root / ".env"
-    return Settings(_env_file=env_file if env_file.exists() else None)
+    env_files: list[Path] = []
+    for name in (".env", ".env.local", "crawler/.env"):
+        p = root / name
+        if p.exists():
+            env_files.append(p)
+    if env_files:
+        return Settings(_env_file=tuple(str(f) for f in env_files))
+    return Settings()

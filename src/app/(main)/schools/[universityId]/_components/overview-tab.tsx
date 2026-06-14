@@ -159,7 +159,7 @@ export function OverviewTab({
 
       {latestYear && scoreCount > 0 && (
         <p className="text-xs text-muted-foreground px-1">
-          已收录 {scoreYears.join("、")} 年进复试线，最新为 {latestYear} 年
+          已收录 {scoreYears.join("、")} 年复试线，最新为 {latestYear} 年
         </p>
       )}
 

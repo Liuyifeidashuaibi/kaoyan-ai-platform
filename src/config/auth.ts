@@ -4,6 +4,9 @@ export const protectedRoutes = [
   "/chat",
   "/wrong-questions",
   "/profile",
+  "/favorites",
+  "/following",
+  "/followers",
 ] as const;
 
 export function isAuthRoute(pathname: string) {

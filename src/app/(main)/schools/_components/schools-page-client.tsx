@@ -43,7 +43,7 @@ function SchoolsPageContent({ basePath = "/schools" }: { basePath?: string }) {
   const [schoolLoading, setSchoolLoading] = useState(true);
   const [majorLoading, setMajorLoading] = useState(false);
   const [searchLoading, setSearchLoading] = useState(false);
-  const { lastSyncedLabel, syncing, refresh } = useSchoolsSync();
+  const { syncing, refresh } = useSchoolsSync();
   const debouncedSearch = useDebouncedValue(search.trim(), 300);
   const isSearching = debouncedSearch.length > 0;
   const showMajorList = viewMode === "major" || majorTabVisited;
@@ -131,12 +131,6 @@ function SchoolsPageContent({ basePath = "/schools" }: { basePath?: string }) {
         <div className="mb-6 flex items-start justify-between gap-3">
           <div>
             <h1 className="text-2xl font-bold text-foreground">择校</h1>
-            <p className="mt-1 text-sm text-muted-foreground">
-              985 / 211 / 双一流 · 进复试最低分（2025/2026）
-              {lastSyncedLabel && (
-                <span className="ml-2 text-xs">· 更新于 {lastSyncedLabel}</span>
-              )}
-            </p>
           </div>
           <div className="flex shrink-0 items-center gap-2">
             <button

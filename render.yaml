@@ -18,5 +18,9 @@ services:
         sync: false
       - key: CORS_ORIGINS
         value: https://kaoyan-ai-platform.vercel.app,http://localhost:3000
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
       - key: PROJECT_ROOT
         value: /app

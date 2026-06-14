@@ -1,4 +1,5 @@
 import { LogoutButton } from "@/components/auth/logout-button";
+import { ProfileCommunityCard } from "@/components/community/profile-community-card";
 import {
   Card,
   CardContent,
@@ -49,6 +50,8 @@ export default async function ProfilePage() {
           </div>
         </CardContent>
       </Card>
+
+      <ProfileCommunityCard userId={user.id} />
     </div>
   );
 }

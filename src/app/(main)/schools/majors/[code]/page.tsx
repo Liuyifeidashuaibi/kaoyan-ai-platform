@@ -13,7 +13,6 @@ import {
   getScoresByMajorCode,
   groupMajorOfferingsByUniversity,
   formatMajorPath,
-  getLineDiffColor,
   type MajorUniversityOffering,
   type ScoreWithMajor,
 } from "@/lib/api/schools";
@@ -270,7 +269,7 @@ function SchoolOfferingCard({
           href={`/schools/${group.university_id}?tab=scores&major=${majorCode}`}
           className="shrink-0 text-xs text-orange-500 hover:underline"
         >
-          进复试最低分
+          复试线
         </Link>
       </div>
 
@@ -281,7 +280,7 @@ function SchoolOfferingCard({
             onClick={() => setScoresExpanded((v) => !v)}
             className="flex w-full items-center justify-between py-3 text-left text-xs font-medium text-muted-foreground"
           >
-            <span>进复试最低分（{uniqueScores.length} 条，2025/2026）</span>
+            <span>复试线（{uniqueScores.length} 条，2025/2026）</span>
             <ChevronDown
               className={cn(
                 "size-4 transition-transform",
@@ -295,12 +294,11 @@ function SchoolOfferingCard({
                 <thead>
                   <tr className="border-b border-border bg-muted/40 text-xs text-muted-foreground">
                     <th className="py-2 pl-2 text-left font-medium">年份</th>
-                    <th className="py-2 text-center font-medium">进复试最低分</th>
+                    <th className="py-2 text-center font-medium">总分</th>
                     <th className="py-2 text-center font-medium">政治</th>
-                    <th className="py-2 text-center font-medium">英语</th>
-                    <th className="py-2 text-center font-medium">专业①</th>
-                    <th className="py-2 text-center font-medium">专业②</th>
-                    <th className="py-2 pr-2 text-center font-medium">国家线差</th>
+                    <th className="py-2 text-center font-medium">外语</th>
+                    <th className="py-2 text-center font-medium">业务课一</th>
+                    <th className="py-2 text-center font-medium">业务课二</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border/40">
@@ -314,25 +312,6 @@ function SchoolOfferingCard({
                       <td className="py-2 text-center">{s.english_score}</td>
                       <td className="py-2 text-center">{s.professional1_score ?? "—"}</td>
                       <td className="py-2 text-center">{s.professional2_score ?? "—"}</td>
-                      <td className="py-2 pr-2 text-center">
-                        {s.line_diff != null ? (
-                          <span
-                            className={cn(
-                              "rounded px-1.5 py-0.5 text-xs font-semibold",
-                              s.line_diff > 0
-                                ? "bg-green-50 text-green-700"
-                                : s.line_diff < 0
-                                  ? "bg-red-50 text-red-600"
-                                  : "bg-muted text-muted-foreground"
-                            )}
-                          >
-                            {s.line_diff > 0 ? "+" : ""}
-                            {s.line_diff}
-                          </span>
-                        ) : (
-                          <span className={getLineDiffColor(null)}>—</span>
-                        )}
-                      </td>
                     </tr>
                   ))}
                 </tbody>

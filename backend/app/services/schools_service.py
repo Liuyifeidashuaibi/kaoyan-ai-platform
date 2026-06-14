@@ -41,9 +41,11 @@ class SchoolsService:
     def _sb(self) -> Client:
         if self._client is None:
             s = get_settings()
-            if not s.supabase_url or not s.supabase_service_key:
+            url = s.effective_supabase_url
+            key = s.effective_supabase_service_key
+            if not url or not key:
                 raise RuntimeError("未配置 SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY")
-            self._client = create_client(s.supabase_url, s.supabase_service_key)
+            self._client = create_client(url, key)
         return self._client
 
     def _uni_to_school(self, row: dict[str, Any], major_count: int = 0) -> SchoolListItem:

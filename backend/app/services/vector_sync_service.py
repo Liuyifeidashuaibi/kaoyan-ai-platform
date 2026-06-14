@@ -52,11 +52,11 @@ class VectorSyncService:
 
     def _get_supabase(self) -> Client:
         if self._sb is None:
-            if not self.settings.supabase_url or not self.settings.supabase_service_key:
+            if not self.settings.effective_supabase_url or not self.settings.effective_supabase_service_key:
                 raise RuntimeError("未配置 SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY")
             self._sb = create_client(
-                self.settings.supabase_url,
-                self.settings.supabase_service_key,
+                self.settings.effective_supabase_url,
+                self.settings.effective_supabase_service_key,
             )
         return self._sb
 

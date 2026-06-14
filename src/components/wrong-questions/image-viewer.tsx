@@ -274,9 +274,17 @@ export function ImageViewer({ open, index, slides, onClose }: ImageViewerProps) 
   );
 }
 
-/** Build slide list from wrong-question list */
+function formatSlideDate(iso: string): string {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return iso;
+  const pad = (value: number) => String(value).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+}
+
+/** Build slide list from image materials only */
 export function buildSlides(
   questions: Array<{
+    file_path?: string;
     image_path: string;
     title: string;
     category_name: string;
@@ -284,8 +292,8 @@ export function buildSlides(
   }>
 ): SlideItem[] {
   return questions.map((q) => ({
-    src: resolveUploadUrl(q.image_path),
+    src: resolveUploadUrl(q.file_path || q.image_path),
     title: q.title,
-    description: `${q.category_name} · ${new Date(q.created_at).toLocaleDateString("zh-CN")}`,
+    description: `${q.category_name} · ${formatSlideDate(q.created_at)}`,
   }));
 }

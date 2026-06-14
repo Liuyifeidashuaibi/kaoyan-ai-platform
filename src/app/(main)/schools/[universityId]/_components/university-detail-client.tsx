@@ -22,9 +22,9 @@ import { MajorsTab } from "./majors-tab";
 import { ScoresTab } from "./scores-tab";
 
 const DETAIL_TABS = [
-  { value: "scores", label: "进复试最低分" },
   { value: "overview", label: "院校概况" },
-  { value: "majors", label: "开设专业" },
+  { value: "majors", label: "专业" },
+  { value: "scores", label: "复试线" },
 ] as const;
 
 type DetailTab = (typeof DETAIL_TABS)[number]["value"];
@@ -36,7 +36,7 @@ function isDetailTab(v: string | null): v is DetailTab {
 function resolveInitialTab(tabParam: string | null, majorParam: string | null): DetailTab {
   if (isDetailTab(tabParam)) return tabParam;
   if (majorParam) return "majors";
-  return "scores";
+  return "overview";
 }
 
 interface UniversityDetailClientProps {
@@ -308,7 +308,6 @@ function UniversityDetailContent({ universityId }: UniversityDetailClientProps) 
               universityId={universityId}
               dataVersion={version}
               highlightMajorCode={majorParam ?? undefined}
-              onViewMajors={handleViewMajors}
               onClearHighlight={majorParam ? handleClearMajorHighlight : undefined}
             />
           )}

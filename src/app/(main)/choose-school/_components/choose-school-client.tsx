@@ -11,10 +11,7 @@ export function ChooseSchoolClient() {
         <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-3">
           <div>
             <p className="text-xs font-medium text-orange-100">择校数据中心</p>
-            <h1 className="mt-1 text-xl font-bold lg:text-2xl">查进复试最低分 · 按院校/专业筛选</h1>
-            <p className="mt-1 max-w-xl text-xs text-orange-50/90 lg:text-sm">
-              展示各专业进入复试的最低初试总分（2025/2026），支持 985 / 211 / 双一流筛选。
-            </p>
+            <h1 className="mt-1 text-xl font-bold lg:text-2xl">择校</h1>
           </div>
           <Link
             href="/schools?view=major"

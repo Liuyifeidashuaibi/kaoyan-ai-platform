@@ -1,0 +1,10 @@
+# 排除大文件，避免 vercel CLI 本地上传超限
+kaoyan.db
+*.db
+chroma_db
+uploads
+crawler
+backend/.venv
+.next
+node_modules
+.git

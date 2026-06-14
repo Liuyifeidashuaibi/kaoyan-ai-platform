@@ -1,16 +1,18 @@
 # 部署指南 — 考研 AI 平台
 
-Vercel 只托管 **Next.js 前端**。AI 聊天与错题本依赖 **FastAPI 后端**（千问 API），需单独部署。
+Vercel 只托管 **Next.js 前端**。AI 聊天与错题本依赖 **FastAPI 后端**（千问 API）。
+
+> **没有 Render？** 见下方 [本地后端 + Cloudflare Tunnel](#本地后端--cloudflare-tunnelvercel-连本机)（项目已自带脚本，推荐个人使用）。
 
 ## 架构
 
 ```
-浏览器 → Vercel (Next.js) → 代理 /api/chat、/api/wrong-questions → Render/Railway (FastAPI)
+浏览器 → Vercel (Next.js) → 代理 /api/* → Cloudflare Tunnel 或 云主机 (FastAPI)
          ↓
       Supabase 登录
 ```
 
-## 一、部署后端（Render 推荐）
+## 一、部署后端（Render，可选）
 
 1. 将代码推送到 GitHub
 2. 打开 [Render](https://render.com) → **New Blueprint** → 选择本仓库（使用根目录 `render.yaml`）

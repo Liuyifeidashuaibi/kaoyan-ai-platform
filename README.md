@@ -54,30 +54,61 @@ uvicorn app.main:app --reload --host 127.0.0.1 --port 8000
 npm run db:migrate:013
 ```
 
-## 部署
+## 部署（无 Render）
 
-完整步骤见 **[DEPLOY.md](./DEPLOY.md)**：
+**不需要 Render。** 推荐：**Vercel 托管前端**，**本机跑 FastAPI**，用 **Cloudflare Tunnel** 暴露给 Vercel。
 
-- **前端**：GitHub → Vercel 自动部署
-- **后端**：Render Blueprint（`render.yaml` + `Dockerfile`）
-- **数据库**：Supabase 迁移脚本在 `supabase/migrations/`
+```
+Vercel 前端  →  BACKEND_URL  →  Cloudflare Tunnel  →  你电脑上的 :8000
+```
 
-### Vercel 环境变量（必填）
+### 最快试通（无自有域名，约 5 分钟）
+
+**1. Vercel 环境变量**（Settings → Environment Variables）：
 
 | 变量 | 说明 |
 |------|------|
-| `BACKEND_URL` | Render 后端地址 |
-| `NEXT_PUBLIC_SUPABASE_URL` | Supabase 项目 URL |
+| `NEXT_PUBLIC_SUPABASE_URL` | Supabase URL |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase anon key |
+| `BACKEND_URL` | 见第 3 步隧道地址 |
+| `NEXT_PUBLIC_API_URL` | 与 `BACKEND_URL` 相同（聊天流式建议必配） |
 
-### Render 环境变量（必填）
+**2. 本机启动后端 + 临时隧道**（项目根目录 PowerShell）：
 
-| 变量 | 说明 |
-|------|------|
-| `DASHSCOPE_API_KEY` | 千问 API Key |
-| `SUPABASE_URL` | 社区/择校 |
-| `SUPABASE_SERVICE_ROLE_KEY` | 后端读写 Supabase |
-| `CORS_ORIGINS` | 含 Vercel 域名 |
+```powershell
+.\scripts\start-local-stack.ps1
+```
+
+若没有 `cloudflare-tunnel/config.yml`，会自动用**临时隧道**，窗口里会出现类似：
+
+`https://xxxx.trycloudflare.com`
+
+**3.** 把该地址填进 Vercel 的 `BACKEND_URL` 和 `NEXT_PUBLIC_API_URL`，然后 **Redeploy**。
+
+**4.** 本机 `.env` 需有 `DASHSCOPE_API_KEY`；`CORS_ORIGINS` 要包含你的 Vercel 域名，例如：
+
+```env
+CORS_ORIGINS=http://localhost:3000,https://kaoyan-ai-platform.vercel.app
+```
+
+**5.** 验证：`https://你的vercel域名/api/backend-health` 返回 `success: true`
+
+> 临时隧道 URL **每次重启会变**，需重新改 Vercel 并 Redeploy。  
+> 有 Cloudflare 域名时，见 [DEPLOY.md](./DEPLOY.md) 配置**固定域名**（改一次即可）。
+
+### 社区模块
+
+```bash
+npm run db:migrate:013
+```
+
+后端 `.env` 还需：`SUPABASE_URL`、`SUPABASE_SERVICE_ROLE_KEY`
+
+---
+
+## 部署（可选：Render 云后端）
+
+若不想本机常开，可用 Render 部署后端，见 **[DEPLOY.md](./DEPLOY.md)** 第一节。
 
 ## 脚本
 

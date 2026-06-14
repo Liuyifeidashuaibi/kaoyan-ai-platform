@@ -1,0 +1,2867 @@
+{
+  "meta": {
+    "source": "https://www.kaoyan.cn/school-list/0-0-syl",
+    "filter": "双一流 (feature=syl)",
+    "total": 147,
+    "updatedAt": "2026-06-14T17:41:26.734Z"
+  },
+  "schools": [
+    {
+      "id": 5,
+      "name": "清华大学",
+      "location": "北京",
+      "area": "A区",
+      "type": "综合类",
+      "labels": [
+        "985",
+        "211",
+        "双一流",
+        "自划线"
+      ],
+      "links": [
+        "招生简章",
+        "招生计划",
+        "复试分数",
+        "历年真题",
+        "调剂查询"
+      ],
+      "logo": "https://static.kaoyan.cn/image/logo/5_log.jpg"
+    },
+    {
+      "id": 147,
+      "name": "北京大学",
+      "location": "北京",
+      "area": "A区",
+      "type": "综合类",
+      "labels": [
+        "985",
+        "211",
+        "双一流",
+        "自划线"
+      ],
+      "links": [
+        "招生简章",
+        "招生计划",
+        "复试分数",
+        "历年真题",
+        "调剂查询"
+      ],
+      "logo": "https://static.kaoyan.cn/image/logo/147_log.jpg"
+    },
+    {
+      "id": 171,
+      "name": "浙江大学",
+      "location": "浙江",
+      "area": "A区",
+      "type": "综合类",
+      "labels": [
+        "985",
+        "211",
+        "双一流",
+        "自划线"
+      ],
+      "links": [
+        "招生简章",
+        "招生计划",
+        "复试分数",
+        "历年真题",
+        "调剂查询"
+      ],
+      "logo": "https://static.kaoyan.cn/image/logo/171_log.jpg"
+    },
+    {
+      "id": 267,
+      "name": "上海交通大学",
+      "location": "上海",
+      "area": "A区",
+      "type": "综合类",
+      "labels": [
+        "985",
+        "211",
+        "双一流",
+        "自划线"
+      ],
+      "links": [
+        "招生简章",
+        "招生计划",
+        "复试分数",
+        "历年真题",
+        "调剂查询"
+      ],
+      "logo": "https://static.kaoyan.cn/image/logo/267_log.jpg"
+    },
+    {
+      "id": 254,
+      "name": "复旦大学",
+      "location": "上海",
+      "area": "A区",
+      "type": "综合类",
+      "labels": [
+        "985",
+        "211",
+        "双一流",
+        "自划线"
+      ],
+      "links": [
+        "招生简章",
+        "招生计划",
+        "复试分数",
+        "历年真题",
+        "调剂查询"
+      ],
+      "logo": "https://static.kaoyan.cn/image/logo/254_log.jpg"
+    },
+    {
+      "id": 39,
+      "name": "南京大学",
+      "location": "江苏",
+      "area": "A区",
+      "type": "综合类",
+      "labels": [
+        "985",
+        "211",
+        "双一流",
+        "自划线"
+      ],
+      "links": [
+        "招生简章",
+        "招生计划",
+        "复试分数",
+        "历年真题",
+        "调剂查询"
+      ],
+      "logo": "https://static.kaoyan.cn/image/logo/39_log.jpg"
+    },
+    {
+      "id": 160,
+      "name": "中国科学技术大学",
+      "location": "安徽",
+      "area": "A区",
+      "type": "综合类",
+      "labels": [
+        "985",
+        "211",
+        "双一流",
+        "自划线"
+      ],
+      "links": [
+        "招生简章",
+        "招生计划",
+        "复试分数",
+        "历年真题",
+        "调剂查询"
+      ],
+      "logo": "https://static.kaoyan.cn/image/logo/160_log.jpg"
+    },
+    {
+      "id": 37,
+      "name": "华中科技大学",
+      "location": "湖北",
+      "area": "A区",
+      "type": "综合类",
+      "labels": [
+        "985",
+        "211",
+        "双一流",
+        "自划线"
+      ],
+      "links": [
+        "招生简章",
+        "招生计划",
+        "复试分数",
+        "历年真题",
+        "调剂查询"
+      ],
+      "logo": "https://static.kaoyan.cn/image/logo/37_log.jpg"
+    },
+    {
+      "id": 3,
+      "name": "武汉大学",
+      "location": "湖北",
+      "area": "A区",
+      "type": "综合类",
+      "labels": [
+        "985",
+        "211",
+        "双一流",
+        "自划线"
+      ],
+      "links": [
+        "招生简章",
+        "招生计划",
+        "复试分数",
+        "历年真题",
+        "调剂查询"
+      ],
+      "logo": "https://static.kaoyan.cn/image/logo/3_log.jpg"
+    },
+    {
+      "id": 225,
+      "name": "西安交通大学",
+      "location": "陕西",
+      "area": "A区",
+      "type": "综合类",
+      "labels": [
+        "985",
+        "211",
+        "双一流",
+        "自划线"
+      ],
+      "links": [
+        "招生简章",
+        "招生计划",
+        "复试分数",
+        "历年真题",
+        "调剂查询"
+      ],
+      "logo": "https://static.kaoyan.cn/image/logo/225_log.jpg"
+    },
+    {
+      "id": 231,
+      "name": "中山大学",
+      "location": "广东",
+      "area": "A区",
+      "type": "综合类",
+      "labels": [
+        "985",
+        "211",
+        "双一流",
+        "自划线"
+      ],
+      "links": [
+        "招生简章",
+        "招生计划",
+        "复试分数",
+        "历年真题",
+        "调剂查询"
+      ],
+      "logo": "https://static.kaoyan.cn/image/logo/231_log.jpg"
+    },
+    {
+      "id": 182,
+      "name": "北京航空航天大学",
+      "location": "北京",
+      "area": "A区",
+      "type": "理工类",
+      "labels": [
+        "985",
+        "211",
+        "双一流",
+        "自划线"
+      ],
+      "links": [
+        "招生简章",
+        "招生计划",
+        "复试分数",
+        "历年真题",
+        "调剂查询"
+      ],
+      "logo": "https://static.kaoyan.cn/image/logo/182_log.jpg"
+    },
+    {
+      "id": 287,
+      "name": "东南大学",
+      "location": "江苏",
+      "area": "A区",
+      "type": "综合类",
+      "labels": [
+        "985",
+        "211",
+        "双一流",
+        "自划线"
+      ],
+      "links": [
+        "招生简章",
+        "招生计划",
+        "复试分数",
+        "历年真题",
+        "调剂查询"
+      ],
+      "logo": "https://static.kaoyan.cn/image/logo/287_log.jpg"
+    },
+    {
+      "id": 184,
+      "name": "北京理工大学",
+      "location": "北京",
+      "area": "A区",
+      "type": "理工类",
+      "labels": [
+        "985",
+        "211",
+        "双一流",
+        "自划线"
+      ],
+      "links": [
+        "招生简章",
+        "招生计划",
+        "复试分数",
+        "历年真题",
+        "调剂查询"
+      ],
+      "logo": "https://static.kaoyan.cn/image/logo/184_log.jpg"
+    },
+    {
+      "id": 208,
+      "name": "四川大学",
+      "location": "四川",
+      "area": "A区",
+      "type": "综合类",
+      "labels": [
+        "985",
+        "211",
+        "双一流",
+        "自划线"
+      ],
+      "links": [
+        "招生简章",
+        "招生计划",
+        "复试分数",
+        "历年真题",
+        "调剂查询"
+      ],
+      "logo": "https://static.kaoyan.cn/image/logo/208_log.jpg"
+    },
+    {
+      "id": 378,
+      "name": "哈尔滨工业大学",
+      "location": "黑龙江",
+      "area": "A区",
+      "type": "理工类",
+      "labels": [
+        "985",
+        "211",
+        "双一流",
+        "自划线"
+      ],
+      "links": [
+        "招生简章",
+        "招生计划",
+        "复试分数",
+        "历年真题",
+        "调剂查询"
+      ],
+      "logo": "https://static.kaoyan.cn/image/logo/378_log.jpg"
+    },
+    {
+      "id": 7,
+      "name": "北京协和医学院",
+      "location": "北京",
+      "area": "A区",
+      "type": "医药类",
+      "labels": [
+        "双一流"
+      ],
+      "links": [
+        "招生简章",
+        "招生计划",
+        "复试分数",
+        "历年真题",
+        "调剂查询"
+      ],
+      "logo": "https://static.kaoyan.cn/image/logo/7_log.jpg"
+    },
+    {
+      "id": 257,
+      "name": "同济大学",
+      "location": "上海",
+      "area": "A区",
+      "type": "综合类",
+      "labels": [
+        "985",
+        "211",
+        "双一流",
+        "自划线"
+      ],
+      "links": [
+        "招生简章",
+        "招生计划",
+        "复试分数",
+        "历年真题",
+        "调剂查询"
+      ],
+      "logo": "https://static.kaoyan.cn/image/logo/257_log.jpg"
+    },
+    {
+      "id": 178,
+      "name": "中国人民大学",
+      "location": "北京",
+      "area": "A区",
+      "type": "综合类",
+      "labels": [
+        "985",
+        "211",
+        "双一流",
+        "自划线"
+      ],
+      "links": [
+        "招生简章",
+        "招生计划",
+        "复试分数",
+        "历年真题",
+        "调剂查询"
+      ],
+      "logo": "https://static.kaoyan.cn/image/logo/178_log.jpg"
+    },
+    {
+      "id": 174,
+      "name": "北京师范大学",
+      "location": "北京",
+      "area": "A区",
+      "type": "师范类",
+      "labels": [
+        "985",
+        "211",
+        "双一流",
+        "自划线"
+      ],
+      "links": [
+        "招生简章",
+        "招生计划",
+        "复试分数",
+        "历年真题",
+        "调剂查询"
+      ],
+      "logo": "https://static.kaoyan.cn/image/logo/174_log.jpg"
+    },
+    {
+      "id": 242,
+      "name": "天津大学",
+      "location": "天津",
+      "area": "A区",
+      "type": "综合类",
+      "labels": [
+        "985",
+        "211",
+        "双一流",
+        "自划线"
+      ],
+      "links": [
+        "招生简章",
+        "招生计划",
+        "复试分数",
+        "历年真题",
+        "调剂查询"
+      ],
+      "logo": "https://static.kaoyan.cn/image/logo/242_log.jpg"
+    },
+    {
+      "id": 243,
+      "name": "南开大学",
+      "location": "天津",
+      "area": "A区",
+      "type": "综合类",
+      "labels": [
+        "985",
+        "211",
+        "双一流",
+        "自划线"
+      ],
+      "links": [
+        "招生简章",
+        "招生计划",
+        "复试分数",
+        "历年真题",
+        "调剂查询"
+      ],
+      "logo": "https://static.kaoyan.cn/image/logo/243_log.jpg"
+    },
+    {
+      "id": 292,
+      "name": "山东大学",
+      "location": "山东",
+      "area": "A区",
+      "type": "综合类",
+      "labels": [
+        "985",
+        "211",
+        "双一流",
+        "自划线"
+      ],
+      "links": [
+        "招生简章",
+        "招生计划",
+        "复试分数",
+        "历年真题",
+        "调剂查询"
+      ],
+      "logo": "https://static.kaoyan.cn/image/logo/292_log.jpg"
+    },
+    {
+      "id": 149,
+      "name": "西北工业大学",
+      "location": "陕西",
+      "area": "A区",
+      "type": "理工类",
+      "labels": [
+        "985",
+        "211",
+        "双一流",
+        "自划线"
+      ],
+      "links": [
+        "招生简章",
+        "招生计划",
+        "复试分数",
+        "历年真题",
+        "调剂查询"
+      ],
+      "logo": "https://static.kaoyan.cn/image/logo/149_log.jpg"
+    },
+    {
+      "id": 144,
+      "name": "厦门大学",
+      "location": "福建",
+      "area": "A区",
+      "type": "综合类",
+      "labels": [
+        "985",
+        "211",
+        "双一流",
+        "自划线"
+      ],
+      "links": [
+        "招生简章",
+        "招生计划",
+        "复试分数",
+        "历年真题",
+        "调剂查询"
+      ],
+      "logo": "https://static.kaoyan.cn/image/logo/144_log.jpg"
+    },
+    {
+      "id": 51,
+      "name": "中南大学",
+      "location": "湖南",
+      "area": "A区",
+      "type": "综合类",
+      "labels": [
+        "985",
+        "211",
+        "双一流",
+        "自划线"
+      ],
+      "links": [
+        "招生简章",
+        "招生计划",
+        "复试分数",
+        "历年真题",
+        "调剂查询"
+      ],
+      "logo": "https://static.kaoyan.cn/image/logo/51_log.jpg"
+    },
+    {
+      "id": 359,
+      "name": "吉林大学",
+      "location": "吉林",
+      "area": "A区",
+      "type": "综合类",
+      "labels": [
+        "985",
+        "211",
+        "双一流",
+        "自划线"
+      ],
+      "links": [
+        "招生简章",
+        "招生计划",
+        "复试分数",
+        "历年真题",
+        "调剂查询"
+      ],
+      "logo": "https://static.kaoyan.cn/image/logo/359_log.jpg"
+    },
+    {
+      "id": 194,
+      "name": "中国农业大学",
+      "location": "北京",
+      "area": "A区",
+      "type": "农林类",
+      "labels": [
+        "985",
+        "211",
+        "双一流",
+        "自划线"
+      ],
+      "links": [
+        "招生简章",
+        "招生计划",
+        "复试分数",
+        "历年真题",
+        "调剂查询"
+      ],
+      "logo": "https://static.kaoyan.cn/image/logo/194_log.jpg"
+    },
+    {
+      "id": 318,
+      "name": "大连理工大学",
+      "location": "辽宁",
+      "area": "A区",
+      "type": "理工类",
+      "labels": [
+        "985",
+        "211",
+        "双一流",
+        "自划线"
+      ],
+      "links": [
+        "招生简章",
+        "招生计划",
+        "复试分数",
+        "历年真题",
+        "调剂查询"
+      ],
+      "logo": "https://static.kaoyan.cn/image/logo/318_log.jpg"
+    },
+    {
+      "id": 261,
+      "name": "华东师范大学",
+      "location": "上海",
+      "area": "A区",
+      "type": "师范类",
+      "labels": [
+        "985",
+        "211",
+        "双一流"
+      ],
+      "links": [
+        "招生简章",
+        "招生计划",
+        "复试分数",
+        "历年真题",
+        "调剂查询"
+      ],
+      "logo": "https://static.kaoyan.cn/image/logo/261_log.jpg"
+    },
+    {
+      "id": 56,
+      "name": "华南理工大学",
+      "location": "广东",
+      "area": "A区",
+      "type": "综合类",
+      "labels": [
+        "985",
+        "211",
+        "双一流",
+        "自划线"
+      ],
+      "links": [
+        "招生简章",
+        "招生计划",
+        "复试分数",
+        "历年真题",
+        "调剂查询"
+      ],
+      "logo": "https://static.kaoyan.cn/image/logo/56_log.jpg"
+    },
+    {
+      "id": 222,
+      "name": "电子科技大学",
+      "location": "四川",
+      "area": "A区",
+      "type": "理工类",
+      "labels": [
+        "985",
+        "211",
+        "双一流",
+        "自划线"
+      ],
+      "links": [
+        "招生简章",
+        "招生计划",
+        "复试分数",
+        "历年真题",
+        "调剂查询"
+      ],
+      "logo": "https://static.kaoyan.cn/image/logo/222_log.jpg"
+    },
+    {
+      "id": 121,
+      "name": "湖南大学",
+      "location": "湖南",
+      "area": "A区",
+      "type": "综合类",
+      "labels": [
+        "985",
+        "211",
+        "双一流",
+        "自划线"
+      ],
+      "links": [
+        "招生简章",
+        "招生计划",
+        "复试分数",
+        "历年真题",
+        "调剂查询"
+      ],
+      "logo": "https://static.kaoyan.cn/image/logo/121_log.jpg"
+    },
+    {
+      "id": 252,
+      "name": "重庆大学",
+      "location": "重庆",
+      "area": "A区",
+      "type": "综合类",
+      "labels": [
+        "985",
+        "211",
+        "双一流",
+        "自划线"
+      ],
+      "links": [
+        "招生简章",
+        "招生计划",
+        "复试分数",
+        "历年真题",
+        "调剂查询"
+      ],
+      "logo": "https://static.kaoyan.cn/image/logo/252_log.jpg"
+    },
+    {
+      "id": 1386,
+      "name": "南方科技大学",
+      "location": "广东",
+      "area": "A区",
+      "type": "理工类",
+      "labels": [
+        "双一流"
+      ],
+      "links": [
+        "招生简章",
+        "招生计划",
+        "复试分数",
+        "历年真题",
+        "调剂查询"
+      ],
+      "logo": "https://static.kaoyan.cn/image/logo/1386_log.jpg"
+    },
+    {
+      "id": 410,
+      "name": "北京科技大学",
+      "location": "北京",
+      "area": "A区",
+      "type": "理工类",
+      "labels": [
+        "211",
+        "双一流"
+      ],
+      "links": [
+        "招生简章",
+        "招生计划",
+        "复试分数",
+        "历年真题",
+        "调剂查询"
+      ],
+      "logo": "https://static.kaoyan.cn/image/logo/410_log.jpg"
+    },
+    {
+      "id": 264,
+      "name": "上海财经大学",
+      "location": "上海",
+      "area": "A区",
+      "type": "财经类",
+      "labels": [
+        "211",
+        "双一流"
+      ],
+      "links": [
+        "招生简章",
+        "招生计划",
+        "复试分数",
+        "历年真题",
+        "调剂查询"
+      ],
+      "logo": "https://static.kaoyan.cn/image/logo/264_log.jpg"
+    },
+    {
+      "id": 275,
+      "name": "南京航空航天大学",
+      "location": "江苏",
+      "area": "A区",
+      "type": "理工类",
+      "labels": [
+        "211",
+        "双一流"
+      ],
+      "links": [
+        "招生简章",
+        "招生计划",
+        "复试分数",
+        "历年真题",
+        "调剂查询"
+      ],
+      "logo": "https://static.kaoyan.cn/image/logo/275_log.jpg"
+    },
+    {
+      "id": 282,
+      "name": "南京理工大学",
+      "location": "江苏",
+      "area": "A区",
+      "type": "理工类",
+      "labels": [
+        "211",
+        "双一流"
+      ],
+      "links": [
+        "招生简章",
+        "招生计划",
+        "复试分数",
+        "历年真题",
+        "调剂查询"
+      ],
+      "logo": "https://static.kaoyan.cn/image/logo/282_log.jpg"
+    },
+    {
+      "id": 262,
+      "name": "兰州大学",
+      "location": "甘肃",
+      "area": "B区",
+      "type": "综合类",
+      "labels": [
+        "985",
+        "211",
+        "双一流",
+        "自划线"
+      ],
+      "links": [
+        "招生简章",
+        "招生计划",
+        "复试分数",
+        "历年真题",
+        "调剂查询"
+      ],
+      "logo": "https://static.kaoyan.cn/image/logo/262_log.jpg"
+    },
+    {
+      "id": 319,
+      "name": "东北大学",
+      "location": "辽宁",
+      "area": "A区",
+      "type": "理工类",
+      "labels": [
+        "985",
+        "211",
+        "双一流",
+        "自划线"
+      ],
+      "links": [
+        "招生简章",
+        "招生计划",
+        "复试分数",
+        "历年真题",
+        "调剂查询"
+      ],
+      "logo": "https://static.kaoyan.cn/image/logo/319_log.jpg"
+    },
+    {
+      "id": 229,
+      "name": "西安电子科技大学",
+      "location": "陕西",
+      "area": "A区",
+      "type": "理工类",
+      "labels": [
+        "211",
+        "双一流"
+      ],
+      "links": [
+        "招生简章",
+        "招生计划",
+        "复试分数",
+        "历年真题",
+        "调剂查询"
+      ],
+      "logo": "https://static.kaoyan.cn/image/logo/229_log.jpg"
+    },
+    {
+      "id": 19,
+      "name": "北京交通大学",
+      "location": "北京",
+      "area": "A区",
+      "type": "理工类",
+      "labels": [
+        "211",
+        "双一流"
+      ],
+      "links": [
+        "招生简章",
+        "招生计划",
+        "复试分数",
+        "历年真题",
+        "调剂查询"
+      ],
+      "logo": "https://static.kaoyan.cn/image/logo/19_log.jpg"
+    },
+    {
+      "id": 1407,
+      "name": "上海科技大学",
+      "location": "上海",
+      "area": "A区",
+      "type": "理工类",
+      "labels": [
+        "双一流"
+      ],
+      "links": [
+        "招生简章",
+        "招生计划",
+        "复试分数",
+        "历年真题",
+        "调剂查询"
+      ],
+      "logo": "https://static.kaoyan.cn/image/logo/1407_log.jpg"
+    },
+    {
+      "id": 284,
+      "name": "苏州大学",
+      "location": "江苏",
+      "area": "A区",
+      "type": "综合类",
+      "labels": [
+        "211",
+        "双一流"
+      ],
+      "links": [
+        "招生简章",
+        "招生计划",
+        "复试分数",
+        "历年真题",
+        "调剂查询"
+      ],
+      "logo": "https://static.kaoyan.cn/image/logo/284_log.jpg"
+    },
+    {
+      "id": 259,
+      "name": "华东理工大学",
+      "location": "上海",
+      "area": "A区",
+      "type": "理工类",
+      "labels": [
+        "211",
+        "双一流"
+      ],
+      "links": [
+        "招生简章",
+        "招生计划",
+        "复试分数",
+        "历年真题",
+        "调剂查询"
+      ],
+      "logo": "https://static.kaoyan.cn/image/logo/259_log.jpg"
+    },
+    {
+      "id": 416,
+      "name": "中央财经大学",
+      "location": "北京",
+      "area": "A区",
+      "type": "财经类",
+      "labels": [
+        "211",
+        "双一流"
+      ],
+      "links": [
+        "招生简章",
+        "招生计划",
+        "复试分数",
+        "历年真题",
+        "调剂查询"
+      ],
+      "logo": "https://static.kaoyan.cn/image/logo/416_log.jpg"
+    },
+    {
+      "id": 285,
+      "name": "哈尔滨工程大学",
+      "location": "黑龙江",
+      "area": "A区",
+      "type": "理工类",
+      "labels": [
+        "211",
+        "双一流"
+      ],
+      "links": [
+        "招生简章",
+        "招生计划",
+        "复试分数",
+        "历年真题",
+        "调剂查询"
+      ],
+      "logo": "https://static.kaoyan.cn/image/logo/285_log.jpg"
+    },
+    {
+      "id": 360,
+      "name": "东北师范大学",
+      "location": "吉林",
+      "area": "A区",
+      "type": "师范类",
+      "labels": [
+        "211",
+        "双一流"
+      ],
+      "links": [
+        "招生简章",
+        "招生计划",
+        "复试分数",
+        "历年真题",
+        "调剂查询"
+      ],
+      "logo": "https://static.kaoyan.cn/image/logo/360_log.jpg"
+    },
+    {
+      "id": 90,
+      "name": "华中农业大学",
+      "location": "湖北",
+      "area": "A区",
+      "type": "农林类",
+      "labels": [
+        "211",
+        "双一流"
+      ],
+      "links": [
+        "招生简章",
+        "招生计划",
+        "复试分数",
+        "历年真题",
+        "调剂查询"
+      ],
+      "logo": "https://static.kaoyan.cn/image/logo/90_log.jpg"
+    },
+    {
+      "id": 950,
+      "name": "中国石油大学（北京）",
+      "location": "北京",
+      "area": "A区",
+      "type": "理工类",
+      "labels": [
+        "211",
+        "双一流"
+      ],
+      "links": [
+        "招生简章",
+        "招生计划",
+        "复试分数",
+        "历年真题",
+        "调剂查询"
+      ],
+      "logo": "https://static.kaoyan.cn/image/logo/950_log.jpg"
+    },
+    {
+      "id": 277,
+      "name": "南京医科大学",
+      "location": "江苏",
+      "area": "A区",
+      "type": "医药类",
+      "labels": [
+        "双一流"
+      ],
+      "links": [
+        "招生简章",
+        "招生计划",
+        "复试分数",
+        "历年真题",
+        "调剂查询"
+      ],
+      "logo": "https://static.kaoyan.cn/image/logo/277_log.jpg"
+    },
+    {
+      "id": 33,
+      "name": "南京农业大学",
+      "location": "江苏",
+      "area": "A区",
+      "type": "农林类",
+      "labels": [
+        "211",
+        "双一流"
+      ],
+      "links": [
+        "招生简章",
+        "招生计划",
+        "复试分数",
+        "历年真题",
+        "调剂查询"
+      ],
+      "logo": "https://static.kaoyan.cn/image/logo/33_log.jpg"
+    },
+    {
+      "id": 25,
+      "name": "郑州大学",
+      "location": "河南",
+      "area": "A区",
+      "type": "综合类",
+      "labels": [
+        "211",
+        "双一流"
+      ],
+      "links": [
+        "招生简章",
+        "招生计划",
+        "复试分数",
+        "历年真题",
+        "调剂查询"
+      ],
+      "logo": "https://static.kaoyan.cn/image/logo/25_log.jpg"
+    },
+    {
+      "id": 155,
+      "name": "暨南大学",
+      "location": "广东",
+      "area": "A区",
+      "type": "综合类",
+      "labels": [
+        "211",
+        "双一流"
+      ],
+      "links": [
+        "招生简章",
+        "招生计划",
+        "复试分数",
+        "历年真题",
+        "调剂查询"
+      ],
+      "logo": "https://static.kaoyan.cn/image/logo/155_log.jpg"
+    },
+    {
+      "id": 1115,
+      "name": "南京师范大学",
+      "location": "江苏",
+      "area": "A区",
+      "type": "师范类",
+      "labels": [
+        "211",
+        "双一流"
+      ],
+      "links": [
+        "招生简章",
+        "招生计划",
+        "复试分数",
+        "历年真题",
+        "调剂查询"
+      ],
+      "logo": "https://static.kaoyan.cn/image/logo/1115_log.jpg"
+    },
+    {
+      "id": 126,
+      "name": "武汉理工大学",
+      "location": "湖北",
+      "area": "A区",
+      "type": "理工类",
+      "labels": [
+        "211",
+        "双一流"
+      ],
+      "links": [
+        "招生简章",
+        "招生计划",
+        "复试分数",
+        "历年真题",
+        "调剂查询"
+      ],
+      "logo": "https://static.kaoyan.cn/image/logo/126_log.jpg"
+    },
+    {
+      "id": 450,
+      "name": "中国矿业大学",
+      "location": "江苏",
+      "area": "A区",
+      "type": "综合类",
+      "labels": [
+        "211",
+        "双一流"
+      ],
+      "links": [
+        "招生简章",
+        "招生计划",
+        "复试分数",
+        "历年真题",
+        "调剂查询"
+      ],
+      "logo": "https://static.kaoyan.cn/image/logo/450_log.jpg"
+    },
+    {
+      "id": 176,
+      "name": "对外经济贸易大学",
+      "location": "北京",
+      "area": "A区",
+      "type": "财经类",
+      "labels": [
+        "211",
+        "双一流"
+      ],
+      "links": [
+        "招生简章",
+        "招生计划",
+        "复试分数",
+        "历年真题",
+        "调剂查询"
+      ],
+      "logo": "https://static.kaoyan.cn/image/logo/176_log.jpg"
+    },
+    {
+      "id": 189,
+      "name": "中国政法大学",
+      "location": "北京",
+      "area": "A区",
+      "type": "政法类",
+      "labels": [
+        "211",
+        "双一流"
+      ],
+      "links": [
+        "招生简章",
+        "招生计划",
+        "复试分数",
+        "历年真题",
+        "调剂查询"
+      ],
+      "logo": "https://static.kaoyan.cn/image/logo/189_log.jpg"
+    },
+    {
+      "id": 288,
+      "name": "江南大学",
+      "location": "江苏",
+      "area": "A区",
+      "type": "综合类",
+      "labels": [
+        "211",
+        "双一流"
+      ],
+      "links": [
+        "招生简章",
+        "招生计划",
+        "复试分数",
+        "历年真题",
+        "调剂查询"
+      ],
+      "logo": "https://static.kaoyan.cn/image/logo/288_log.jpg"
+    },
+    {
+      "id": 245,
+      "name": "天津医科大学",
+      "location": "天津",
+      "area": "A区",
+      "type": "医药类",
+      "labels": [
+        "211",
+        "双一流"
+      ],
+      "links": [
+        "招生简章",
+        "招生计划",
+        "复试分数",
+        "历年真题",
+        "调剂查询"
+      ],
+      "logo": "https://static.kaoyan.cn/image/logo/245_log.jpg"
+    },
+    {
+      "id": 142,
+      "name": "上海大学",
+      "location": "上海",
+      "area": "A区",
+      "type": "综合类",
+      "labels": [
+        "211",
+        "双一流"
+      ],
+      "links": [
+        "招生简章",
+        "招生计划",
+        "复试分数",
+        "历年真题",
+        "调剂查询"
+      ],
+      "logo": "https://static.kaoyan.cn/image/logo/142_log.jpg"
+    },
+    {
+      "id": 460,
+      "name": "中国海洋大学",
+      "location": "山东",
+      "area": "A区",
+      "type": "综合类",
+      "labels": [
+        "985",
+        "211",
+        "双一流"
+      ],
+      "links": [
+        "招生简章",
+        "招生计划",
+        "复试分数",
+        "历年真题",
+        "调剂查询"
+      ],
+      "logo": "https://static.kaoyan.cn/image/logo/460_log.jpg"
+    },
+    {
+      "id": 131,
+      "name": "华中师范大学",
+      "location": "湖北",
+      "area": "A区",
+      "type": "师范类",
+      "labels": [
+        "211",
+        "双一流"
+      ],
+      "links": [
+        "招生简章",
+        "招生计划",
+        "复试分数",
+        "历年真题",
+        "调剂查询"
+      ],
+      "logo": "https://static.kaoyan.cn/image/logo/131_log.jpg"
+    },
+    {
+      "id": 220,
+      "name": "西南交通大学",
+      "location": "四川",
+      "area": "A区",
+      "type": "理工类",
+      "labels": [
+        "211",
+        "双一流"
+      ],
+      "links": [
+        "招生简章",
+        "招生计划",
+        "复试分数",
+        "历年真题",
+        "调剂查询"
+      ],
+      "logo": "https://static.kaoyan.cn/image/logo/220_log.jpg"
+    },
+    {
+      "id": 307,
+      "name": "中国石油大学（华东）",
+      "location": "山东",
+      "area": "A区",
+      "type": "理工类",
+      "labels": [
+        "211",
+        "双一流"
+      ],
+      "links": [
+        "招生简章",
+        "招生计划",
+        "复试分数",
+        "历年真题",
+        "调剂查询"
+      ],
+      "logo": "https://static.kaoyan.cn/image/logo/307_log.jpg"
+    },
+    {
+      "id": 108,
+      "name": "中国地质大学（武汉）",
+      "location": "湖北",
+      "area": "A区",
+      "type": "理工类",
+      "labels": [
+        "211",
+        "双一流"
+      ],
+      "links": [
+        "招生简章",
+        "招生计划",
+        "复试分数",
+        "历年真题",
+        "调剂查询"
+      ],
+      "logo": "https://static.kaoyan.cn/image/logo/108_log.jpg"
+    },
+    {
+      "id": 557,
+      "name": "陕西师范大学",
+      "location": "陕西",
+      "area": "A区",
+      "type": "师范类",
+      "labels": [
+        "211",
+        "双一流"
+      ],
+      "links": [
+        "招生简章",
+        "招生计划",
+        "复试分数",
+        "历年真题",
+        "调剂查询"
+      ],
+      "logo": "https://static.kaoyan.cn/image/logo/557_log.jpg"
+    },
+    {
+      "id": 123,
+      "name": "北京邮电大学",
+      "location": "北京",
+      "area": "A区",
+      "type": "理工类",
+      "labels": [
+        "211",
+        "双一流"
+      ],
+      "links": [
+        "招生简章",
+        "招生计划",
+        "复试分数",
+        "历年真题",
+        "调剂查询"
+      ],
+      "logo": "https://static.kaoyan.cn/image/logo/123_log.jpg"
+    },
+    {
+      "id": 41,
+      "name": "河海大学",
+      "location": "江苏",
+      "area": "A区",
+      "type": "综合类",
+      "labels": [
+        "211",
+        "双一流"
+      ],
+      "links": [
+        "招生简章",
+        "招生计划",
+        "复试分数",
+        "历年真题",
+        "调剂查询"
+      ],
+      "logo": "https://static.kaoyan.cn/image/logo/41_log.jpg"
+    },
+    {
+      "id": 55,
+      "name": "北京工业大学",
+      "location": "北京",
+      "area": "A区",
+      "type": "理工类",
+      "labels": [
+        "211",
+        "双一流"
+      ],
+      "links": [
+        "招生简章",
+        "招生计划",
+        "复试分数",
+        "历年真题",
+        "调剂查询"
+      ],
+      "logo": "https://static.kaoyan.cn/image/logo/55_log.jpg"
+    },
+    {
+      "id": 151,
+      "name": "西北大学",
+      "location": "陕西",
+      "area": "A区",
+      "type": "综合类",
+      "labels": [
+        "211",
+        "双一流"
+      ],
+      "links": [
+        "招生简章",
+        "招生计划",
+        "复试分数",
+        "历年真题",
+        "调剂查询"
+      ],
+      "logo": "https://static.kaoyan.cn/image/logo/151_log.jpg"
+    },
+    {
+      "id": 411,
+      "name": "北京化工大学",
+      "location": "北京",
+      "area": "A区",
+      "type": "理工类",
+      "labels": [
+        "211",
+        "双一流"
+      ],
+      "links": [
+        "招生简章",
+        "招生计划",
+        "复试分数",
+        "历年真题",
+        "调剂查询"
+      ],
+      "logo": "https://static.kaoyan.cn/image/logo/411_log.jpg"
+    },
+    {
+      "id": 925,
+      "name": "西南大学",
+      "location": "重庆",
+      "area": "A区",
+      "type": "综合类",
+      "labels": [
+        "211",
+        "双一流"
+      ],
+      "links": [
+        "招生简章",
+        "招生计划",
+        "复试分数",
+        "历年真题",
+        "调剂查询"
+      ],
+      "logo": "https://static.kaoyan.cn/image/logo/925_log.jpg"
+    },
+    {
+      "id": 202,
+      "name": "云南大学",
+      "location": "云南",
+      "area": "B区",
+      "type": "综合类",
+      "labels": [
+        "211",
+        "双一流"
+      ],
+      "links": [
+        "招生简章",
+        "招生计划",
+        "复试分数",
+        "历年真题",
+        "调剂查询"
+      ],
+      "logo": "https://static.kaoyan.cn/image/logo/202_log.jpg"
+    },
+    {
+      "id": 209,
+      "name": "西南财经大学",
+      "location": "四川",
+      "area": "A区",
+      "type": "财经类",
+      "labels": [
+        "211",
+        "双一流"
+      ],
+      "links": [
+        "招生简章",
+        "招生计划",
+        "复试分数",
+        "历年真题",
+        "调剂查询"
+      ],
+      "logo": "https://static.kaoyan.cn/image/logo/209_log.jpg"
+    },
+    {
+      "id": 181,
+      "name": "南昌大学",
+      "location": "江西",
+      "area": "A区",
+      "type": "综合类",
+      "labels": [
+        "211",
+        "双一流"
+      ],
+      "links": [
+        "招生简章",
+        "招生计划",
+        "复试分数",
+        "历年真题",
+        "调剂查询"
+      ],
+      "logo": "https://static.kaoyan.cn/image/logo/181_log.jpg"
+    },
+    {
+      "id": 91,
+      "name": "中南财经政法大学",
+      "location": "湖北",
+      "area": "A区",
+      "type": "财经类",
+      "labels": [
+        "211",
+        "双一流"
+      ],
+      "links": [
+        "招生简章",
+        "招生计划",
+        "复试分数",
+        "历年真题",
+        "调剂查询"
+      ],
+      "logo": "https://static.kaoyan.cn/image/logo/91_log.jpg"
+    },
+    {
+      "id": 232,
+      "name": "西北农林科技大学",
+      "location": "陕西",
+      "area": "A区",
+      "type": "农林类",
+      "labels": [
+        "985",
+        "211",
+        "双一流"
+      ],
+      "links": [
+        "招生简章",
+        "招生计划",
+        "复试分数",
+        "历年真题",
+        "调剂查询"
+      ],
+      "logo": "https://static.kaoyan.cn/image/logo/232_log.jpg"
+    },
+    {
+      "id": 177,
+      "name": "北京外国语大学",
+      "location": "北京",
+      "area": "A区",
+      "type": "语言类",
+      "labels": [
+        "211",
+        "双一流"
+      ],
+      "links": [
+        "招生简章",
+        "招生计划",
+        "复试分数",
+        "历年真题",
+        "调剂查询"
+      ],
+      "logo": "https://static.kaoyan.cn/image/logo/177_log.jpg"
+    },
+    {
+      "id": 393,
+      "name": "中国地质大学（北京）",
+      "location": "北京",
+      "area": "A区",
+      "type": "理工类",
+      "labels": [
+        "211",
+        "双一流"
+      ],
+      "links": [
+        "招生简章",
+        "招生计划",
+        "复试分数",
+        "历年真题",
+        "调剂查询"
+      ],
+      "logo": "https://static.kaoyan.cn/image/logo/393_log.jpg"
+    },
+    {
+      "id": 199,
+      "name": "华北电力大学",
+      "location": "北京",
+      "area": "A区",
+      "type": "理工类",
+      "labels": [
+        "211",
+        "双一流"
+      ],
+      "links": [
+        "招生简章",
+        "招生计划",
+        "复试分数",
+        "历年真题",
+        "调剂查询"
+      ],
+      "logo": "https://static.kaoyan.cn/image/logo/199_log.jpg"
+    },
+    {
+      "id": 141,
+      "name": "东华大学",
+      "location": "上海",
+      "area": "A区",
+      "type": "综合类",
+      "labels": [
+        "211",
+        "双一流"
+      ],
+      "links": [
+        "招生简章",
+        "招生计划",
+        "复试分数",
+        "历年真题",
+        "调剂查询"
+      ],
+      "logo": "https://static.kaoyan.cn/image/logo/141_log.jpg"
+    },
+    {
+      "id": 78,
+      "name": "中国矿业大学（北京）",
+      "location": "北京",
+      "area": "A区",
+      "type": "理工类",
+      "labels": [
+        "211",
+        "双一流"
+      ],
+      "links": [
+        "招生简章",
+        "招生计划",
+        "复试分数",
+        "历年真题",
+        "调剂查询"
+      ],
+      "logo": "https://static.kaoyan.cn/image/logo/78_log.jpg"
+    },
+    {
+      "id": 143,
+      "name": "宁波大学",
+      "location": "浙江",
+      "area": "A区",
+      "type": "综合类",
+      "labels": [
+        "双一流"
+      ],
+      "links": [
+        "招生简章",
+        "招生计划",
+        "复试分数",
+        "历年真题",
+        "调剂查询"
+      ],
+      "logo": "https://static.kaoyan.cn/image/logo/143_log.jpg"
+    },
+    {
+      "id": 239,
+      "name": "华南师范大学",
+      "location": "广东",
+      "area": "A区",
+      "type": "师范类",
+      "labels": [
+        "211",
+        "双一流"
+      ],
+      "links": [
+        "招生简章",
+        "招生计划",
+        "复试分数",
+        "历年真题",
+        "调剂查询"
+      ],
+      "logo": "https://static.kaoyan.cn/image/logo/239_log.jpg"
+    },
+    {
+      "id": 186,
+      "name": "福州大学",
+      "location": "福建",
+      "area": "A区",
+      "type": "理工类",
+      "labels": [
+        "211",
+        "双一流"
+      ],
+      "links": [
+        "招生简章",
+        "招生计划",
+        "复试分数",
+        "历年真题",
+        "调剂查询"
+      ],
+      "logo": "https://static.kaoyan.cn/image/logo/186_log.jpg"
+    },
+    {
+      "id": 138,
+      "name": "合肥工业大学",
+      "location": "安徽",
+      "area": "A区",
+      "type": "理工类",
+      "labels": [
+        "211",
+        "双一流"
+      ],
+      "links": [
+        "招生简章",
+        "招生计划",
+        "复试分数",
+        "历年真题",
+        "调剂查询"
+      ],
+      "logo": "https://static.kaoyan.cn/image/logo/138_log.jpg"
+    },
+    {
+      "id": 95,
+      "name": "北京中医药大学",
+      "location": "北京",
+      "area": "A区",
+      "type": "医药类",
+      "labels": [
+        "211",
+        "双一流"
+      ],
+      "links": [
+        "招生简章",
+        "招生计划",
+        "复试分数",
+        "历年真题",
+        "调剂查询"
+      ],
+      "logo": "https://static.kaoyan.cn/image/logo/95_log.jpg"
+    },
+    {
+      "id": 70,
+      "name": "北京林业大学",
+      "location": "北京",
+      "area": "A区",
+      "type": "农林类",
+      "labels": [
+        "211",
+        "双一流"
+      ],
+      "links": [
+        "招生简章",
+        "招生计划",
+        "复试分数",
+        "历年真题",
+        "调剂查询"
+      ],
+      "logo": "https://static.kaoyan.cn/image/logo/70_log.jpg"
+    },
+    {
+      "id": 380,
+      "name": "中国传媒大学",
+      "location": "北京",
+      "area": "A区",
+      "type": "综合类",
+      "labels": [
+        "211",
+        "双一流"
+      ],
+      "links": [
+        "招生简章",
+        "招生计划",
+        "复试分数",
+        "历年真题",
+        "调剂查询"
+      ],
+      "logo": "https://static.kaoyan.cn/image/logo/380_log.jpg"
+    },
+    {
+      "id": 278,
+      "name": "南京邮电大学",
+      "location": "江苏",
+      "area": "A区",
+      "type": "理工类",
+      "labels": [
+        "双一流"
+      ],
+      "links": [
+        "招生简章",
+        "招生计划",
+        "复试分数",
+        "历年真题",
+        "调剂查询"
+      ],
+      "logo": "https://static.kaoyan.cn/image/logo/278_log.jpg"
+    },
+    {
+      "id": 120,
+      "name": "湖南师范大学",
+      "location": "湖南",
+      "area": "A区",
+      "type": "师范类",
+      "labels": [
+        "211",
+        "双一流"
+      ],
+      "links": [
+        "招生简章",
+        "招生计划",
+        "复试分数",
+        "历年真题",
+        "调剂查询"
+      ],
+      "logo": "https://static.kaoyan.cn/image/logo/120_log.jpg"
+    },
+    {
+      "id": 154,
+      "name": "广西大学",
+      "location": "广西",
+      "area": "B区",
+      "type": "综合类",
+      "labels": [
+        "211",
+        "双一流"
+      ],
+      "links": [
+        "招生简章",
+        "招生计划",
+        "复试分数",
+        "历年真题",
+        "调剂查询"
+      ],
+      "logo": "https://static.kaoyan.cn/image/logo/154_log.jpg"
+    },
+    {
+      "id": 191,
+      "name": "首都师范大学",
+      "location": "北京",
+      "area": "A区",
+      "type": "师范类",
+      "labels": [
+        "双一流"
+      ],
+      "links": [
+        "招生简章",
+        "招生计划",
+        "复试分数",
+        "历年真题",
+        "调剂查询"
+      ],
+      "logo": "https://static.kaoyan.cn/image/logo/191_log.jpg"
+    },
+    {
+      "id": 226,
+      "name": "长安大学",
+      "location": "陕西",
+      "area": "A区",
+      "type": "理工类",
+      "labels": [
+        "211",
+        "双一流"
+      ],
+      "links": [
+        "招生简章",
+        "招生计划",
+        "复试分数",
+        "历年真题",
+        "调剂查询"
+      ],
+      "logo": "https://static.kaoyan.cn/image/logo/226_log.jpg"
+    },
+    {
+      "id": 274,
+      "name": "南京林业大学",
+      "location": "江苏",
+      "area": "A区",
+      "type": "农林类",
+      "labels": [
+        "双一流"
+      ],
+      "links": [
+        "招生简章",
+        "招生计划",
+        "复试分数",
+        "历年真题",
+        "调剂查询"
+      ],
+      "logo": "https://static.kaoyan.cn/image/logo/274_log.jpg"
+    },
+    {
+      "id": 236,
+      "name": "华南农业大学",
+      "location": "广东",
+      "area": "A区",
+      "type": "综合类",
+      "labels": [
+        "双一流"
+      ],
+      "links": [
+        "招生简章",
+        "招生计划",
+        "复试分数",
+        "历年真题",
+        "调剂查询"
+      ],
+      "logo": "https://static.kaoyan.cn/image/logo/236_log.jpg"
+    },
+    {
+      "id": 408,
+      "name": "上海中医药大学",
+      "location": "上海",
+      "area": "A区",
+      "type": "医药类",
+      "labels": [
+        "双一流"
+      ],
+      "links": [
+        "招生简章",
+        "招生计划",
+        "复试分数",
+        "历年真题",
+        "调剂查询"
+      ],
+      "logo": "https://static.kaoyan.cn/image/logo/408_log.jpg"
+    },
+    {
+      "id": 59,
+      "name": "安徽大学",
+      "location": "安徽",
+      "area": "A区",
+      "type": "综合类",
+      "labels": [
+        "211",
+        "双一流"
+      ],
+      "links": [
+        "招生简章",
+        "招生计划",
+        "复试分数",
+        "历年真题",
+        "调剂查询"
+      ],
+      "logo": "https://static.kaoyan.cn/image/logo/59_log.jpg"
+    },
+    {
+      "id": 198,
+      "name": "贵州大学",
+      "location": "贵州",
+      "area": "B区",
+      "type": "综合类",
+      "labels": [
+        "211",
+        "双一流"
+      ],
+      "links": [
+        "招生简章",
+        "招生计划",
+        "复试分数",
+        "历年真题",
+        "调剂查询"
+      ],
+      "logo": "https://static.kaoyan.cn/image/logo/198_log.jpg"
+    },
+    {
+      "id": 272,
+      "name": "上海外国语大学",
+      "location": "上海",
+      "area": "A区",
+      "type": "语言类",
+      "labels": [
+        "211",
+        "双一流"
+      ],
+      "links": [
+        "招生简章",
+        "招生计划",
+        "复试分数",
+        "历年真题",
+        "调剂查询"
+      ],
+      "logo": "https://static.kaoyan.cn/image/logo/272_log.jpg"
+    },
+    {
+      "id": 53,
+      "name": "广州医科大学",
+      "location": "广东",
+      "area": "A区",
+      "type": "医药类",
+      "labels": [
+        "双一流"
+      ],
+      "links": [
+        "招生简章",
+        "招生计划",
+        "复试分数",
+        "历年真题",
+        "调剂查询"
+      ],
+      "logo": "https://static.kaoyan.cn/image/logo/53_log.jpg"
+    },
+    {
+      "id": 109,
+      "name": "河南大学",
+      "location": "河南",
+      "area": "A区",
+      "type": "综合类",
+      "labels": [
+        "双一流"
+      ],
+      "links": [
+        "招生简章",
+        "招生计划",
+        "复试分数",
+        "历年真题",
+        "调剂查询"
+      ],
+      "logo": "https://static.kaoyan.cn/image/logo/109_log.jpg"
+    },
+    {
+      "id": 310,
+      "name": "山西大学",
+      "location": "山西",
+      "area": "A区",
+      "type": "综合类",
+      "labels": [
+        "双一流"
+      ],
+      "links": [
+        "招生简章",
+        "招生计划",
+        "复试分数",
+        "历年真题",
+        "调剂查询"
+      ],
+      "logo": "https://static.kaoyan.cn/image/logo/310_log.jpg"
+    },
+    {
+      "id": 200,
+      "name": "湘潭大学",
+      "location": "湖南",
+      "area": "A区",
+      "type": "综合类",
+      "labels": [
+        "双一流"
+      ],
+      "links": [
+        "招生简章",
+        "招生计划",
+        "复试分数",
+        "历年真题",
+        "调剂查询"
+      ],
+      "logo": "https://static.kaoyan.cn/image/logo/200_log.jpg"
+    },
+    {
+      "id": 453,
+      "name": "中国药科大学",
+      "location": "江苏",
+      "area": "A区",
+      "type": "医药类",
+      "labels": [
+        "211",
+        "双一流"
+      ],
+      "links": [
+        "招生简章",
+        "招生计划",
+        "复试分数",
+        "历年真题",
+        "调剂查询"
+      ],
+      "logo": "https://static.kaoyan.cn/image/logo/453_log.jpg"
+    },
+    {
+      "id": 451,
+      "name": "南京信息工程大学",
+      "location": "江苏",
+      "area": "A区",
+      "type": "理工类",
+      "labels": [
+        "双一流"
+      ],
+      "links": [
+        "招生简章",
+        "招生计划",
+        "复试分数",
+        "历年真题",
+        "调剂查询"
+      ],
+      "logo": "https://static.kaoyan.cn/image/logo/451_log.jpg"
+    },
+    {
+      "id": 119,
+      "name": "中央民族大学",
+      "location": "北京",
+      "area": "A区",
+      "type": "民族类",
+      "labels": [
+        "985",
+        "211",
+        "双一流"
+      ],
+      "links": [
+        "招生简章",
+        "招生计划",
+        "复试分数",
+        "历年真题",
+        "调剂查询"
+      ],
+      "logo": "https://static.kaoyan.cn/image/logo/119_log.jpg"
+    },
+    {
+      "id": 515,
+      "name": "海南大学",
+      "location": "海南",
+      "area": "B区",
+      "type": "综合类",
+      "labels": [
+        "211",
+        "双一流"
+      ],
+      "links": [
+        "招生简章",
+        "招生计划",
+        "复试分数",
+        "历年真题",
+        "调剂查询"
+      ],
+      "logo": "https://static.kaoyan.cn/image/logo/515_log.jpg"
+    },
+    {
+      "id": 309,
+      "name": "太原理工大学",
+      "location": "山西",
+      "area": "A区",
+      "type": "理工类",
+      "labels": [
+        "211",
+        "双一流"
+      ],
+      "links": [
+        "招生简章",
+        "招生计划",
+        "复试分数",
+        "历年真题",
+        "调剂查询"
+      ],
+      "logo": "https://static.kaoyan.cn/image/logo/309_log.jpg"
+    },
+    {
+      "id": 89,
+      "name": "河北工业大学",
+      "location": "天津",
+      "area": "A区",
+      "type": "理工类",
+      "labels": [
+        "211",
+        "双一流"
+      ],
+      "links": [
+        "招生简章",
+        "招生计划",
+        "复试分数",
+        "历年真题",
+        "调剂查询"
+      ],
+      "logo": "https://static.kaoyan.cn/image/logo/89_log.jpg"
+    },
+    {
+      "id": 320,
+      "name": "大连海事大学",
+      "location": "辽宁",
+      "area": "A区",
+      "type": "理工类",
+      "labels": [
+        "211",
+        "双一流"
+      ],
+      "links": [
+        "招生简章",
+        "招生计划",
+        "复试分数",
+        "历年真题",
+        "调剂查询"
+      ],
+      "logo": "https://static.kaoyan.cn/image/logo/320_log.jpg"
+    },
+    {
+      "id": 98,
+      "name": "外交学院",
+      "location": "北京",
+      "area": "A区",
+      "type": "语言类",
+      "labels": [
+        "双一流"
+      ],
+      "links": [
+        "招生简章",
+        "招生计划",
+        "复试分数",
+        "历年真题",
+        "调剂查询"
+      ],
+      "logo": "https://static.kaoyan.cn/image/logo/98_log.jpg"
+    },
+    {
+      "id": 376,
+      "name": "东北林业大学",
+      "location": "黑龙江",
+      "area": "A区",
+      "type": "农林类",
+      "labels": [
+        "211",
+        "双一流"
+      ],
+      "links": [
+        "招生简章",
+        "招生计划",
+        "复试分数",
+        "历年真题",
+        "调剂查询"
+      ],
+      "logo": "https://static.kaoyan.cn/image/logo/376_log.jpg"
+    },
+    {
+      "id": 313,
+      "name": "内蒙古大学",
+      "location": "内蒙古",
+      "area": "B区",
+      "type": "综合类",
+      "labels": [
+        "211",
+        "双一流"
+      ],
+      "links": [
+        "招生简章",
+        "招生计划",
+        "复试分数",
+        "历年真题",
+        "调剂查询"
+      ],
+      "logo": "https://static.kaoyan.cn/image/logo/313_log.jpg"
+    },
+    {
+      "id": 379,
+      "name": "东北农业大学",
+      "location": "黑龙江",
+      "area": "A区",
+      "type": "农林类",
+      "labels": [
+        "211",
+        "双一流"
+      ],
+      "links": [
+        "招生简章",
+        "招生计划",
+        "复试分数",
+        "历年真题",
+        "调剂查询"
+      ],
+      "logo": "https://static.kaoyan.cn/image/logo/379_log.jpg"
+    },
+    {
+      "id": 280,
+      "name": "宁夏大学",
+      "location": "宁夏",
+      "area": "B区",
+      "type": "综合类",
+      "labels": [
+        "211",
+        "双一流"
+      ],
+      "links": [
+        "招生简章",
+        "招生计划",
+        "复试分数",
+        "历年真题",
+        "调剂查询"
+      ],
+      "logo": "https://static.kaoyan.cn/image/logo/280_log.jpg"
+    },
+    {
+      "id": 283,
+      "name": "新疆大学",
+      "location": "新疆",
+      "area": "B区",
+      "type": "综合类",
+      "labels": [
+        "211",
+        "双一流"
+      ],
+      "links": [
+        "招生简章",
+        "招生计划",
+        "复试分数",
+        "历年真题",
+        "调剂查询"
+      ],
+      "logo": "https://static.kaoyan.cn/image/logo/283_log.jpg"
+    },
+    {
+      "id": 212,
+      "name": "西南石油大学",
+      "location": "四川",
+      "area": "A区",
+      "type": "综合类",
+      "labels": [
+        "双一流"
+      ],
+      "links": [
+        "招生简章",
+        "招生计划",
+        "复试分数",
+        "历年真题",
+        "调剂查询"
+      ],
+      "logo": "https://static.kaoyan.cn/image/logo/212_log.jpg"
+    },
+    {
+      "id": 317,
+      "name": "辽宁大学",
+      "location": "辽宁",
+      "area": "A区",
+      "type": "综合类",
+      "labels": [
+        "211",
+        "双一流"
+      ],
+      "links": [
+        "招生简章",
+        "招生计划",
+        "复试分数",
+        "历年真题",
+        "调剂查询"
+      ],
+      "logo": "https://static.kaoyan.cn/image/logo/317_log.jpg"
+    },
+    {
+      "id": 216,
+      "name": "四川农业大学",
+      "location": "四川",
+      "area": "A区",
+      "type": "农林类",
+      "labels": [
+        "211",
+        "双一流"
+      ],
+      "links": [
+        "招生简章",
+        "招生计划",
+        "复试分数",
+        "历年真题",
+        "调剂查询"
+      ],
+      "logo": "https://static.kaoyan.cn/image/logo/216_log.jpg"
+    },
+    {
+      "id": 479,
+      "name": "石河子大学",
+      "location": "新疆",
+      "area": "B区",
+      "type": "综合类",
+      "labels": [
+        "211",
+        "双一流"
+      ],
+      "links": [
+        "招生简章",
+        "招生计划",
+        "复试分数",
+        "历年真题",
+        "调剂查询"
+      ],
+      "logo": "https://static.kaoyan.cn/image/logo/479_log.jpg"
+    },
+    {
+      "id": 112,
+      "name": "天津工业大学",
+      "location": "天津",
+      "area": "A区",
+      "type": "综合类",
+      "labels": [
+        "双一流"
+      ],
+      "links": [
+        "招生简章",
+        "招生计划",
+        "复试分数",
+        "历年真题",
+        "调剂查询"
+      ],
+      "logo": "https://static.kaoyan.cn/image/logo/112_log.jpg"
+    },
+    {
+      "id": 136,
+      "name": "南京中医药大学",
+      "location": "江苏",
+      "area": "A区",
+      "type": "医药类",
+      "labels": [
+        "双一流"
+      ],
+      "links": [
+        "招生简章",
+        "招生计划",
+        "复试分数",
+        "历年真题",
+        "调剂查询"
+      ],
+      "logo": "https://static.kaoyan.cn/image/logo/136_log.jpg"
+    },
+    {
+      "id": 140,
+      "name": "上海海洋大学",
+      "location": "上海",
+      "area": "A区",
+      "type": "农林类",
+      "labels": [
+        "双一流"
+      ],
+      "links": [
+        "招生简章",
+        "招生计划",
+        "复试分数",
+        "历年真题",
+        "调剂查询"
+      ],
+      "logo": "https://static.kaoyan.cn/image/logo/140_log.jpg"
+    },
+    {
+      "id": 221,
+      "name": "广州中医药大学",
+      "location": "广东",
+      "area": "A区",
+      "type": "医药类",
+      "labels": [
+        "双一流"
+      ],
+      "links": [
+        "招生简章",
+        "招生计划",
+        "复试分数",
+        "历年真题",
+        "调剂查询"
+      ],
+      "logo": "https://static.kaoyan.cn/image/logo/221_log.jpg"
+    },
+    {
+      "id": 205,
+      "name": "成都理工大学",
+      "location": "四川",
+      "area": "A区",
+      "type": "理工类",
+      "labels": [
+        "双一流"
+      ],
+      "links": [
+        "招生简章",
+        "招生计划",
+        "复试分数",
+        "历年真题",
+        "调剂查询"
+      ],
+      "logo": "https://static.kaoyan.cn/image/logo/205_log.jpg"
+    },
+    {
+      "id": 405,
+      "name": "上海体育大学",
+      "location": "上海",
+      "area": "A区",
+      "type": "体育类",
+      "labels": [
+        "双一流"
+      ],
+      "links": [
+        "招生简章",
+        "招生计划",
+        "复试分数",
+        "历年真题",
+        "调剂查询"
+      ],
+      "logo": "https://static.kaoyan.cn/image/logo/405_log.jpg"
+    },
+    {
+      "id": 362,
+      "name": "延边大学",
+      "location": "吉林",
+      "area": "A区",
+      "type": "综合类",
+      "labels": [
+        "211",
+        "双一流"
+      ],
+      "links": [
+        "招生简章",
+        "招生计划",
+        "复试分数",
+        "历年真题",
+        "调剂查询"
+      ],
+      "logo": "https://static.kaoyan.cn/image/logo/362_log.jpg"
+    },
+    {
+      "id": 423,
+      "name": "天津中医药大学",
+      "location": "天津",
+      "area": "A区",
+      "type": "医药类",
+      "labels": [
+        "双一流"
+      ],
+      "links": [
+        "招生简章",
+        "招生计划",
+        "复试分数",
+        "历年真题",
+        "调剂查询"
+      ],
+      "logo": "https://static.kaoyan.cn/image/logo/423_log.jpg"
+    },
+    {
+      "id": 996,
+      "name": "青海大学",
+      "location": "青海",
+      "area": "B区",
+      "type": "综合类",
+      "labels": [
+        "211",
+        "双一流"
+      ],
+      "links": [
+        "招生简章",
+        "招生计划",
+        "复试分数",
+        "历年真题",
+        "调剂查询"
+      ],
+      "logo": "https://static.kaoyan.cn/image/logo/996_log.jpg"
+    },
+    {
+      "id": 219,
+      "name": "成都中医药大学",
+      "location": "四川",
+      "area": "A区",
+      "type": "医药类",
+      "labels": [
+        "双一流"
+      ],
+      "links": [
+        "招生简章",
+        "招生计划",
+        "复试分数",
+        "历年真题",
+        "调剂查询"
+      ],
+      "logo": "https://static.kaoyan.cn/image/logo/219_log.jpg"
+    },
+    {
+      "id": 43,
+      "name": "西藏大学",
+      "location": "西藏",
+      "area": "B区",
+      "type": "综合类",
+      "labels": [
+        "211",
+        "双一流"
+      ],
+      "links": [
+        "招生简章",
+        "招生计划",
+        "复试分数",
+        "历年真题",
+        "调剂查询"
+      ],
+      "logo": "https://static.kaoyan.cn/image/logo/43_log.jpg"
+    },
+    {
+      "id": 206,
+      "name": "中国人民公安大学",
+      "location": "北京",
+      "area": "A区",
+      "type": "政法类",
+      "labels": [
+        "双一流"
+      ],
+      "links": [
+        "招生简章",
+        "招生计划",
+        "复试分数",
+        "历年真题",
+        "调剂查询"
+      ],
+      "logo": "https://static.kaoyan.cn/image/logo/206_log.jpg"
+    },
+    {
+      "id": 201,
+      "name": "北京体育大学",
+      "location": "北京",
+      "area": "A区",
+      "type": "体育类",
+      "labels": [
+        "211",
+        "双一流"
+      ],
+      "links": [
+        "招生简章",
+        "招生计划",
+        "复试分数",
+        "历年真题",
+        "调剂查询"
+      ],
+      "logo": "https://static.kaoyan.cn/image/logo/201_log.jpg"
+    },
+    {
+      "id": 169,
+      "name": "中国科学院大学",
+      "location": "北京",
+      "area": "A区",
+      "type": "综合类",
+      "labels": [
+        "双一流"
+      ],
+      "links": [
+        "招生简章",
+        "招生计划",
+        "复试分数",
+        "历年真题",
+        "调剂查询"
+      ],
+      "logo": "https://static.kaoyan.cn/image/logo/169_log.jpg"
+    },
+    {
+      "id": 158,
+      "name": "中国人民解放军国防科技大学",
+      "location": "湖南",
+      "area": "A区",
+      "type": "军事类",
+      "labels": [
+        "985",
+        "211",
+        "双一流"
+      ],
+      "links": [
+        "招生简章",
+        "招生计划",
+        "复试分数",
+        "历年真题",
+        "调剂查询"
+      ],
+      "logo": "https://static.kaoyan.cn/image/logo/158_log.jpg"
+    },
+    {
+      "id": 403,
+      "name": "海军军医大学",
+      "location": "上海",
+      "area": "A区",
+      "type": "军事类",
+      "labels": [
+        "211",
+        "双一流"
+      ],
+      "links": [
+        "招生简章",
+        "招生计划",
+        "复试分数",
+        "历年真题",
+        "调剂查询"
+      ],
+      "logo": "https://static.kaoyan.cn/image/logo/403_log.jpg"
+    },
+    {
+      "id": 213,
+      "name": "中央戏剧学院",
+      "location": "北京",
+      "area": "A区",
+      "type": "艺术类",
+      "labels": [
+        "双一流"
+      ],
+      "links": [
+        "招生简章",
+        "招生计划",
+        "复试分数",
+        "历年真题",
+        "调剂查询"
+      ],
+      "logo": "https://static.kaoyan.cn/image/logo/213_log.jpg"
+    },
+    {
+      "id": 238,
+      "name": "中国人民解放军空军军医大学",
+      "location": "陕西",
+      "area": "A区",
+      "type": "军事类",
+      "labels": [
+        "211",
+        "双一流"
+      ],
+      "links": [
+        "招生简章",
+        "招生计划",
+        "复试分数",
+        "历年真题",
+        "调剂查询"
+      ],
+      "logo": "https://static.kaoyan.cn/image/logo/238_log.jpg"
+    },
+    {
+      "id": 418,
+      "name": "中央美术学院",
+      "location": "北京",
+      "area": "A区",
+      "type": "艺术类",
+      "labels": [
+        "双一流"
+      ],
+      "links": [
+        "招生简章",
+        "招生计划",
+        "复试分数",
+        "历年真题",
+        "调剂查询"
+      ],
+      "logo": "https://static.kaoyan.cn/image/logo/418_log.jpg"
+    },
+    {
+      "id": 471,
+      "name": "中国美术学院",
+      "location": "浙江",
+      "area": "A区",
+      "type": "艺术类",
+      "labels": [
+        "双一流"
+      ],
+      "links": [
+        "招生简章",
+        "招生计划",
+        "复试分数",
+        "历年真题",
+        "调剂查询"
+      ],
+      "logo": "https://static.kaoyan.cn/image/logo/471_log.jpg"
+    },
+    {
+      "id": 404,
+      "name": "上海音乐学院",
+      "location": "上海",
+      "area": "A区",
+      "type": "艺术类",
+      "labels": [
+        "双一流"
+      ],
+      "links": [
+        "招生简章",
+        "招生计划",
+        "复试分数",
+        "历年真题",
+        "调剂查询"
+      ],
+      "logo": "https://static.kaoyan.cn/image/logo/404_log.jpg"
+    },
+    {
+      "id": 417,
+      "name": "中央音乐学院",
+      "location": "北京",
+      "area": "A区",
+      "type": "艺术类",
+      "labels": [
+        "211",
+        "双一流"
+      ],
+      "links": [
+        "招生简章",
+        "招生计划",
+        "复试分数",
+        "历年真题",
+        "调剂查询"
+      ],
+      "logo": "https://static.kaoyan.cn/image/logo/417_log.jpg"
+    },
+    {
+      "id": 957,
+      "name": "中国音乐学院",
+      "location": "北京",
+      "area": "A区",
+      "type": "艺术类",
+      "labels": [
+        "双一流"
+      ],
+      "links": [
+        "招生简章",
+        "招生计划",
+        "复试分数",
+        "历年真题",
+        "调剂查询"
+      ],
+      "logo": "https://static.kaoyan.cn/image/logo/957_log.jpg"
+    }
+  ],
+  "filters": {
+    "location": [],
+    "types": [
+      "综合类",
+      "理工类",
+      "农林类",
+      "医药类",
+      "师范类",
+      "语言类",
+      "财经类",
+      "政法类",
+      "体育类",
+      "艺术类",
+      "民族类",
+      "军事类",
+      "其他"
+    ],
+    "levels": [
+      "全部",
+      "985",
+      "211"
+    ]
+  }
+}

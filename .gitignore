@@ -72,6 +72,15 @@ crawler/data/eol_score_index.json
 crawler/data/_*.csv
 crawler/data/_*.json
 
+# 掌上考研 Node 爬虫输出（大文件不入库）
+crawler/data/kaoyan-cn/syl-schools-full.json
+crawler/data/kaoyan-cn/latest/
+crawler/data/kaoyan-cn/history/
+crawler/data/kaoyan-cn/logs/
+crawler/data/kaoyan-cn/.checkpoint.json
+crawler/data/kaoyan-cn/manifest.json
+crawler/kaoyan-cn/node_modules/
+
 # 日志
 *.log
 npm-debug.log*

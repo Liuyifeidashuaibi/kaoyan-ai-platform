@@ -16,7 +16,10 @@
     "crawler:sync-colleges": "python crawler/main.py sync-colleges",
     "crawler:discover": "python crawler/main.py discover-priority",
     "crawler:update": "python crawler/main.py update",
-    "crawler:full": "python crawler/main.py full --priority-only"
+    "crawler:full": "python crawler/main.py full --priority-only",
+    "crawler:kaoyan:sync": "python crawler/sync_kaoyan_cn.py",
+    "crawler:kaoyan:import": "python crawler/import_kaoyan_full.py",
+    "crawler:kaoyan:crawl": "cd crawler/kaoyan-cn && npm run crawl"
   },
   "dependencies": {
     "@base-ui/react": "^1.5.0",

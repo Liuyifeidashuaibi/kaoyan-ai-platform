@@ -1,40 +1,35 @@
 # 考研择校数据中心
 
-
-
-生产级择校数据采集与入库系统，覆盖 985 / 211 / 双一流院校。
-
-
+生产级择校数据采集与入库系统，覆盖 985 / 211 / 双一流院校（147 所）。
 
 ## 架构
 
-
-
 ```
-
 crawler/
-
-├── discover/       # 研究生院/学院链接发现（拟录取/复试线/专业目录）
-
-├── fetchers/       # HTTP + Playwright 抓取 + 原始文件归档
-
-├── parsers/        # HTML / PDF / Word / Excel 解析
-
-├── ai_extract/     # 千问结构化抽取（仅解析，不发现）
-
-├── adapters/       # 学校专属适配器（TOP50 优先）
-
-├── schedulers/     # 失败任务队列（JSON + crawl_tasks 表）
-
-├── storage/        # Supabase 入库 + Hash 检测 + 统计聚合
-
-├── raw/            # Layer1 原始数据 raw/{学校}/{年份}/
-
-└── main.py         # 统一入口
-
+├── kaoyan-cn/          # 掌上考研 Node 爬虫（双一流 147 校，主数据源）
+│   ├── src/            # 抓取 / 增量同步 / 指纹检测
+│   └── scripts/        # crawl / sync / verify
+├── import_kaoyan_full.py  # JSON → Supabase 入库
+├── sync_kaoyan_cn.py      # 一键：抓取 + 入库 + 通知前端
+├── discover/           # 研究生院官方来源发现（拟录取/复试线）
+├── fetchers/           # HTTP + Playwright 抓取
+├── parsers/            # HTML / PDF / Word / Excel 解析
+├── ai_extract/         # 千问结构化抽取
+├── adapters/           # 学校专属适配器
+├── storage/            # Supabase 入库 + Hash 检测
+└── main.py             # 官方来源爬虫入口（辅助）
 ```
 
+### 掌上考研数据流（主路径）
 
+```
+kaoyan.cn API
+  → crawler/kaoyan-cn (Node 20+)
+  → crawler/data/kaoyan-cn/latest/
+  → import_kaoyan_full.py
+  → Supabase (universities / majors / scores)
+  → 前端 /schools 自动刷新
+```
 
 ### 数据分层
 
@@ -82,49 +77,26 @@ crawler/
 
 ## 快速开始
 
-
-
 ```bash
-
-# 1. 配置环境变量（项目根 .env 或 crawler/.env）
-
+# 1. 配置环境变量（项目根 .env.local 或 crawler/.env）
 SUPABASE_URL=...
-
 SUPABASE_SERVICE_ROLE_KEY=...
 
-DASHSCOPE_API_KEY=...   # 千问 AI 抽取
-
-
-
 # 2. 安装依赖
+pip install -r crawler/requirements.txt
+npm install --prefix crawler/kaoyan-cn
 
-bash scripts/deploy-choose-school.sh
+# 3. 一键同步掌上考研数据（抓取 + 入库 + 通知前端）
+npm run crawler:kaoyan:sync
 
+# 仅导入已有 JSON（不抓取）
+python crawler/sync_kaoyan_cn.py --import-only
 
+# 全量抓取（首次或重建）
+python crawler/sync_kaoyan_cn.py --full
+```
 
-# 3. 执行数据库迁移（Supabase SQL Editor 或 supabase db push）
-
-#    007_choose_school_datacenter.sql
-
-#    009_admission_datacenter.sql
-
-
-
-# 4. 全量更新（复试线 CSV + TOP50 拟录取发现）
-
-python crawler/main.py full
-
-
-
-# 5. 增量更新（Hash 检测变更页）
-
-python crawler/main.py update
-
-
-
-# 6. 单校更新
-
-python crawler/main.py school 北京大学
+### 官方来源爬虫（辅助，需 DASHSCOPE_API_KEY）
 
 
 

@@ -1,5 +1,6 @@
 import { AppHeader } from "@/components/layout/app-header";
 import { AppSidebar } from "@/components/layout/app-sidebar";
+import { PageFadeWrapper } from "@/components/layout/page-fade-wrapper";
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   return (
@@ -7,7 +8,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       <AppHeader />
       <div className="flex flex-1 min-h-0">
         <AppSidebar />
-        <main className="flex-1 min-h-0 overflow-auto">{children}</main>
+        <PageFadeWrapper className="flex-1 min-h-0 overflow-auto">
+          {children}
+        </PageFadeWrapper>
       </div>
     </div>
   );

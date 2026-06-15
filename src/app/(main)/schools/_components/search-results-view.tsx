@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
@@ -103,7 +103,7 @@ export function SearchResultsView({
           <button
             type="button"
             onClick={() => setRetryKey((k) => k + 1)}
-            className="rounded-lg bg-orange-500 px-4 py-2 text-sm font-medium text-white hover:bg-orange-600"
+            className="rounded-lg bg-[#007AFF]/100 px-4 py-2 text-sm font-medium text-white hover:bg-[#007AFF]"
           >
             重试
           </button>
@@ -128,7 +128,7 @@ export function SearchResultsView({
         <section>
           <p className="mb-3 text-sm text-muted-foreground">
             相关专业{" "}
-            <span className="font-semibold text-orange-500">{majors.length}</span> 个
+            <span className="font-semibold text-[#007AFF]">{majors.length}</span> 个
           </p>
           <div className="flex flex-col gap-3">
             {majors.slice(0, 20).map((major) => (
@@ -138,7 +138,7 @@ export function SearchResultsView({
               <button
                 type="button"
                 onClick={() => onBrowseAllMajors?.(keyword)}
-                className="rounded-xl border border-dashed border-orange-200 bg-orange-50/40 py-3 text-center text-xs text-orange-600 hover:bg-orange-50"
+                className="rounded-xl border border-dashed border-[#007AFF]/20 bg-[#007AFF]/10/40 py-3 text-center text-xs text-[#007AFF] hover:bg-[#007AFF]/10"
               >
                 还有 {majors.length - 20} 个专业 · 切换到「按专业」浏览全部
               </button>
@@ -151,7 +151,7 @@ export function SearchResultsView({
         <section>
           <p className="mb-3 text-sm text-muted-foreground">
             相关院校{" "}
-            <span className="font-semibold text-orange-500">{sortedSchools.length}</span> 所
+            <span className="font-semibold text-[#007AFF]">{sortedSchools.length}</span> 所
           </p>
           <div className="flex flex-col gap-3">
             {sortedSchools.map((hit) => (
@@ -183,11 +183,11 @@ function SearchHitRow({ hit, keyword }: { hit: SchoolSearchHit; keyword: string 
         <img
           src={hit.logo_url}
           alt={hit.name}
-          className="size-12 shrink-0 rounded-full object-cover ring-2 ring-orange-50"
+          className="size-12 shrink-0 rounded-full object-cover ring-2 ring-[#007AFF]/10"
         />
       ) : (
-        <div className="flex size-12 shrink-0 items-center justify-center rounded-full bg-orange-50 ring-2 ring-orange-100">
-          <span className="text-sm font-bold text-orange-600">{initial}</span>
+        <div className="flex size-12 shrink-0 items-center justify-center rounded-full bg-[#007AFF]/10 ring-2 ring-[#007AFF]/15">
+          <span className="text-sm font-bold text-[#007AFF]">{initial}</span>
         </div>
       )}
 
@@ -198,7 +198,7 @@ function SearchHitRow({ hit, keyword }: { hit: SchoolSearchHit; keyword: string 
             className={cn(
               "shrink-0 rounded px-1.5 py-0.5 text-[10px] font-medium",
               hit.matchReason === "both"
-                ? "bg-orange-100 text-orange-700"
+                ? "bg-[#007AFF]/15 text-[#007AFF]"
                 : hit.matchReason === "major"
                   ? "bg-blue-50 text-blue-700"
                   : "bg-muted text-muted-foreground"
@@ -211,7 +211,7 @@ function SearchHitRow({ hit, keyword }: { hit: SchoolSearchHit; keyword: string 
           {hit.province} · {hit.city} · {hit.major_count} 个招生专业
         </p>
         {majorsPreview.length > 0 && (
-          <p className="mt-1 truncate text-xs text-orange-600/90">
+          <p className="mt-1 truncate text-xs text-[#007AFF]/90">
             匹配专业：{majorsPreview.join("、")}
             {moreCount > 0 ? ` 等${hit.matchedMajors.length}个` : ""}
           </p>

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { MajorCard } from "@/components/schools/major-card";
@@ -120,7 +120,7 @@ export function MajorListView({
           tabs={DEGREE_TABS}
           active={degreeType}
           onChange={(v) => setDegreeType(v as "学硕" | "专硕")}
-          activeColor="orange"
+          activeColor="brand"
           className="border-none"
         />
       </div>
@@ -130,7 +130,7 @@ export function MajorListView({
           tabs={categoryTabs}
           active={subjectCategory}
           onChange={setSubjectCategory}
-          activeColor="orange"
+          activeColor="brand"
           className="border-none"
         />
         {subjectCategory !== "全部" && disciplineCount > 0 && (
@@ -141,7 +141,7 @@ export function MajorListView({
       </div>
 
       {!loading && search && (
-        <p className="mb-3 text-xs text-orange-700">
+        <p className="mb-3 text-xs text-[#007AFF]">
           关键词筛选：「{search}」
           <button
             type="button"
@@ -156,7 +156,7 @@ export function MajorListView({
       {!loading && (
         <p className="mb-3 text-sm text-muted-foreground">
           共找到{" "}
-          <span className="font-semibold text-orange-500">{majors.length}</span>{" "}
+          <span className="font-semibold text-[#007AFF]">{majors.length}</span>{" "}
           个{degreeType === "学硕" ? "学术型" : "专业型"}招生专业
         </p>
       )}

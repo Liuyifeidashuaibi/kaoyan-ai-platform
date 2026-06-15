@@ -1,4 +1,4 @@
-import { cn } from "@/lib/utils";
+﻿import { cn } from "@/lib/utils";
 
 interface SkeletonListProps {
   count?: number;
@@ -58,9 +58,9 @@ export function LoadingProgressBar({ active }: { active?: boolean }) {
     <div
       role="progressbar"
       aria-label="加载中"
-      className="pointer-events-none fixed inset-x-0 top-0 z-50 h-0.5 overflow-hidden bg-orange-100"
+      className="pointer-events-none fixed inset-x-0 top-0 z-50 h-0.5 overflow-hidden bg-[#007AFF]/15"
     >
-      <div className="h-full w-full animate-pulse bg-orange-500" />
+      <div className="h-full w-full animate-pulse bg-[#007AFF]/100" />
     </div>
   );
 }

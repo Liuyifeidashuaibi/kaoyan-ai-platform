@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 """
-掌上考研爬虫一键同步：Node 抓取 → JSON 入库 → 通知前端
+掌上考研数据发布：读取 E:\\Kaoyan\\re JSON → 入库 Supabase → 通知前端
+
+爬虫在 E:\\Kaoyan\\clawer 独立运行；本脚本只负责发布到网站。
 
 用法：
-  python sync_kaoyan_cn.py              # 增量同步 + 入库
-  python sync_kaoyan_cn.py --full       # 全量抓取 + 入库
-  python sync_kaoyan_cn.py --import-only  # 仅导入已有 JSON
+  python sync_kaoyan_cn.py              # 从 re 入库（默认）
+  python sync_kaoyan_cn.py --import-only  # 同上
 """
 from __future__ import annotations
 
@@ -15,60 +16,25 @@ import sys
 from pathlib import Path
 
 _here = Path(__file__).parent
-KAOYAN_CN = _here / "kaoyan-cn"
-
-
-def run(cmd: list[str], label: str) -> int:
-    print(f"\n═══ {label} ═══", flush=True)
-    print(" ".join(cmd), flush=True)
-    return subprocess.call(cmd, cwd=str(_here))
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="掌上考研数据同步")
-    parser.add_argument("--full", action="store_true", help="全量抓取（默认增量）")
-    parser.add_argument("--import-only", action="store_true", help="跳过抓取，仅入库")
+    parser = argparse.ArgumentParser(description="掌上考研 JSON 发布到 Supabase")
+    parser.add_argument("--import-only", action="store_true", help="仅入库（默认行为）")
     parser.add_argument("--years", default="2025-2026")
     args = parser.parse_args()
 
     py = sys.executable
-    node = "node"
+    import_script = _here / "import_kaoyan_full.py"
+    cmd = [py, str(import_script), "--years", args.years]
 
-    if not args.import_only:
-        npm_install = subprocess.call(
-            ["npm", "install", "--prefix", str(KAOYAN_CN)],
-            cwd=str(_here),
-        )
-        if npm_install != 0:
-            sys.exit(npm_install)
+    print("\n═══ 发布择校数据（re → Supabase）═══", flush=True)
+    print(" ".join(cmd), flush=True)
+    rc = subprocess.call(cmd, cwd=str(_here.parent))
+    if rc != 0:
+        sys.exit(rc)
 
-        if args.full:
-            crawl_rc = subprocess.call(
-                [node, str(KAOYAN_CN / "scripts" / "run-once.js"), "--fresh"],
-                cwd=str(KAOYAN_CN),
-            )
-        else:
-            crawl_rc = subprocess.call(
-                [node, str(KAOYAN_CN / "scripts" / "sync-once.js")],
-                cwd=str(KAOYAN_CN),
-            )
-        if crawl_rc != 0:
-            print(f"爬虫退出码 {crawl_rc}", file=sys.stderr)
-            sys.exit(crawl_rc)
-
-    import_rc = run(
-        [
-            py,
-            str(_here / "import_kaoyan_full.py"),
-            "--years",
-            args.years,
-        ],
-        "JSON 入库",
-    )
-    if import_rc != 0:
-        sys.exit(import_rc)
-
-    print("\n掌上考研同步完成。", flush=True)
+    print("\n择校数据已发布到网站。", flush=True)
 
 
 if __name__ == "__main__":

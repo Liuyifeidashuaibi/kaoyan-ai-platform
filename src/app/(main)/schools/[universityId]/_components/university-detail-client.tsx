@@ -24,7 +24,7 @@ import { ScoresTab } from "./scores-tab";
 const DETAIL_TABS = [
   { value: "overview", label: "院校概况" },
   { value: "majors", label: "专业" },
-  { value: "scores", label: "复试线" },
+  { value: "scores", label: "分数" },
 ] as const;
 
 type DetailTab = (typeof DETAIL_TABS)[number]["value"];
@@ -171,7 +171,7 @@ function UniversityDetailContent({ universityId }: UniversityDetailClientProps) 
               <button
                 type="button"
                 onClick={() => load()}
-                className="rounded-lg bg-orange-500 px-4 py-2 text-sm font-medium text-white hover:bg-orange-600"
+                className="rounded-lg bg-[#007AFF] px-4 py-2 text-sm font-medium text-white hover:bg-[#007AFF]/90"
               >
                 重试
               </button>
@@ -216,7 +216,7 @@ function UniversityDetailContent({ universityId }: UniversityDetailClientProps) 
           </button>
         </div>
 
-        <div className="relative mx-4 overflow-hidden rounded-2xl bg-gradient-to-r from-orange-400 to-orange-600 lg:mx-0">
+        <div className="relative mx-4 overflow-hidden rounded-2xl bg-gradient-to-r from-[#007AFF] to-[#007AFF]/80 lg:mx-0">
           <div className="absolute inset-0 bg-black/20" />
           <div className="relative flex items-end gap-4 px-6 py-8">
             {university.logo_url ? (
@@ -228,7 +228,7 @@ function UniversityDetailContent({ universityId }: UniversityDetailClientProps) 
               />
             ) : (
               <div className="flex size-20 items-center justify-center rounded-full border-4 border-white bg-white shadow-lg">
-                <span className="text-2xl font-bold text-orange-600">{initial}</span>
+                <span className="text-2xl font-bold text-[#007AFF]">{initial}</span>
               </div>
             )}
             <div className="min-w-0 flex-1 pb-1 text-white">
@@ -261,7 +261,7 @@ function UniversityDetailContent({ universityId }: UniversityDetailClientProps) 
             rel="noopener noreferrer"
             onClick={(e) => !gradUrl && e.preventDefault()}
             aria-disabled={!gradUrl}
-            className={`flex flex-1 items-center justify-center gap-1.5 rounded-xl bg-orange-500 py-3 text-sm font-medium text-white hover:bg-orange-600 ${!gradUrl ? "pointer-events-none opacity-40" : ""}`}
+            className={`flex flex-1 items-center justify-center gap-1.5 rounded-xl bg-[#007AFF] py-3 text-sm font-medium text-white hover:bg-[#007AFF]/90 ${!gradUrl ? "pointer-events-none opacity-40" : ""}`}
           >
             访问研究生官网
             <ExternalLink className="size-3.5" />
@@ -273,7 +273,7 @@ function UniversityDetailContent({ universityId }: UniversityDetailClientProps) 
             tabs={[...DETAIL_TABS]}
             active={activeTab}
             onChange={handleTabChange}
-            activeColor="orange"
+            activeColor="brand"
             className="border-none"
           />
         </div>

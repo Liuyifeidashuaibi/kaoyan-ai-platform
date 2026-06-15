@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useRef, useState } from "react";
 import { Check, ChevronDown, ChevronUp } from "lucide-react";
@@ -76,7 +76,7 @@ export function FilterDropdown({
         onClick={() => setOpen((o) => !o)}
         className={cn(
           "inline-flex items-center gap-1 rounded-lg px-3 py-2 text-sm transition-colors",
-          active ? "font-medium text-orange-500" : "text-muted-foreground hover:text-foreground"
+          active ? "font-medium text-[#007AFF]" : "text-muted-foreground hover:text-foreground"
         )}
       >
         {displayLabel}
@@ -98,12 +98,12 @@ export function FilterDropdown({
                     }}
                     className={cn(
                       "flex w-full items-center justify-between px-3 py-2 text-left text-sm hover:bg-muted/50",
-                      dualColumn.leftValue === opt.value && "font-medium text-orange-500"
+                      dualColumn.leftValue === opt.value && "font-medium text-[#007AFF]"
                     )}
                   >
                     <span className="truncate">{opt.label}</span>
                     {dualColumn.leftValue === opt.value && (
-                      <Check className="size-4 shrink-0 text-orange-500" />
+                      <Check className="size-4 shrink-0 text-[#007AFF]" />
                     )}
                   </button>
                 ))}
@@ -119,12 +119,12 @@ export function FilterDropdown({
                     }}
                     className={cn(
                       "flex w-full items-center justify-between px-3 py-2 text-left text-sm hover:bg-muted/50",
-                      dualColumn.rightValue === opt.value && "font-medium text-orange-500"
+                      dualColumn.rightValue === opt.value && "font-medium text-[#007AFF]"
                     )}
                   >
                     <span className="truncate">{opt.label}</span>
                     {dualColumn.rightValue === opt.value && (
-                      <Check className="size-4 shrink-0 text-orange-500" />
+                      <Check className="size-4 shrink-0 text-[#007AFF]" />
                     )}
                   </button>
                 ))}
@@ -142,11 +142,11 @@ export function FilterDropdown({
                   onClick={() => handleSelect(opt.value)}
                   className={cn(
                     "flex w-full items-center justify-between px-4 py-2.5 text-left text-sm hover:bg-muted/50",
-                    value === opt.value && "font-medium text-orange-500"
+                    value === opt.value && "font-medium text-[#007AFF]"
                   )}
                 >
                   {opt.label}
-                  {value === opt.value && <Check className="size-4 text-orange-500" />}
+                  {value === opt.value && <Check className="size-4 text-[#007AFF]" />}
                 </button>
               ))}
             </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Loader2, Paperclip, Plus } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -16,7 +16,13 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { createPost, uploadCommunityAttachment } from "@/lib/api/community";
 import type { CommunityAttachment } from "@/lib/api/types";
-import { POST_TYPES, SUBJECT_CATEGORIES, type PostType } from "@/lib/community/constants";
+import { prefetchUniversitiesList } from "@/lib/api/schools";
+import {
+  COHORT_GRADES,
+  POST_TYPES,
+  SUBJECT_CATEGORIES,
+  type PostType,
+} from "@/lib/community/constants";
 
 type CreatePostDialogProps = {
   open: boolean;
@@ -35,12 +41,37 @@ export function CreatePostDialog({
   const [subjectCategory, setSubjectCategory] = useState(
     defaultSubjectCategory || SUBJECT_CATEGORIES[7]
   );
+  const [grade, setGrade] = useState<string>(COHORT_GRADES[3]);
+  const [universityId, setUniversityId] = useState("");
+  const [schools, setSchools] = useState<{ id: string; name: string }[]>([]);
+  const [schoolsLoading, setSchoolsLoading] = useState(false);
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [attachments, setAttachments] = useState<CommunityAttachment[]>([]);
   const [submitting, setSubmitting] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    let cancelled = false;
+    setSchoolsLoading(true);
+    prefetchUniversitiesList()
+      .then((list) => {
+        if (!cancelled) {
+          setSchools(list.map((u) => ({ id: u.id, name: u.name })));
+        }
+      })
+      .catch(() => {
+        if (!cancelled) setSchools([]);
+      })
+      .finally(() => {
+        if (!cancelled) setSchoolsLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [open]);
 
   async function handleUpload(file: File) {
     setUploading(true);
@@ -60,12 +91,24 @@ export function CreatePostDialog({
       setError("请填写标题");
       return;
     }
+    if (!grade) {
+      setError("请选择年级");
+      return;
+    }
+    if (!subjectCategory) {
+      setError("请选择专业");
+      return;
+    }
     setSubmitting(true);
     setError(null);
     try {
+      const selectedSchool = schools.find((s) => s.id === universityId);
       await createPost({
         post_type: postType,
         subject_category: subjectCategory,
+        grade,
+        university_id: universityId || null,
+        university_name: selectedSchool?.name ?? null,
         title: title.trim(),
         content,
         attachments,
@@ -73,6 +116,7 @@ export function CreatePostDialog({
       setTitle("");
       setContent("");
       setAttachments([]);
+      setUniversityId("");
       onOpenChange(false);
       onCreated?.();
     } catch (e) {
@@ -107,24 +151,68 @@ export function CreatePostDialog({
             </div>
           </div>
 
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="space-y-2">
+              <Label htmlFor="subject">
+                专业 <span className="text-destructive">*</span>
+              </Label>
+              <select
+                id="subject"
+                required
+                className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 text-sm"
+                value={subjectCategory}
+                onChange={(e) => setSubjectCategory(e.target.value)}
+              >
+                {SUBJECT_CATEGORIES.map((c) => (
+                  <option key={c} value={c}>
+                    {c}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="grade">
+                年级 <span className="text-destructive">*</span>
+              </Label>
+              <select
+                id="grade"
+                required
+                className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 text-sm"
+                value={grade}
+                onChange={(e) => setGrade(e.target.value)}
+              >
+                {COHORT_GRADES.map((g) => (
+                  <option key={g} value={g}>
+                    {g}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
           <div className="space-y-2">
-            <Label htmlFor="subject">专业大类</Label>
+            <Label htmlFor="school">学校（可选）</Label>
             <select
-              id="subject"
+              id="school"
               className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 text-sm"
-              value={subjectCategory}
-              onChange={(e) => setSubjectCategory(e.target.value)}
+              value={universityId}
+              onChange={(e) => setUniversityId(e.target.value)}
+              disabled={schoolsLoading}
             >
-              {SUBJECT_CATEGORIES.map((c) => (
-                <option key={c} value={c}>
-                  {c}
+              <option value="">不选择学校</option>
+              {schools.map((s) => (
+                <option key={s.id} value={s.id}>
+                  {s.name}
                 </option>
               ))}
             </select>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="title">标题</Label>
+            <Label htmlFor="title">
+              标题 <span className="text-destructive">*</span>
+            </Label>
             <Input
               id="title"
               value={title}

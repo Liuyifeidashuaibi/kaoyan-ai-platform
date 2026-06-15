@@ -80,15 +80,15 @@ export function MajorsTab({
   return (
     <div className="flex flex-col h-full">
       {highlightDigits && onClearHighlight && (
-        <div className="flex items-center justify-between gap-2 border-b border-orange-100 bg-orange-50/60 px-4 py-2 text-xs">
-          <span className="text-orange-800">
+        <div className="flex items-center justify-between gap-2 border-b border-[#007AFF]/15 bg-[#007AFF]/10 px-4 py-2 text-xs">
+          <span className="text-[#007AFF]">
             已定位专业
             {highlightedName ? `：${highlightedName}` : ` ${highlightDigits}`}
           </span>
           <button
             type="button"
             onClick={onClearHighlight}
-            className="shrink-0 font-medium text-orange-600 hover:underline"
+            className="shrink-0 font-medium text-[#007AFF] hover:underline"
           >
             查看全部
           </button>
@@ -228,7 +228,7 @@ function MajorRow({
       ref={highlightRef}
       className={cn(
         "flex items-center gap-3 border-b border-border/60 px-4 py-3 last:border-0",
-        highlighted && "bg-orange-50/60"
+        highlighted && "bg-[#007AFF]/10"
       )}
     >
       <div className="min-w-0 flex-1">
@@ -237,7 +237,7 @@ function MajorRow({
             <Link
               href={`/schools/majors/${code}${query}`}
               onClick={() => onSelectMajor?.(code)}
-              className="truncate text-sm font-semibold hover:text-orange-600"
+              className="truncate text-sm font-semibold hover:text-[#007AFF]"
             >
               {major.name}
             </Link>
@@ -248,20 +248,20 @@ function MajorRow({
             <button
               type="button"
               onClick={() => onViewScores(code)}
-              className="shrink-0 text-xs text-orange-500 hover:underline"
+              className="shrink-0 text-xs text-[#007AFF] hover:underline"
             >
-              本校复试线
+              本校分数
             </button>
           )}
           {hasScore && (
-            <span className="shrink-0 rounded bg-orange-50 px-1.5 py-0.5 text-[10px] font-medium text-orange-600">
-              有复试线
+            <span className="shrink-0 rounded bg-[#007AFF]/10 px-1.5 py-0.5 text-[10px] font-medium text-[#007AFF]">
+              有分数
             </span>
           )}
           {code && (
             <Link
               href={`/schools/majors/${code}${query}`}
-              className="shrink-0 text-xs text-muted-foreground hover:text-orange-500 hover:underline"
+              className="shrink-0 text-xs text-muted-foreground hover:text-[#007AFF] hover:underline"
             >
               跨校开设
             </Link>

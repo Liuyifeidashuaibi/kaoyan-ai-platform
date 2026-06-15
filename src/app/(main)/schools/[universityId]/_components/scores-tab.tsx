@@ -57,7 +57,7 @@ export function ScoresTab({
         setScores(s);
         setYears(ys);
       } catch (err) {
-        console.error("加载复试线失败:", err);
+        console.error("加载分数失败:", err);
       } finally {
         setLoading(false);
       }
@@ -121,15 +121,15 @@ export function ScoresTab({
   return (
     <div className="flex h-full flex-col">
       {highlightDigits && onClearHighlight && (
-        <div className="flex items-center justify-between gap-2 border-b border-orange-100 bg-orange-50/60 px-4 py-2 text-xs">
-          <span className="text-orange-800">
+        <div className="flex items-center justify-between gap-2 border-b border-[#007AFF]/15 bg-[#007AFF]/10 px-4 py-2 text-xs">
+          <span className="text-[#007AFF]">
             已定位专业
             {highlightedName ? `：${highlightedName}` : ` ${highlightDigits}`}
           </span>
           <button
             type="button"
             onClick={onClearHighlight}
-            className="shrink-0 font-medium text-orange-600 hover:underline"
+            className="shrink-0 font-medium text-[#007AFF] hover:underline"
           >
             查看全部
           </button>
@@ -174,10 +174,10 @@ export function ScoresTab({
           <SkeletonList count={6} className="rounded-none" />
         ) : sortedRows.length === 0 ? (
           <EmptyState
-            title="暂无复试线"
+            title="暂无分数"
             description={
               scores.length === 0
-                ? "该院校 2025/2026 复试线尚未收录，请稍后刷新"
+                ? "该院校 2025/2026 分数尚未收录，请稍后刷新"
                 : "调整筛选条件或清除搜索"
             }
           />
@@ -207,7 +207,7 @@ export function ScoresTab({
                       ref={highlighted ? highlightRef : undefined}
                       className={cn(
                         "hover:bg-muted/20",
-                        highlighted && "bg-orange-50/50"
+                        highlighted && "bg-[#007AFF]/10"
                       )}
                     >
                       <td className="py-3 pl-4">

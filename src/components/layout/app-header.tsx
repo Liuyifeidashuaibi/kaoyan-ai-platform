@@ -1,9 +1,9 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import { GraduationCap } from "lucide-react";
 
 import { UserBadge } from "@/components/layout/user-badge";
 import { navItems } from "@/config/navigation";
@@ -25,10 +25,15 @@ export function AppHeader() {
   return (
     <header className="sticky top-0 z-40 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
       <div className="flex h-14 items-center gap-4 px-4 md:px-6">
-        <Link href="/" className="flex items-center gap-2 font-semibold">
-          <span className="flex size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-            <GraduationCap className="size-4" />
-          </span>
+        <Link href="/" className="flex items-center gap-2 font-semibold text-[#111827]">
+          <Image
+            src="/logo.png"
+            alt="考研 AI 平台"
+            width={32}
+            height={32}
+            className="size-8 rounded-lg object-cover"
+            priority
+          />
           <span className="hidden sm:inline">考研 AI 平台</span>
         </Link>
 

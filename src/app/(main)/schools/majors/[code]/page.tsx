@@ -149,7 +149,7 @@ function MajorDetailContent({ code }: { code: string }) {
                   className={cn(
                     "rounded-full px-3 py-1 text-xs font-medium",
                     !degreeType
-                      ? "bg-orange-500 text-white"
+                      ? "bg-[#007AFF] text-white"
                       : "bg-muted text-muted-foreground hover:bg-muted/80"
                   )}
                 >
@@ -163,7 +163,7 @@ function MajorDetailContent({ code }: { code: string }) {
                     className={cn(
                       "rounded-full px-3 py-1 text-xs font-medium",
                       degreeType === deg
-                        ? "bg-orange-500 text-white"
+                        ? "bg-[#007AFF] text-white"
                         : "bg-muted text-muted-foreground hover:bg-muted/80"
                     )}
                   >
@@ -187,7 +187,7 @@ function MajorDetailContent({ code }: { code: string }) {
               <button
                 type="button"
                 onClick={() => load()}
-                className="rounded-lg bg-orange-500 px-4 py-2 text-sm font-medium text-white hover:bg-orange-600"
+                className="rounded-lg bg-[#007AFF] px-4 py-2 text-sm font-medium text-white hover:bg-[#007AFF]/90"
               >
                 重试
               </button>
@@ -267,9 +267,9 @@ function SchoolOfferingCard({
         </Link>
         <Link
           href={`/schools/${group.university_id}?tab=scores&major=${majorCode}`}
-          className="shrink-0 text-xs text-orange-500 hover:underline"
+          className="shrink-0 text-xs text-[#007AFF] hover:underline"
         >
-          复试线
+          分数
         </Link>
       </div>
 
@@ -280,7 +280,7 @@ function SchoolOfferingCard({
             onClick={() => setScoresExpanded((v) => !v)}
             className="flex w-full items-center justify-between py-3 text-left text-xs font-medium text-muted-foreground"
           >
-            <span>复试线（{uniqueScores.length} 条，2025/2026）</span>
+            <span>分数（{uniqueScores.length} 条，2025/2026）</span>
             <ChevronDown
               className={cn(
                 "size-4 transition-transform",
@@ -305,7 +305,7 @@ function SchoolOfferingCard({
                   {uniqueScores.map((s) => (
                     <tr key={s.id} className="hover:bg-muted/20">
                       <td className="py-2 pl-2 font-medium">{s.year}</td>
-                      <td className="py-2 text-center text-base font-semibold text-orange-600">
+                      <td className="py-2 text-center text-base font-semibold text-[#007AFF]">
                         {s.total_score}
                       </td>
                       <td className="py-2 text-center">{s.politics_score}</td>

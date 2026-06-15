@@ -58,6 +58,9 @@ export async function getPost(postId: string) {
 export async function createPost(body: {
   post_type: PostType;
   subject_category: string;
+  grade: string;
+  university_id?: string | null;
+  university_name?: string | null;
   title: string;
   content: string;
   attachments?: { url: string; name: string; mime_type: string }[];

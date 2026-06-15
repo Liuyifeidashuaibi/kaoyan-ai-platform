@@ -88,6 +88,10 @@ export function PostCard({
           <div className="mt-1 flex flex-wrap gap-1.5">
             <Badge variant="outline">{POST_TYPE_LABELS[post.post_type]}</Badge>
             <Badge variant="outline">{post.subject_category}</Badge>
+            {post.grade && <Badge variant="outline">{post.grade}</Badge>}
+            {post.university_name && (
+              <Badge variant="secondary">{post.university_name}</Badge>
+            )}
             {post.is_hidden && showHiddenControls && (
               <Badge variant="secondary">已隐藏</Badge>
             )}

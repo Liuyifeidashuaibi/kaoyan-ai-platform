@@ -4,6 +4,11 @@ const backendUrl =
   process.env.BACKEND_URL?.trim() || "http://127.0.0.1:8000";
 
 const nextConfig: NextConfig = {
+  webpack(config) {
+    // Reduce parallel workers so compilation doesn't exhaust system memory.
+    config.parallelism = 1;
+    return config;
+  },
   async rewrites() {
     return [
       {

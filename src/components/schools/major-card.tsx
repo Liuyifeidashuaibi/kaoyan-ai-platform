@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 
 
@@ -52,7 +52,7 @@ export function MajorCard({ major, className }: MajorCardProps) {
 
         <div className="flex flex-wrap items-center gap-2">
 
-          <span className="rounded-md bg-orange-50 px-2 py-0.5 text-xs font-medium text-orange-700">
+          <span className="rounded-md bg-[#007AFF]/10 px-2 py-0.5 text-xs font-medium text-[#007AFF]">
 
             {degreeLabel}
 

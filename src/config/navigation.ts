@@ -36,10 +36,10 @@ export const navItems: NavItem[] = [
     description: "错题整理与 AI 解析",
   },
   {
-    href: "/schools",
+    href: "/choose-school",
     label: "择校",
     icon: GraduationCap,
-    description: "院校与专业查询（/choose-school）",
+    description: "院校与专业查询",
   },
   {
     href: "/study/tomato",

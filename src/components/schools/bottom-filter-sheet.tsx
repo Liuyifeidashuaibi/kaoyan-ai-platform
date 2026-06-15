@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useRef } from "react";
 import { X } from "lucide-react";
@@ -85,13 +85,13 @@ export function BottomFilterSheet({
                 "w-full flex items-center justify-between px-4 py-3 text-sm",
                 "hover:bg-muted/50 transition-colors",
                 selected === opt.value &&
-                  "text-orange-500 font-medium"
+                  "text-[#007AFF] font-medium"
               )}
             >
               <span>{opt.label}</span>
               {selected === opt.value && (
                 <svg
-                  className="size-4 text-orange-500"
+                  className="size-4 text-[#007AFF]"
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"

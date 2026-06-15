@@ -86,6 +86,9 @@ export type CommunityPost = {
   author_id: string;
   post_type: "experience" | "material";
   subject_category: string;
+  grade: string | null;
+  university_id: string | null;
+  university_name: string | null;
   title: string;
   content: string;
   attachments: CommunityAttachment[];

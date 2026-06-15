@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useRef, useState } from "react";
 import { X } from "lucide-react";
@@ -115,7 +115,7 @@ export function GlobalFilterDrawer({ open, onClose }: GlobalFilterDrawerProps) {
                 <div
                   className={`size-5 rounded flex items-center justify-center border-2 transition-colors ${
                     draft[key]
-                      ? "bg-orange-500 border-orange-500"
+                      ? "bg-[#007AFF]/100 border-[#007AFF]"
                       : "border-border"
                   }`}
                 >
@@ -143,7 +143,7 @@ export function GlobalFilterDrawer({ open, onClose }: GlobalFilterDrawerProps) {
           <button
             onClick={handleConfirm}
             disabled={!hasAny}
-            className="w-full rounded-xl bg-orange-500 py-3 text-sm font-semibold text-white disabled:opacity-50 active:bg-orange-600 transition-colors"
+            className="w-full rounded-xl bg-[#007AFF]/100 py-3 text-sm font-semibold text-white disabled:opacity-50 active:bg-[#007AFF] transition-colors"
           >
             确认筛选
           </button>

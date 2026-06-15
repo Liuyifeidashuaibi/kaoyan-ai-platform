@@ -13,8 +13,8 @@ interface TabNavProps {
   active: string;
   onChange: (value: string) => void;
   className?: string;
-  /** 选中态颜色，默认橙色 */
-  activeColor?: "orange" | "primary";
+  /** 选中态颜色：brand=#007AFF */
+  activeColor?: "orange" | "primary" | "brand";
 }
 
 /**
@@ -25,13 +25,12 @@ export function TabNav({
   active,
   onChange,
   className,
-  activeColor = "orange",
+  activeColor = "brand",
 }: TabNavProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const handleClick = (value: string, idx: number) => {
     onChange(value);
-    // 将当前 tab 滚动到中央
     const container = scrollRef.current;
     if (!container) return;
     const buttons = container.querySelectorAll("button");
@@ -45,11 +44,25 @@ export function TabNav({
     });
   };
 
+  const activeTextClass =
+    activeColor === "brand"
+      ? "text-[#007AFF]"
+      : activeColor === "orange"
+        ? "text-orange-500"
+        : "text-primary";
+
+  const activeBarClass =
+    activeColor === "brand"
+      ? "bg-[#007AFF]"
+      : activeColor === "orange"
+        ? "bg-orange-500"
+        : "bg-primary";
+
   return (
     <div
       ref={scrollRef}
       className={cn(
-        "flex overflow-x-auto scrollbar-none border-b border-border bg-background",
+        "flex overflow-x-auto scrollbar-none border-b border-border bg-white",
         className
       )}
       style={{ scrollbarWidth: "none" }}
@@ -59,12 +72,8 @@ export function TabNav({
           key={tab.value}
           onClick={() => handleClick(tab.value, idx)}
           className={cn(
-            "shrink-0 px-4 py-3 text-sm font-medium transition-colors relative whitespace-nowrap",
-            active === tab.value
-              ? activeColor === "orange"
-                ? "text-orange-500"
-                : "text-primary"
-              : "text-muted-foreground"
+            "shrink-0 px-4 py-3 text-sm font-medium transition-colors relative whitespace-nowrap text-[#111827]/60",
+            active === tab.value ? activeTextClass : "hover:text-[#111827]"
           )}
         >
           {tab.label}
@@ -72,7 +81,7 @@ export function TabNav({
             <span
               className={cn(
                 "absolute bottom-0 left-3 right-3 h-0.5 rounded-full",
-                activeColor === "orange" ? "bg-orange-500" : "bg-primary"
+                activeBarClass
               )}
             />
           )}

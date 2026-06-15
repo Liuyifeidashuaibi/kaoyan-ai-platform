@@ -103,23 +103,23 @@ export function StatisticsTab({
   return (
     <div className="flex flex-col h-full">
       {highlightDigits && onClearHighlight && (
-        <div className="flex items-center justify-between gap-2 border-b border-orange-100 bg-orange-50/60 px-4 py-2 text-xs">
-          <span className="text-orange-800">
+        <div className="flex items-center justify-between gap-2 border-b border-[#007AFF]/15 bg-[#007AFF]/10 px-4 py-2 text-xs">
+          <span className="text-[#007AFF]">
             已定位专业
             {highlightedName ? `：${highlightedName}` : ` ${highlightDigits}`}
           </span>
           <button
             type="button"
             onClick={onClearHighlight}
-            className="shrink-0 font-medium text-orange-600 hover:underline"
+            className="shrink-0 font-medium text-[#007AFF] hover:underline"
           >
             查看全部
           </button>
         </div>
       )}
 
-      <div className="border-b border-orange-100 bg-orange-50/40 px-4 py-2 text-xs text-orange-900">
-        最低录取分 = 最后一名拟录取考生的初试成绩，是真实上岸线，不同于官方复试线。
+      <div className="border-b border-[#007AFF]/15 bg-[#007AFF]/10 px-4 py-2 text-xs text-[#111827]">
+        最低录取分 = 最后一名拟录取考生的初试成绩，是真实上岸线，不同于官方分数。
       </div>
 
       <div className="bg-background border-b border-border px-4 py-2.5 flex flex-wrap items-center gap-1">
@@ -248,7 +248,7 @@ function MajorStatisticsGroup({
       ref={highlightRef}
       className={cn(
         "border-b border-border/60",
-        highlighted && "bg-orange-50/40"
+        highlighted && "bg-[#007AFF]/10"
       )}
     >
       <button
@@ -267,7 +267,7 @@ function MajorStatisticsGroup({
                   e.stopPropagation();
                   onViewMajors();
                 }}
-                className="text-xs text-orange-500 hover:underline"
+                className="text-xs text-[#007AFF] hover:underline"
               >
                 本校专业
               </button>
@@ -276,7 +276,7 @@ function MajorStatisticsGroup({
               <Link
                 href={crossSchoolHref}
                 onClick={(e) => e.stopPropagation()}
-                className="text-xs text-muted-foreground hover:text-orange-500 hover:underline"
+                className="text-xs text-muted-foreground hover:text-[#007AFF] hover:underline"
               >
                 跨校开设
               </Link>
@@ -310,7 +310,7 @@ function MajorStatisticsGroup({
             <thead>
               <tr className="border-b border-border bg-muted/40 text-xs text-muted-foreground">
                 <th className="py-2 pl-2 text-left font-medium">年份</th>
-                <th className="py-2 text-center font-medium text-orange-700">
+                <th className="py-2 text-center font-medium text-[#007AFF]">
                   最低录取分
                 </th>
                 <th className="py-2 text-center font-medium">平均录取分</th>
@@ -318,7 +318,7 @@ function MajorStatisticsGroup({
                 <th className="py-2 text-center font-medium">录取人数</th>
                 <th className="py-2 text-center font-medium">复试人数</th>
                 <th className="py-2 text-center font-medium">录取率</th>
-                <th className="py-2 pr-2 text-center font-medium">复试线</th>
+                <th className="py-2 pr-2 text-center font-medium">分数</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border/40">
@@ -343,7 +343,7 @@ function StatisticsRow({ stat }: { stat: MajorStatistics }) {
     <>
       <tr className="hover:bg-muted/20">
         <td className="py-2.5 pl-2 text-sm font-medium">{stat.year}</td>
-        <td className="py-2.5 text-center text-base font-bold text-orange-600">
+        <td className="py-2.5 text-center text-base font-bold text-[#007AFF]">
           {stat.min_score ?? "—"}
         </td>
         <td className="py-2.5 text-center font-medium">
@@ -367,7 +367,7 @@ function StatisticsRow({ stat }: { stat: MajorStatistics }) {
                 href={stat.source_url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-0.5 text-orange-600 hover:underline"
+                className="inline-flex items-center gap-0.5 text-[#007AFF] hover:underline"
               >
                 来源链接
                 <ExternalLink className="size-3" />

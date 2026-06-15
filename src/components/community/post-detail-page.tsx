@@ -245,6 +245,10 @@ export function PostDetailPage({ postId }: PostDetailPageProps) {
         <div className="flex flex-wrap gap-2">
           <Badge variant="outline">{POST_TYPE_LABELS[post.post_type]}</Badge>
           <Badge variant="secondary">{post.subject_category}</Badge>
+          {post.grade && <Badge variant="outline">{post.grade}</Badge>}
+          {post.university_name && (
+            <Badge variant="outline">{post.university_name}</Badge>
+          )}
           {post.is_hidden && isAuthor && (
             <Badge variant="secondary">已隐藏（仅自己可见）</Badge>
           )}

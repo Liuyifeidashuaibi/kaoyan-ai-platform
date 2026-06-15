@@ -3,8 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
+    "dev": "set NODE_OPTIONS=--max-old-space-size=2048 && next dev --webpack --disable-source-maps",
+    "build": "set NODE_OPTIONS=--max-old-space-size=3072 && next build --webpack",
     "start": "next start",
     "lint": "eslint src backend/scripts --max-warnings 0",
     "typecheck": "tsc --noEmit",
@@ -12,14 +12,8 @@
     "db:migrate:007": "node scripts/run-migration.mjs 007_choose_school_datacenter.sql",
     "db:migrate:008": "node scripts/run-migration.mjs 008_sync_colleges_bulk.sql",
     "db:migrate:013": "node scripts/run-migration.mjs 013_community.sql",
-    "crawler:whitelist": "python crawler/main.py build-whitelist",
-    "crawler:sync-colleges": "python crawler/main.py sync-colleges",
-    "crawler:discover": "python crawler/main.py discover-priority",
-    "crawler:update": "python crawler/main.py update",
-    "crawler:full": "python crawler/main.py full --priority-only",
-    "crawler:kaoyan:sync": "python crawler/sync_kaoyan_cn.py",
-    "crawler:kaoyan:import": "python crawler/import_kaoyan_full.py",
-    "crawler:kaoyan:crawl": "cd crawler/kaoyan-cn && npm run crawl"
+    "db:migrate:014": "node scripts/run-migration.mjs 014_community_post_grade_school.sql",
+    "crawler:kaoyan:import": "python crawler/sync_kaoyan_cn.py --import-only"
   },
   "dependencies": {
     "@base-ui/react": "^1.5.0",
@@ -27,6 +21,7 @@
     "@supabase/supabase-js": "^2.108.1",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "framer-motion": "^12.40.0",
     "highlight.js": "^11.11.1",
     "katex": "^0.17.0",
     "lucide-react": "^1.17.0",

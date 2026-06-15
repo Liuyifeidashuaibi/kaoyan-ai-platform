@@ -491,6 +491,66 @@ def fetch_school_score_h5(
     return list(by_name.values())
 
 
+def fetch_school_score_items(
+    session: requests.Session,
+    school_id: int,
+    year: int,
+    *,
+    area: str = "A",
+    factor: Optional[dict] = None,
+) -> list[dict]:
+    """拉取掌上考研 H5 原始分数条目（与 JSON scores.years 格式一致）。"""
+    factor = factor if factor is not None else fetch_factor_meta(session, school_id)
+    seen: set[tuple] = set()
+    items: list[dict] = []
+
+    for degree_type, _ in ((2, "学硕"), (1, "专硕")):
+        kinds = _kinds_for_year(factor, year, degree_type)
+        for kind in kinds:
+            payload = {
+                "school_id": school_id,
+                "year": year,
+                "type": degree_type,
+                "kind": kind,
+                "page": 1,
+                "area": area,
+            }
+            try:
+                resp = session.post(
+                    KAOYAN_H5_SCORE_URL,
+                    json=payload,
+                    headers=_h5_headers(),
+                    timeout=35,
+                )
+                if resp.status_code != 200:
+                    continue
+                body = resp.json()
+                if body.get("code") != "0000":
+                    continue
+                batch = body.get("data") or []
+            except Exception as exc:
+                log.debug("h5 score items %s %s kind=%s: %s", school_id, year, kind, exc)
+                continue
+
+            for item in batch:
+                if item.get("data_type") not in ("school_score", "score_level"):
+                    continue
+                key = (
+                    item.get("data_type"),
+                    item.get("id"),
+                    item.get("code"),
+                    item.get("name"),
+                    item.get("depart_id"),
+                    item.get("degree_type"),
+                )
+                if key in seen:
+                    continue
+                seen.add(key)
+                items.append(item)
+
+    return items
+
+
 def fetch_school_score_pages(
     session: requests.Session,
     school_id: int,

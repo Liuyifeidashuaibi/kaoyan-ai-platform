@@ -12,7 +12,7 @@ from typing import Any
 from supabase import Client, create_client
 
 from app.config import get_settings
-from app.schemas.community import SUBJECT_CATEGORIES, PostCreate, PostUpdate
+from app.schemas.community import COHORT_GRADES, SUBJECT_CATEGORIES, PostCreate, PostUpdate
 
 logger = logging.getLogger(__name__)
 
@@ -20,7 +20,8 @@ PAGE_SIZE_DEFAULT = 20
 PAGE_SIZE_MAX = 50
 USER_PUBLIC_FIELDS = "id,display_id,nickname,avatar_url,subject_category,created_at"
 POST_FIELDS = (
-    "id,author_id,post_type,subject_category,title,content,attachments,"
+    "id,author_id,post_type,subject_category,grade,university_id,university_name,"
+    "title,content,attachments,"
     "view_count,favorite_count,comment_count,hot_score,is_hidden,created_at,updated_at"
 )
 
@@ -75,6 +76,10 @@ class CommunityService:
     def _validate_subject(self, category: str) -> None:
         if category not in SUBJECT_CATEGORIES:
             raise ValueError(f"无效的专业大类，请从以下选择：{', '.join(SUBJECT_CATEGORIES)}")
+
+    def _validate_grade(self, grade: str) -> None:
+        if grade not in COHORT_GRADES:
+            raise ValueError(f"无效的年级，请选择：{', '.join(COHORT_GRADES)}")
 
     def ensure_user_row(self, user_id: str) -> None:
         """确保 auth 用户在 public.users 中有记录（兼容迁移前注册账号）。"""
@@ -190,12 +195,32 @@ class CommunityService:
 
     def create_post(self, user_id: str, body: PostCreate) -> dict[str, Any]:
         self._validate_subject(body.subject_category)
+        self._validate_grade(body.grade)
         self.ensure_user_row(user_id)
         sb = self._sb()
+
+        university_name = (body.university_name or "").strip() or None
+        university_id = (body.university_id or "").strip() or None
+        if university_id:
+            uni_resp = (
+                sb.table("universities")
+                .select("id,name")
+                .eq("id", university_id)
+                .limit(1)
+                .execute()
+            )
+            uni = self._first_row(uni_resp)
+            if not uni:
+                raise ValueError("所选院校不存在")
+            university_name = uni.get("name") or university_name
+
         row = {
             "author_id": user_id,
             "post_type": body.post_type,
             "subject_category": body.subject_category,
+            "grade": body.grade,
+            "university_id": university_id,
+            "university_name": university_name,
             "title": body.title.strip(),
             "content": body.content,
             "attachments": [a.model_dump() for a in body.attachments],

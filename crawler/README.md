@@ -1,212 +1,78 @@
-# 考研择校数据中心
+# 择校数据发布（掌上考研 → Supabase）
 
-生产级择校数据采集与入库系统，覆盖 985 / 211 / 双一流院校（147 所）。
+择校 UI 数据**只来自掌上考研（kaoyan.cn）**，分三个本机目录协作：
 
-## 架构
-
-```
-crawler/
-├── kaoyan-cn/          # 掌上考研 Node 爬虫（双一流 147 校，主数据源）
-│   ├── src/            # 抓取 / 增量同步 / 指纹检测
-│   └── scripts/        # crawl / sync / verify
-├── import_kaoyan_full.py  # JSON → Supabase 入库
-├── sync_kaoyan_cn.py      # 一键：抓取 + 入库 + 通知前端
-├── discover/           # 研究生院官方来源发现（拟录取/复试线）
-├── fetchers/           # HTTP + Playwright 抓取
-├── parsers/            # HTML / PDF / Word / Excel 解析
-├── ai_extract/         # 千问结构化抽取
-├── adapters/           # 学校专属适配器
-├── storage/            # Supabase 入库 + Hash 检测
-└── main.py             # 官方来源爬虫入口（辅助）
-```
-
-### 掌上考研数据流（主路径）
+| 目录 | 作用 |
+|------|------|
+| `E:\Kaoyan\clawer` | **爬虫**：抓掌上考研，你自行运行/定时 |
+| `E:\Kaoyan\re` | **数据**：JSON 输出（`latest\syl-schools-full.json`） |
+| 本项目 `crawler/` | **发布**：读 `re` → 写入 Supabase → 网站刷新 |
 
 ```
-kaoyan.cn API
-  → crawler/kaoyan-cn (Node 20+)
-  → crawler/data/kaoyan-cn/latest/
-  → import_kaoyan_full.py
-  → Supabase (universities / majors / scores)
-  → 前端 /schools 自动刷新
+掌上考研 (kaoyan.cn)
+       ↓  clawer 抓取
+E:\Kaoyan\re\latest\
+       ↓  本仓库 import
+Supabase (universities / majors / scores)
+       ↓
+前端 /choose-school
 ```
 
-### 数据分层
+## 日常用法
 
+### 每日自动（爬取 + 自动上网站）
 
+任选其一：
 
-| 层级 | 存储 | 说明 |
+- 双击 `E:\Kaoyan\clawer\daily-sync-and-publish.bat`
+- 或常驻 `E:\Kaoyan\clawer\start-scheduler.bat`（每天 0:00 北京时：sync + 自动发布）
 
-|------|------|------|
+### 手动爬取（只更新 re，不上网站）
 
-| Layer1 | `crawler/raw/{学校}/{年份}/` | HTML/PDF/Excel 永久归档 |
+双击 `E:\Kaoyan\clawer\sync-now.bat`
 
-| Layer2 | `admission_records` | 逐考生拟录取记录 |
+### 手动发布到网站
 
-| Layer3 | `major_statistics` | 最低/平均/最高录取分统计 |
-
-
-
-### Supabase 表
-
-
-
-| 规范表名 | 实际表 |
-
-|---------|--------|
-
-| schools | `universities` + 视图 `schools` |
-
-| colleges | `colleges` |
-
-| majors | `majors` |
-
-| score_lines | `scores` + 视图 `score_lines` |
-
-| admission_records | `admission_records` |
-
-| major_statistics | `major_statistics` |
-
-| source_pages | `source_pages` |
-
-| school_sources | `school_sources` |
-
-| crawl_tasks | `crawl_tasks` |
-
-
-
-## 快速开始
+爬取完成后，在项目根目录：
 
 ```bash
-# 1. 配置环境变量（项目根 .env.local 或 crawler/.env）
-SUPABASE_URL=...
-SUPABASE_SERVICE_ROLE_KEY=...
-
-# 2. 安装依赖
-pip install -r crawler/requirements.txt
-npm install --prefix crawler/kaoyan-cn
-
-# 3. 一键同步掌上考研数据（抓取 + 入库 + 通知前端）
-npm run crawler:kaoyan:sync
-
-# 仅导入已有 JSON（不抓取）
-python crawler/sync_kaoyan_cn.py --import-only
-
-# 全量抓取（首次或重建）
-python crawler/sync_kaoyan_cn.py --full
+npm run crawler:kaoyan:import
 ```
 
-### 官方来源爬虫（辅助，需 DASHSCOPE_API_KEY）
+或双击 `scripts\publish-schools.bat`
 
+## 环境变量
 
+见 [.env.example](./.env.example)。必填：
 
-# 7. 从拟录取记录重算统计
+- `SUPABASE_URL`
+- `SUPABASE_SERVICE_ROLE_KEY`
+- `KAOYAN_DATA_DIR`（默认 `E:\Kaoyan\re`）
 
-python crawler/main.py recompute-stats
+## 本仓库脚本
 
-```
-
-
-
-## 数据来源优先级
-
-
-
-1. **P0** 研究生院/学院官网 — 拟录取名单、拟录取公示
-
-2. **P1** 复试名单、复试成绩公示
-
-3. **P2** 招生目录、招生简章
-
-
-
-AI 仅负责结构化抽取，不用于网页发现。
-
-
-
-## 后端 API
-
-
-
-启动 FastAPI 后可用：
-
-
-
-- `GET /api/schools?page=&keyword=&tag=`
-
-- `GET /api/schools/{id}`
-
-- `GET /api/majors?page=&school=&college=&keyword=`
-
-- `GET /api/majors/{id}`
-
-- `GET /api/statistics?school=&college=&major=&year=`
-
-- `GET /api/admissions?school=&college=&major=&year=`
-
-- `GET /api/score-lines?school=&college=&major=&year=`
-
-
+| 脚本 | 说明 |
+|------|------|
+| `sync_kaoyan_cn.py` | 发布入口（默认 `--import-only`） |
+| `import_kaoyan_full.py` | JSON → Supabase 全量 upsert |
+| `audit_kaoyan_scores.py` | 分数覆盖率审计 |
+| `fill_low_coverage_scores.py` | 低覆盖院校 H5 补分（可选） |
+| `cleanup_duplicate_majors.py` | 删除 DB 内唯一键重复专业 |
+| `cleanup_orphan_majors.py` | 删除不在最新 JSON 中的孤儿专业 |
+| `verify_majors_json.py` | 发布前 JSON 对照校验 |
+| `notify_frontend.py` | 递增 `schools_sync_meta.revision` |
 
 ## 前端
 
+入库后自动 `bump_schools_sync()`，前端约 30 秒内刷新，**无需重新部署 Vercel**。
 
+## 数据文件（在 E:\Kaoyan\re）
 
-- `/choose-school` → 重定向至 `/schools`
+| 路径 | 说明 |
+|------|------|
+| `latest/syl-schools-full.json` | 147 校完整详情（入库用） |
+| `latest/schools.json` | 院校简表 |
+| `logs/changes-*.json` | 增量变更报告 |
+| `history/YYYY-MM-DD/` | 按日归档 |
 
-- 院校详情页默认展示 **真实上岸线**（最低录取分），复试线单独 Tab
-
-
-
-## 定时任务
-
-
-
-GitHub Actions：`.github/workflows/choose-school-crawler.yml`
-
-
-
-| 调度 | 模式 | 说明 |
-
-|------|------|------|
-
-| 每日 02:00（北京） | `update` | 增量更新 |
-
-| 每周一 03:00（北京） | `full` | 全量扫描 |
-
-| 每月 1 日 | `recompute-stats` | 统计校验 |
-
-
-
-## 日志与归档
-
-
-
-- `crawler/logs/crawler.log` — 运行日志
-
-- `crawler/logs/failed_tasks.json` — 失败任务队列
-
-- `crawler/raw/{学校}/{年份}/` — 原始页面/附件存档（可追溯）
-
-
-
-## 验收清单
-
-
-
-- [x] TOP50 优先校自动发现拟录取来源页
-
-- [x] AI 抽取拟录取名单并计算最低录取分
-
-- [x] 学校-学院-专业关系树（majors + colleges）
-
-- [x] 原始文件归档 raw/{school}/{year}/
-
-- [x] 每日增量 / 每周全量 CI
-
-- [x] 前端 `/schools` 查询真实上岸线
-
-- [x] REST API 可调用
-
-- [x] 每条数据保留 source_url / publish_date / raw_file_path
-
+爬虫详细说明见 `E:\Kaoyan\clawer\README.md`。

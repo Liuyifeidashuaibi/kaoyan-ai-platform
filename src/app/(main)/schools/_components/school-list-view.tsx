@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { ChevronDown, SlidersHorizontal } from "lucide-react";
@@ -161,7 +161,7 @@ export function SchoolListView({ search, onLoadingChange }: SchoolListViewProps)
 
       {!loading && (
         <p className="mb-3 text-sm text-muted-foreground">
-          共 <span className="font-semibold text-orange-500">{filtered.length}</span> 所院校
+          共 <span className="font-semibold text-[#007AFF]">{filtered.length}</span> 所院校
         </p>
       )}
 
@@ -216,7 +216,7 @@ function FilterChip({
       className={cn(
         "inline-flex items-center gap-1.5 rounded-xl border px-3 py-2 text-sm transition-colors",
         active
-          ? "border-orange-200 bg-orange-50 font-medium text-orange-700"
+          ? "border-[#007AFF]/20 bg-[#007AFF]/10 font-medium text-[#007AFF]"
           : "border-border bg-background text-foreground hover:bg-muted/40"
       )}
     >

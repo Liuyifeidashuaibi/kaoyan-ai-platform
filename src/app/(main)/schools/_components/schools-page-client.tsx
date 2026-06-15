@@ -34,7 +34,6 @@ function SchoolsPageContent({ basePath = "/schools" }: { basePath?: string }) {
   const viewParam = searchParams.get("view");
   const qParam = searchParams.get("q") ?? "";
   const viewMode: "school" | "major" = viewParam === "major" ? "major" : "school";
-  const hideHeader = basePath === "/choose-school";
 
   const [search, setSearch] = useState(qParam);
   const [majorListSearch, setMajorListSearch] = useState("");
@@ -117,7 +116,7 @@ function SchoolsPageContent({ basePath = "/schools" }: { basePath?: string }) {
     (viewMode === "major" && !isSearching && majorLoading);
 
   return (
-    <div className="min-h-full bg-[#f5f6f8]">
+    <div className="min-h-full bg-white text-[#111827]">
       <LoadingProgressBar active={showProgress} />
       <SchoolSearchOverlay
         open={searchOpen}
@@ -127,43 +126,36 @@ function SchoolsPageContent({ basePath = "/schools" }: { basePath?: string }) {
       />
 
       <div className="mx-auto max-w-7xl px-4 py-6 lg:px-8">
-        {!hideHeader && (
-        <div className="mb-6 flex items-start justify-between gap-3">
-          <div>
-            <h1 className="text-2xl font-bold text-foreground">择校</h1>
-          </div>
-          <div className="flex shrink-0 items-center gap-2">
-            <button
-              type="button"
-              onClick={() => setSearchOpen(true)}
-              className={cn(
-                "flex size-9 items-center justify-center rounded-xl border border-border bg-white shadow-sm transition-colors hover:bg-muted/50",
-                isSearching && "bg-orange-50 text-orange-600 ring-1 ring-orange-300"
-              )}
-              aria-label="快捷搜索"
-            >
-              <Search className="size-4" />
-            </button>
-            <button
-              type="button"
-              onClick={() => void refresh()}
-              disabled={syncing}
-              className="flex items-center gap-1.5 rounded-xl border border-border bg-white px-3 py-2 text-xs font-medium text-muted-foreground shadow-sm hover:bg-muted/50 disabled:opacity-50"
-              aria-label="刷新择校数据"
-            >
-              <RefreshCw className={cn("size-3.5", syncing && "animate-spin")} />
-              刷新
-            </button>
-          </div>
+        <div className="mb-4 flex items-center justify-end gap-2">
+          <button
+            type="button"
+            onClick={() => setSearchOpen(true)}
+            className={cn(
+              "flex size-9 items-center justify-center rounded-xl border border-border bg-white shadow-sm transition-colors hover:bg-muted/50",
+              isSearching && "bg-[#007AFF]/10 text-[#007AFF] ring-1 ring-[#007AFF]/30"
+            )}
+            aria-label="快捷搜索"
+          >
+            <Search className="size-4" />
+          </button>
+          <button
+            type="button"
+            onClick={() => void refresh()}
+            disabled={syncing}
+            className="flex items-center gap-1.5 rounded-xl border border-border bg-white px-3 py-2 text-xs font-medium text-muted-foreground shadow-sm hover:bg-muted/50 disabled:opacity-50"
+            aria-label="刷新择校数据"
+          >
+            <RefreshCw className={cn("size-3.5", syncing && "animate-spin")} />
+            刷新
+          </button>
         </div>
-        )}
 
-        <div className="mb-4 rounded-2xl bg-white shadow-sm">
+        <div className="mb-4 rounded-2xl bg-white shadow-sm ring-1 ring-black/5">
           <TabNav
             tabs={VIEW_TABS}
             active={viewMode}
             onChange={handleViewChange}
-            activeColor="orange"
+            activeColor="brand"
             className={cn("border-none rounded-t-2xl", isSearching && "opacity-60")}
           />
           {isSearching && (
@@ -203,7 +195,7 @@ function SchoolsPageContent({ basePath = "/schools" }: { basePath?: string }) {
 export function SchoolsPageClient({ basePath = "/schools" }: { basePath?: string } = {}) {
   if (!isSupabaseConfigured()) {
     return (
-      <div className="min-h-full bg-[#f5f6f8] px-4 py-12">
+      <div className="min-h-full bg-white px-4 py-12">
         <EmptyState
           title="数据库未配置"
           description="请在 .env.local 中设置 NEXT_PUBLIC_SUPABASE_URL 和 NEXT_PUBLIC_SUPABASE_ANON_KEY"

@@ -2,12 +2,12 @@
 """
 掌上考研 JSON（syl-schools-full.json）→ Supabase 全量导入
 
-将 crawler/data/kaoyan-cn/ 下的 985/211/双一流院校数据写入：
+读取 E:\\Kaoyan\\re（clawer 输出）下的 985/211/双一流 JSON，写入：
   universities / majors / scores
 
 用法：
   python import_kaoyan_full.py
-  python import_kaoyan_full.py --input data/kaoyan-cn/latest/syl-schools-full.json
+  python import_kaoyan_full.py --input E:\\Kaoyan\\re\\latest\\syl-schools-full.json
   python import_kaoyan_full.py --dry-run --school 武汉大学
 """
 from __future__ import annotations
@@ -32,13 +32,10 @@ load_dotenv(_here / ".env")
 load_dotenv(_here.parent / ".env")
 load_dotenv(_here.parent / ".env.local")
 
-from enrich_constants import SCORE_YEARS  # noqa: E402
-from import_kaoyan_scores_batch import (  # noqa: E402
-    BATCH_SIZE,
-    batch_upsert,
-    resolve_major_id_relaxed,
-)
+from db_import_utils import batch_upsert, resolve_major_id_relaxed  # noqa: E402
+from enrich_constants import CODE_PREFIX_CATEGORY, SCORE_YEARS  # noqa: E402
 from notify_frontend import bump_schools_sync  # noqa: E402
+from paths import kaoyan_full_json  # noqa: E402
 
 logging.basicConfig(
     level=logging.INFO,
@@ -47,8 +44,7 @@ logging.basicConfig(
 )
 log = logging.getLogger("import_kaoyan_full")
 
-DEFAULT_INPUT = _here / "data" / "kaoyan-cn" / "syl-schools-full.json"
-LATEST_INPUT = _here / "data" / "kaoyan-cn" / "latest" / "syl-schools-full.json"
+DEFAULT_INPUT = kaoyan_full_json()
 
 
 def _sb() -> Client:
@@ -153,6 +149,318 @@ def build_major_rows(university_id: str, school: dict) -> list[dict]:
     return rows
 
 
+SUBJECT_CATEGORY_NAMES = frozenset(CODE_PREFIX_CATEGORY.values())
+ART_MAJOR_CODE_PREFIXES = ("05", "13", "14")
+
+
+def _is_broad_level_line(item: dict) -> bool:
+    if item.get("data_type") == "score_level":
+        return True
+    prefix = re.sub(r"\D", "", item.get("code") or "")
+    name = (item.get("name") or "").strip()
+    return len(prefix) <= 4 or name in SUBJECT_CATEGORY_NAMES
+
+
+def _majors_for_broad_level(
+    majors: list[dict],
+    item: dict,
+    degree: str | None,
+) -> list[dict]:
+    """门类/4 位代码分数线：向同学科或同关键词专业展开。"""
+    name = (item.get("name") or "").strip()
+    prefix = re.sub(r"\D", "", item.get("code") or "")
+    college = _normalize_college(item.get("depart_name") or "")
+    candidates: list[dict] = []
+
+    if name == "艺术学" or prefix.startswith("1301"):
+        candidates = [
+            m for m in majors
+            if (m.get("subject_category") or "").strip() == "艺术学"
+            or re.sub(r"\D", "", str(m.get("code") or ""))[:2] in ART_MAJOR_CODE_PREFIXES
+        ]
+    elif name == "音乐" or prefix.startswith("1352"):
+        candidates = [
+            m for m in majors
+            if "音乐" in (m.get("name") or "")
+            or re.sub(r"\D", "", str(m.get("code") or "")).startswith("1352")
+            or re.sub(r"\D", "", str(m.get("code") or "")).startswith("0504")
+        ]
+    elif name in ("舞蹈", "舞蹈学") or prefix.startswith("1353"):
+        candidates = [
+            m for m in majors
+            if "舞蹈" in (m.get("name") or "")
+            or re.sub(r"\D", "", str(m.get("code") or "")).startswith("1353")
+            or re.sub(r"\D", "", str(m.get("code") or "")).startswith("0504")
+        ]
+    elif name in ("戏剧", "戏剧与影视", "戏曲") or prefix.startswith(("1354", "1355", "1356")):
+        candidates = [
+            m for m in majors
+            if any(k in (m.get("name") or "") for k in ("戏剧", "影视", "戏曲"))
+            or re.sub(r"\D", "", str(m.get("code") or "")).startswith("0504")
+            or re.sub(r"\D", "", str(m.get("code") or "")).startswith("1354")
+        ]
+    elif name == "教育" or prefix.startswith("0451"):
+        candidates = [
+            m for m in majors
+            if "教育" in (m.get("name") or "")
+            or re.sub(r"\D", "", str(m.get("code") or "")).startswith("0451")
+            or re.sub(r"\D", "", str(m.get("code") or "")).startswith("0401")
+        ]
+    elif name in SUBJECT_CATEGORY_NAMES:
+        candidates = [m for m in majors if (m.get("subject_category") or "").strip() == name]
+        if not candidates:
+            cat_prefix = next((k for k, v in CODE_PREFIX_CATEGORY.items() if v == name), None)
+            if cat_prefix:
+                candidates = [
+                    m for m in majors
+                    if re.sub(r"\D", "", str(m.get("code") or ""))[:2] == cat_prefix
+                ]
+    elif len(prefix) >= 2:
+        candidates = majors_matching_code(majors, item.get("code") or "", None)
+
+    art_relaxed_names = {"艺术学", "音乐", "舞蹈", "戏剧与影视", "戏剧", "戏曲", "教育"}
+    if degree and name not in art_relaxed_names:
+        deg_filtered = [m for m in candidates if m.get("degree_type") == degree]
+        if deg_filtered:
+            candidates = deg_filtered
+
+    broad_pool = list(candidates)
+    candidates = _filter_by_college(candidates, college)
+    if name in art_relaxed_names and len(candidates) <= 2 and len(broad_pool) > len(candidates):
+        candidates = broad_pool
+    if name not in SUBJECT_CATEGORY_NAMES:
+        candidates = _filter_by_name(candidates, name)
+    return candidates
+
+
+def _normalize_college(college: str) -> str:
+    college = (college or "").strip()
+    return "" if college in ("全校或院系", "") else college
+
+
+def _filter_by_college(candidates: list[dict], college: str) -> list[dict]:
+    college = _normalize_college(college)
+    if not college or len(candidates) <= 1:
+        return candidates
+    filtered = [
+        m for m in candidates
+        if college in (m.get("college") or "") or (m.get("college") or "") in college
+    ]
+    return filtered if filtered else candidates
+
+
+def _filter_by_name(candidates: list[dict], name: str) -> list[dict]:
+    if not name or len(candidates) <= 1:
+        return candidates
+    name = name.strip()
+    exact = [m for m in candidates if (m.get("name") or "").strip() == name]
+    if exact:
+        return exact
+    fuzzy = [
+        m for m in candidates
+        if name in (m.get("name") or "") or (m.get("name") or "") in name
+    ]
+    return fuzzy if fuzzy else candidates
+
+
+def majors_matching_code(
+    majors: list[dict],
+    level_code: str,
+    degree: str | None,
+) -> list[dict]:
+    prefix = re.sub(r"\D", "", level_code)
+    if len(prefix) < 2:
+        return []
+    matched: list[dict] = []
+    for m in majors:
+        code6 = re.sub(r"\D", "", str(m.get("code") or ""))[:6]
+        if len(code6) != 6 or not code6.startswith(prefix):
+            continue
+        if degree and m.get("degree_type") != degree:
+            continue
+        matched.append(m)
+    return matched
+
+
+def majors_for_score_item(majors: list[dict], item: dict) -> list[dict]:
+    """将 school_score / score_level 条目映射到一条或多条专业记录。"""
+    code = (item.get("code") or "").strip()
+    name = (item.get("name") or "").strip()
+    college = _normalize_college(item.get("depart_name") or "")
+    degree = map_degree(degree_type=item.get("degree_type")) if item.get("degree_type") else None
+    prefix = re.sub(r"\D", "", code)
+
+    if _is_broad_level_line(item):
+        broad = _majors_for_broad_level(majors, item, degree)
+        if broad:
+            return broad
+
+    if len(prefix) == 6:
+        mid = resolve_major_id_relaxed(majors, code, name, degree or "学硕", college)
+        if mid:
+            return [m for m in majors if m["id"] == mid]
+        candidates = [
+            m for m in majors
+            if re.sub(r"\D", "", str(m.get("code") or ""))[:6] == prefix
+        ]
+        if degree:
+            deg_filtered = [m for m in candidates if m.get("degree_type") == degree]
+            if deg_filtered:
+                candidates = deg_filtered
+        candidates = _filter_by_college(candidates, college)
+        candidates = _filter_by_name(candidates, name)
+        if candidates:
+            return candidates
+
+    if len(prefix) >= 2:
+        for deg in ([degree] if degree else []) + [None]:
+            candidates = majors_matching_code(majors, code, deg)
+            if candidates:
+                candidates = _filter_by_college(candidates, college)
+                candidates = _filter_by_name(candidates, name)
+                return candidates
+
+    if name in SUBJECT_CATEGORY_NAMES:
+        candidates = [m for m in majors if (m.get("subject_category") or "").strip() == name]
+        if degree:
+            deg_filtered = [m for m in candidates if m.get("degree_type") == degree]
+            if deg_filtered:
+                candidates = deg_filtered
+        candidates = _filter_by_college(candidates, college)
+        if candidates:
+            return candidates
+
+    if len(prefix) >= 2:
+        cat = CODE_PREFIX_CATEGORY.get(prefix[:2])
+        if cat:
+            candidates = [m for m in majors if (m.get("subject_category") or "").strip() == cat]
+            if degree:
+                deg_filtered = [m for m in candidates if m.get("degree_type") == degree]
+                if deg_filtered:
+                    candidates = deg_filtered
+            candidates = _filter_by_college(candidates, college)
+            candidates = _filter_by_name(candidates, name)
+            if candidates:
+                return candidates
+
+    if name:
+        candidates: list[dict] = []
+        for m in majors:
+            mname = (m.get("name") or "").strip()
+            fd = (m.get("first_discipline") or "").strip()
+            sc = (m.get("subject_category") or "").strip()
+            if name == mname or name in mname or mname in name:
+                candidates.append(m)
+            elif name in fd or fd in name:
+                candidates.append(m)
+            elif name in sc:
+                candidates.append(m)
+        if degree:
+            deg_filtered = [m for m in candidates if m.get("degree_type") == degree]
+            if deg_filtered:
+                candidates = deg_filtered
+        candidates = _filter_by_college(candidates, college)
+        if candidates:
+            return candidates
+
+    mid = resolve_major_id_relaxed(majors, code, name, degree or "学硕", college)
+    if mid:
+        return [m for m in majors if m["id"] == mid]
+    return []
+
+
+def process_score_items(
+    university_id: str,
+    majors: list[dict],
+    years_data: dict[Any, list[dict]],
+    allowed_years: set[int],
+) -> tuple[list[dict], int]:
+    rows: list[dict] = []
+    skipped = 0
+    seen: set[tuple] = set()
+    covered: dict[int, set[str]] = defaultdict(set)
+
+    def add_row(major_id: str, year: int, item: dict) -> bool:
+        key = (major_id, year)
+        if key in seen:
+            return False
+        total = _parse_int(item.get("total"))
+        if not total or total < 140 or total > 510:
+            return False
+        seen.add(key)
+        covered[year].add(major_id)
+        rows.append({
+            "university_id": university_id,
+            "major_id": major_id,
+            "year": year,
+            "total_score": total,
+            "politics_score": _parse_int(item.get("politics")) or 0,
+            "english_score": _parse_int(item.get("english")) or 0,
+            "professional1_score": _parse_int(item.get("special_one")),
+            "professional2_score": _parse_int(item.get("special_two")),
+            "line_diff": _parse_int(item.get("diff_total")),
+        })
+        return True
+
+    for year_str, items in years_data.items():
+        year = _parse_int(year_str)
+        if not year or year not in allowed_years:
+            continue
+
+        school_items: list[dict] = []
+        level_items: list[dict] = []
+        for item in items or []:
+            if not isinstance(item, dict):
+                continue
+            dtype = item.get("data_type")
+            if dtype == "score_level":
+                level_items.append(item)
+            elif not dtype or dtype == "school_score":
+                school_items.append(item)
+
+        for item in school_items:
+            total = _parse_int(item.get("total"))
+            if not total or total < 140 or total > 510:
+                skipped += 1
+                continue
+            matched = majors_for_score_item(majors, item)
+            if not matched:
+                skipped += 1
+                continue
+            added = False
+            for m in matched:
+                if m["id"] in covered[year]:
+                    continue
+                if add_row(m["id"], year, item):
+                    added = True
+            if not added:
+                skipped += 1
+
+        level_items.sort(
+            key=lambda x: len(re.sub(r"\D", "", str(x.get("code") or ""))),
+            reverse=True,
+        )
+        for item in level_items:
+            total = _parse_int(item.get("total"))
+            if not total or total < 140 or total > 510:
+                skipped += 1
+                continue
+            matched = majors_for_score_item(majors, item)
+            if not matched:
+                skipped += 1
+                continue
+            added = False
+            for m in matched:
+                if m["id"] in covered[year]:
+                    continue
+                if add_row(m["id"], year, item):
+                    added = True
+            if not added:
+                skipped += 1
+
+    return rows, skipped
+
+
 def build_score_rows(
     university_id: str,
     school: dict,
@@ -161,54 +469,7 @@ def build_score_rows(
 ) -> tuple[list[dict], int]:
     scores = school.get("scores") or {}
     years_data = scores.get("years") or {}
-    rows: list[dict] = []
-    skipped = 0
-    seen: set[tuple] = set()
-
-    for year_str, items in years_data.items():
-        year = _parse_int(year_str)
-        if not year or year not in allowed_years:
-            continue
-
-        for item in items or []:
-            if not isinstance(item, dict):
-                continue
-            if item.get("data_type") and item.get("data_type") != "school_score":
-                continue
-
-            total = _parse_int(item.get("total"))
-            if not total or total < 140 or total > 510:
-                skipped += 1
-                continue
-
-            code = (item.get("code") or "").strip()
-            name = (item.get("name") or "").strip()
-            degree = map_degree(degree_type=item.get("degree_type"))
-            college = (item.get("depart_name") or "").strip()
-
-            major_id = resolve_major_id_relaxed(majors, code, name, degree, college)
-            if not major_id:
-                skipped += 1
-                continue
-
-            key = (major_id, year)
-            if key in seen:
-                continue
-            seen.add(key)
-
-            rows.append({
-                "university_id": university_id,
-                "major_id": major_id,
-                "year": year,
-                "total_score": total,
-                "politics_score": _parse_int(item.get("politics")) or 0,
-                "english_score": _parse_int(item.get("english")) or 0,
-                "professional1_score": _parse_int(item.get("special_one")),
-                "professional2_score": _parse_int(item.get("special_two")),
-                "line_diff": _parse_int(item.get("diff_total")),
-            })
-
-    return rows, skipped
+    return process_score_items(university_id, majors, years_data, allowed_years)
 
 
 def load_all_majors(sb: Client) -> dict[str, list[dict]]:
@@ -235,8 +496,6 @@ def load_all_majors(sb: Client) -> dict[str, list[dict]]:
 def resolve_input(path_arg: str) -> Path:
     if path_arg:
         return Path(path_arg)
-    if LATEST_INPUT.exists():
-        return LATEST_INPUT
     return DEFAULT_INPUT
 
 
@@ -252,7 +511,7 @@ def main() -> None:
     input_path = resolve_input(args.input)
     if not input_path.exists():
         log.error("数据文件不存在: %s", input_path)
-        log.error("请先运行: npm run crawler:kaoyan:sync 或复制 syl-schools-full.json")
+        log.error("请先在 E:\\Kaoyan\\clawer 运行 sync，或复制 syl-schools-full.json 到 E:\\Kaoyan\\re\\latest\\")
         sys.exit(1)
 
     if "-" in args.years:
@@ -290,6 +549,8 @@ def main() -> None:
         if args.dry_run:
             uni_lookup[name] = f"dry-{i}"
             majors = build_major_rows(uni_lookup[name], school)
+            for j, m in enumerate(majors):
+                m["id"] = f"dry-{i}-{j}"
             all_major_rows.extend(majors)
             score_rows, skipped = build_score_rows(uni_lookup[name], school, majors, allowed_years)
             all_score_rows.extend(score_rows)

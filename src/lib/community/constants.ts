@@ -4,6 +4,11 @@ export const SUBJECT_CATEGORIES = [
   "军事学", "管理学", "艺术学",
 ] as const;
 
+/** 发帖必填年级 */
+export const COHORT_GRADES = ["23级", "24级", "25级", "26级"] as const;
+
+export type CohortGrade = (typeof COHORT_GRADES)[number];
+
 export type SubjectCategory = (typeof SUBJECT_CATEGORIES)[number];
 
 export const POST_TYPES = [

@@ -1,13 +1,6 @@
-import { SchoolsFilterProvider } from "./_context/schools-filter-context";
-import { SchoolsSyncProvider } from "./_context/schools-sync-context";
-import { SchoolsPageClient } from "./_components/schools-page-client";
+import { redirect } from "next/navigation";
 
+/** 院校列表已整合到 /choose-school，详情页仍使用 /schools/[id] */
 export default function SchoolsPage() {
-  return (
-    <SchoolsFilterProvider>
-      <SchoolsSyncProvider>
-        <SchoolsPageClient />
-      </SchoolsSyncProvider>
-    </SchoolsFilterProvider>
-  );
+  redirect("/choose-school");
 }

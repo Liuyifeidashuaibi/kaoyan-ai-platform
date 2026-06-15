@@ -44,6 +44,10 @@ build/
 .env.development.local
 .env.production.local
 
+# 爬虫与发布脚本（仅本机使用，不上传 GitHub）
+crawler/
+scripts/publish-schools.bat
+
 # 爬虫 LLM 解析缓存与临时文件
 crawler/parse_cache.json
 crawler/crawler_checkpoint.json

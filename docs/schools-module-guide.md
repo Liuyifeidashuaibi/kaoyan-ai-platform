@@ -6,170 +6,301 @@
 kaoyan-ai-platform/
 ├── supabase/
 │   └── migrations/
-│       ├── 003_choose_school.sql      # 择校模块基础表
-│       └── 004_schools_extensions.sql # 扩展（调剂表等）
+│       ├── 003_choose_school.sql      # 择校模块基础表（已存在）
+│       └── 004_schools_extensions.sql # 择校模块扩展（新增调剂表+学科分类）
 ├── src/
-│   ├── lib/api/schools.ts             # Supabase 查询
-│   └── app/(main)/schools/            # 择校 UI（/schools）
-└── crawler/                           # 仅发布：re → Supabase
-    ├── sync_kaoyan_cn.py              # 发布入口
-    ├── import_kaoyan_full.py          # JSON 全量入库
-    ├── audit_kaoyan_scores.py         # 分数覆盖率审计
-    ├── fill_low_coverage_scores.py    # 低覆盖补分（可选）
-    ├── paths.py                       # 默认 E:\Kaoyan\re
-    └── requirements.txt
+│   ├── types/database.ts              # TypeScript 类型（已扩展）
+│   ├── lib/api/schools.ts             # Supabase 数据查询工具函数
+│   ├── app/(main)/schools/
+│   │   ├── page.tsx                   # 择校主页（路由：/schools）
+│   │   ├── _context/
+│   │   │   └── schools-filter-context.tsx  # 全局 985/211/双一流筛选状态
+│   │   ├── _components/
+│   │   │   ├── schools-page-client.tsx     # 主页客户端组件
+│   │   │   ├── global-filter-drawer.tsx    # 全局筛选弹窗
+│   │   │   ├── school-list-view.tsx        # 按学校分类视图
+│   │   │   └── major-list-view.tsx         # 按专业分类视图
+│   │   └── [universityId]/
+│   │       ├── page.tsx                    # 院校详情页
+│   │       └── _components/
+│   │           ├── university-detail-client.tsx  # 详情主组件
+│   │           ├── overview-tab.tsx              # 概况标签
+│   │           ├── majors-tab.tsx                # 专业标签
+│   │           └── scores-tab.tsx                # 分数线标签
+│   └── components/schools/
+│       ├── university-card.tsx         # 院校卡片（全局复用）
+│       ├── tab-nav.tsx                 # 横向标签导航
+│       ├── bottom-filter-sheet.tsx     # 底部筛选面板
+│       ├── empty-state.tsx             # 空状态组件
+│       └── skeleton-list.tsx           # 骨架屏组件
+└── crawler/
+    ├── config.py                       # 爬虫配置
+    ├── crawler.py                      # 主爬虫逻辑
+    ├── requirements.txt                # Python 依赖
+    └── .env.example                    # 环境变量示例
 ```
-
-**三目录协作**（爬虫与数据在本机独立目录）：
-
-| 目录 | 作用 |
-|------|------|
-| `E:\Kaoyan\clawer` | 抓取掌上考研，写 JSON |
-| `E:\Kaoyan\re` | 数据落地（`latest\syl-schools-full.json`） |
-| 本仓库 `crawler/` | 读 `re` → Supabase → 网站刷新 |
 
 ---
 
 ## 二、Supabase 数据库建表
 
-### 步骤 1：启用 pg_trgm 扩展（可选）
+### 步骤 1：启用 pg_trgm 扩展（可选，用于全文搜索）
 
-Dashboard → Database → Extensions → 搜索 `pg_trgm` → 启用
+1. 打开 [Supabase Dashboard](https://supabase.com/dashboard)
+2. 进入项目 → Database → Extensions
+3. 搜索 `pg_trgm`，点击启用
 
-### 步骤 2：执行迁移
+### 步骤 2：执行迁移 SQL
 
+**方式 A：Supabase CLI（推荐）**
 ```bash
-npm run db:migrate:007
-npm run db:migrate:008
+npx supabase db push
 ```
 
-或在 Dashboard SQL 编辑器依次执行 `supabase/migrations/` 下对应文件。
+**方式 B：Dashboard SQL 编辑器**
+1. 打开 Dashboard → SQL Editor
+2. 先执行 `supabase/migrations/003_choose_school.sql`（如果尚未执行）
+3. 再执行 `supabase/migrations/004_schools_extensions.sql`（新增扩展）
+4. 点击 Run 执行
 
-### 步骤 3：验证表
+### 步骤 3：验证建表成功
 
-确认存在：`universities`、`majors`、`scores`、`recommendations`、`adjustments`
+在 Dashboard → Table Editor 中确认以下表已创建：
+- `universities` - 院校主表
+- `majors` - 专业表
+- `scores` - 分数线表
+- `recommendations` - 推免信息表
+- `adjustments` - 调剂信息表
+
+> 注：`announcements` 表仍存在于历史迁移中，但择校前端已不再展示公告数据。
 
 ---
 
-## 三、配置与发布数据
-
-择校数据**只来自掌上考研**，由 `E:\Kaoyan\clawer` 抓取，本仓库**不负责爬取**。
+## 三、配置与运行爬虫
 
 ### 步骤 1：准备环境
 
 ```bash
-pip install -r crawler/requirements.txt
-cp crawler/.env.example crawler/.env
-# 填入 SUPABASE_URL、SUPABASE_SERVICE_ROLE_KEY
-# 可选 KAOYAN_DATA_DIR=E:\Kaoyan\re
+cd crawler
+python -m venv venv
+
+# Windows
+venv\Scripts\activate
+
+# macOS/Linux
+source venv/bin/activate
+
+pip install -r requirements.txt
 ```
 
-### 步骤 2：首次全量抓取（在 clawer 目录）
-
-```bat
-E:\Kaoyan\clawer\install.bat
-E:\Kaoyan\clawer\crawl-now.bat
-```
-
-### 步骤 3：发布到网站
+### 步骤 2：配置环境变量
 
 ```bash
-npm run crawler:kaoyan:import
+cp .env.example .env
+# 编辑 .env，填入以下值：
+# SUPABASE_URL=https://xxx.supabase.co
+# SUPABASE_SERVICE_ROLE_KEY=xxx（从 Dashboard > Settings > API > service_role 获取）
 ```
 
-或双击 `scripts\publish-schools.bat`
+> **安全提示**：`service_role` key 具有完整数据库写入权限，请勿提交到 Git！
 
-入库后自动递增 `schools_sync_meta.revision`，前端约 30 秒内刷新。
+### 步骤 3：首次全量爬取
 
-### 日常更新
+```bash
+# 全量模式：爬取所有院校基础信息 + 专业 + 分数线
+python crawler.py --mode=full
+```
 
-| 场景 | 操作 |
-|------|------|
-| 每日自动（爬取 + 上网站） | `clawer\daily-sync-and-publish.bat` 或 `start-scheduler.bat` |
-| 只爬数据（不上网站） | `clawer\sync-now.bat` |
-| 手动发布 | `npm run crawler:kaoyan:import` |
+首次运行约需 2-6 小时（取决于网络状况）。
+- 支持中断续爬：直接重新运行即可从断点继续
+- 日志写入 `crawler.log`，可实时查看
 
-爬虫详细说明见 `E:\Kaoyan\clawer\README.md`，发布说明见 [crawler/README.md](../crawler/README.md)。
+### 步骤 4：后续增量更新
+
+```bash
+# 默认增量模式：仅爬取新增/变更数据
+python crawler.py --mode=increment
+# 或直接
+python crawler.py
+```
 
 ---
 
 ## 四、运行前端项目
 
-根目录 `.env.local`：
+### 步骤 1：确保 Supabase 环境变量已配置
 
+在项目根目录的 `.env.local` 中：
 ```
 NEXT_PUBLIC_SUPABASE_URL=https://xxx.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=xxx
 ```
 
+### 步骤 2：启动开发服务器
+
 ```bash
 npm run dev
 ```
 
-访问 `http://localhost:3000/schools`
+访问 `http://localhost:3000/schools` 即可看到择校模块。
 
 ---
 
-## 五、数据维护
+## 五、GitHub Actions 自动定时更新
 
-### 分数审计
+在 `.github/workflows/schools-crawler.yml` 中创建以下工作流：
 
-```bash
-python crawler/audit_kaoyan_scores.py
-python crawler/audit_kaoyan_scores.py --school 北京大学 --min-coverage 50
+```yaml
+name: 择校数据定时更新
+
+on:
+  schedule:
+    # 每年3月1日至4月30日 每天早8点运行（分数线更新期）
+    - cron: '0 0 1-30 3,4 *'
+    # 每年9月1日至10月31日 每天早8点运行（专业目录更新期）
+    - cron: '0 0 1-31 9,10 *'
+    # 全年每周三早8点运行（数据增量更新）
+    - cron: '0 0 * * 3'
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: '爬取模式'
+        required: true
+        default: 'increment'
+        type: choice
+        options: [full, increment]
+
+jobs:
+  crawl:
+    runs-on: ubuntu-latest
+    timeout-minutes: 360  # 最长6小时
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+          cache-dependency-path: crawler/requirements.txt
+
+      - name: Install dependencies
+        run: pip install -r crawler/requirements.txt
+        working-directory: crawler
+
+      - name: Run crawler
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: |
+          MODE="${{ github.event.inputs.mode || 'increment' }}"
+          python crawler.py --mode=$MODE
+        working-directory: crawler
+
+      - name: Upload logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: crawler-logs-${{ github.run_id }}
+          path: crawler/crawler.log
+          retention-days: 30
 ```
 
-报告输出：`crawler/logs/audit_scores_report.json`
+### 配置 Secrets
 
-### 低覆盖补分（可选）
+1. GitHub 仓库 → Settings → Secrets and variables → Actions
+2. 新增两个 secret：
+   - `SUPABASE_URL`：你的 Supabase 项目 URL
+   - `SUPABASE_SERVICE_ROLE_KEY`：service_role 密钥
 
-```bash
-python crawler/fill_low_coverage_scores.py --dry-run
-python crawler/fill_low_coverage_scores.py --school 中央音乐学院
+---
+
+## 六、数据维护手册
+
+### 年度更新时间表
+
+| 时间 | 更新内容 | 操作 |
+|------|----------|------|
+| **每年 9-10 月** | 各院校发布次年招生简章和专业目录 | 自动（GitHub Actions）|
+| **每年 3-4 月** | 各院校公布当年复试分数线 | 自动（GitHub Actions）|
+| **全年持续** | 院校/专业/学院/复试线增量更新 | 每周自动（GitHub Actions）|
+| **按需** | 手动添加/修正院校信息 | Supabase Dashboard |
+
+### 手动维护操作
+
+#### 添加新院校
+在 Supabase Dashboard → SQL Editor 执行：
+```sql
+INSERT INTO universities (name, province, city, school_type, level_985, level_211, double_first_class, website)
+VALUES ('院校名称', '省份', '城市', '综合', false, true, '一流学科', 'https://xxx.edu.cn');
 ```
 
-### 年度更新节奏
+#### 修正分数线数据
+```sql
+UPDATE scores
+SET total_score = 360, politics_score = 55, english_score = 55
+WHERE major_id = 'xxx' AND year = 2025;
+```
 
-| 时间 | 内容 |
-|------|------|
-| 每日 | clawer 增量探测 + 可选自动发布 |
-| 9–10 月 | 招生简章、专业目录更新 |
-| 3–4 月 | 复试分数线更新 |
+#### 添加 logo
 
----
-
-## 六、常见问题
-
-### Q1：页面显示「暂无数据」
-
-1. Supabase 各表是否有数据
-2. 全局筛选是否过滤掉所有院校
-3. 浏览器控制台 API 报错
-
-### Q2：`SUPABASE_URL 环境变量未设置`
-
-确认 `crawler/.env` 或根 `.env.local` 已配置。
-
-### Q3：发布失败，找不到 JSON
-
-确认 `E:\Kaoyan\re\latest\syl-schools-full.json` 存在；先运行 `clawer\sync-now.bat` 或 `crawl-now.bat`。
-
-### Q4：某校专业数为 0
-
-检查 `re\latest\syl-schools-full.json` 中该校 `plans.items`；重新抓取后 `npm run crawler:kaoyan:import`。
-
-### Q5：RLS 导致无法写入
-
-发布脚本使用 `SUPABASE_SERVICE_ROLE_KEY`（绕过 RLS），不要用 anon key。
-
-### Q6：分数线线差为空
-
-源数据无 `diff_total` 时 `line_diff` 为空，可在 Supabase 手动补全。
+爬虫默认不爬取 logo（节省带宽）。推荐在 Supabase Storage 中：
+1. 创建 `university-logos` bucket（公开读取）
+2. 上传 `{university_name}.png` 格式的 logo
+3. 在 Supabase Dashboard 批量更新 `logo_url` 字段
 
 ---
 
-## 七、性能建议
+## 七、常见问题排查
 
-1. 按需添加 `gin_trgm` 索引（见迁移文件注释）
-2. 高频查询可用 Next.js `cache()` / `unstable_cache()`
-3. 院校 logo 放 Supabase Storage + CDN
+### Q1：页面显示"暂无数据"
+**原因**：数据库中还没有数据，或全局筛选过滤掉了所有院校。
+
+**排查**：
+1. 检查 Supabase Dashboard 中各表是否有数据
+2. 点击右上角筛选图标，确认至少勾选一个层次
+3. 检查浏览器控制台是否有 API 报错
+
+### Q2：爬虫报 `SUPABASE_URL 环境变量未设置`
+确认 `crawler/.env` 文件存在且格式正确（无引号、无多余空格）。
+
+### Q3：爬虫报 `403 Forbidden` 或 `429 Too Many Requests`
+部分院校有防爬措施：
+- 检查 `config.py` 中的 `request_delay_min`，调大到 3-5 秒
+- 对特定院校降低 `max_connections_per_host` 到 1
+
+### Q4：某院校专业数量为 0
+该院校研招网结构与通用模板不兼容，需要为其编写专属爬虫子类：
+```python
+class PKUCrawler(GenericYanZhaoCrawler):
+    """北京大学专属爬虫"""
+    async def crawl_majors(self) -> list[MajorData]:
+        # 按北京大学研招网实际结构实现
+        ...
+```
+
+### Q5：RLS 策略导致无法写入
+爬虫使用 `service_role` key，会绕过 RLS。确认使用的是 `SUPABASE_SERVICE_ROLE_KEY` 而不是 `anon` key。
+
+### Q6：分数线显示线差为空
+线差 `line_diff` 需要知道当年国家线才能计算。可在爬取后手动执行 SQL 更新：
+```sql
+-- 设置 2025 年工学国家线为 270
+UPDATE scores s
+SET line_diff = s.total_score - 270,
+    national_line = 270
+FROM majors m
+WHERE s.major_id = m.id
+  AND s.year = 2025
+  AND m.subject_category = '工学';
+```
+
+---
+
+## 八、性能优化建议
+
+1. **Supabase 添加索引**：如果查询慢，在 Dashboard → SQL Editor 执行迁移文件中注释的 `gin_trgm` 索引
+2. **前端缓存**：使用 Next.js `cache()` 或 `unstable_cache()` 对高频查询进行服务端缓存
+3. **分页加载**：院校数量超过 500 后建议在 API 层加入 `.range()` 分页
+4. **图片 CDN**：将院校 logo 存入 Supabase Storage 并开启 CDN 加速

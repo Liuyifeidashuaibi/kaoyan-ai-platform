@@ -12,6 +12,7 @@ from typing import Any
 from supabase import Client, create_client
 
 from app.config import get_settings
+from app.utils.file_utils import ascii_storage_filename
 from app.schemas.community import COHORT_GRADES, SUBJECT_CATEGORIES, PostCreate, PostUpdate
 
 logger = logging.getLogger(__name__)
@@ -664,7 +665,7 @@ class CommunityService:
         self, user_id: str, filename: str, content: bytes, content_type: str
     ) -> dict[str, str]:
         sb = self._sb()
-        safe_name = re.sub(r"[^\w.\-]", "_", filename) or "file"
+        safe_name = ascii_storage_filename(filename)
         path = f"{user_id}/{uuid.uuid4().hex}_{safe_name}"
         sb.storage.from_("community-attachments").upload(
             path,

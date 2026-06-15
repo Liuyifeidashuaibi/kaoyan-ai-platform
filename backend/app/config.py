@@ -39,6 +39,8 @@ class Settings(BaseSettings):
     dashscope_base_url: str = "https://dashscope.aliyuncs.com/compatible-mode/v1"
     llm_max_tokens: int = 2048
     llm_temperature: float = 0.1
+    # qwen3.5/qwen3.6 默认开启思考模式，首字延迟 20s+；考研答疑建议关闭
+    llm_enable_thinking: bool = False
     # 聊天图片上传大小上限（字节）
     max_image_upload_bytes: int = 5 * 1024 * 1024
     max_audio_upload_bytes: int = 5 * 1024 * 1024

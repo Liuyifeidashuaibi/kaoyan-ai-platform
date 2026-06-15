@@ -280,6 +280,17 @@ class AIService:
                 chain.append(model)
         return chain or ["qwen3.5-plus", "qwen-turbo"]
 
+    def _dashscope_extra_body(self, model: str) -> dict | None:
+        """千问思考/推理模型需显式 enable_thinking；普通 qwen3.5 默认关闭以加快首字。"""
+        name = model.lower()
+        if "-thinking" in name or "deepseek-r1" in name:
+            return {"enable_thinking": True}
+        if self.settings.llm_enable_thinking:
+            return None
+        if name.startswith("qwen3") or "qwen3.5" in name or "qwen3.6" in name or "qwen3.7" in name:
+            return {"enable_thinking": False}
+        return None
+
     def _system_with_rag(self, rag_context: str = "") -> str:
 
         content = SYSTEM_PROMPT
@@ -414,6 +425,7 @@ class AIService:
 
         last_exc: Exception | None = None
         for model in self._llm_model_chain():
+            extra = self._dashscope_extra_body(model)
             try:
                 stream = await asyncio.wait_for(
                     self.openai_client.chat.completions.create(
@@ -422,6 +434,7 @@ class AIService:
                         stream=True,
                         temperature=self.settings.llm_temperature,
                         max_tokens=self.settings.llm_max_tokens,
+                        **({"extra_body": extra} if extra else {}),
                     ),
                     timeout=self.settings.model_timeout_seconds,
                 )
@@ -487,6 +500,7 @@ class AIService:
         ]
 
         model = self.settings.vl_model.strip()
+        extra = self._dashscope_extra_body(model)
 
         try:
 
@@ -503,6 +517,8 @@ class AIService:
                     temperature=0.01,
 
                     max_tokens=1500,
+
+                    **({"extra_body": extra} if extra else {}),
 
                 ),
 

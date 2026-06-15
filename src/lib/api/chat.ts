@@ -161,26 +161,29 @@ export async function streamChatMessage({
 
 
   if (!res.ok) {
-
     let message = `流式请求失败 (${res.status})`;
-
+    const contentType = res.headers.get("content-type") ?? "";
     try {
-
-      const body = (await res.json()) as { message?: string };
-
-      if (body.message) message = body.message;
-
+      if (contentType.includes("application/json")) {
+        const body = (await res.json()) as { message?: string; detail?: string };
+        message = body.message || body.detail || message;
+      } else {
+        const text = (await res.text()).trim();
+        if (text) message = text;
+      }
     } catch {
-
       /* ignore */
-
     }
-
     throw new Error(message);
-
   }
 
-
+  const streamContentType = res.headers.get("content-type") ?? "";
+  if (streamContentType.includes("application/json")) {
+    const body = (await res.json()) as { success?: boolean; message?: string };
+    if (body.success === false) {
+      throw new Error(body.message || "发送失败");
+    }
+  }
 
   if (!res.body) {
 

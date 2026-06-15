@@ -233,7 +233,7 @@ function ThinkingDots() {
           />
         ))}
       </span>
-      <span>思考中…</span>
+      <span>正在生成回答…</span>
     </div>
   );
 }

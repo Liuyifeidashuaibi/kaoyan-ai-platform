@@ -12,7 +12,7 @@ import logging
 from dataclasses import replace as dc_replace
 
 from fastapi import APIRouter, Depends, File, Form, Query, UploadFile
-from fastapi.responses import StreamingResponse
+from fastapi.responses import JSONResponse, StreamingResponse
 from sqlalchemy.orm import Session
 
 from app.config import get_settings
@@ -206,7 +206,10 @@ async def send_message_stream(
     """
     session = service.get_session(session_id)
     if not session:
-        return error_response("会话不存在")
+        return JSONResponse(
+            status_code=404,
+            content=error_response("会话不存在，请新建对话后重试"),
+        )
 
     audio_bytes: bytes | None = None
     audio_filename: str | None = None

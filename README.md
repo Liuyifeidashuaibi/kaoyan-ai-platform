@@ -12,8 +12,6 @@
 | **社区** | 发帖、收藏、关注、个人主页 | Supabase |
 | **番茄钟** | 本地专注计时 | 浏览器 localStorage |
 
-择校数据由掌上考研爬虫抓取（`E:\Kaoyan\clawer`），本仓库只负责发布到 Supabase，详见 [crawler/README.md](./crawler/README.md)。
-
 ## 架构
 
 ```
@@ -120,13 +118,11 @@ npm run build        # 生产构建
 npm run lint         # ESLint
 npm run typecheck    # TypeScript 检查
 npm run db:migrate:013  # 社区表迁移
-
-# 择校数据发布（读 E:\Kaoyan\re → Supabase）
-npm run crawler:kaoyan:import
+npm run crawler:kaoyan:sync   # 掌上考研增量同步 + 导入
+npm run crawler:kaoyan:import # 仅导入已有 JSON 到 Supabase
 ```
 
-择校模块完整说明：[docs/schools-module-guide.md](./docs/schools-module-guide.md)  
-发布脚本说明：[crawler/README.md](./crawler/README.md)
+择校模块完整说明：[docs/schools-module-guide.md](./docs/schools-module-guide.md)
 
 ## 已知限制（后续迭代）
 

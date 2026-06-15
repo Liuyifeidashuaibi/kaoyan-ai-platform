@@ -9,6 +9,10 @@ const nextConfig: NextConfig = {
     config.parallelism = 1;
     return config;
   },
+  experimental: {
+    // 错题本/聊天上传经 Next rewrite 代理，默认 10MB 会截断大文件
+    proxyClientMaxBodySize: "100mb",
+  },
   async rewrites() {
     return [
       {

@@ -85,7 +85,17 @@ export async function apiUpload<T>(
       0
     );
   }
-  const json = (await res.json()) as ApiResponse<T> & { detail?: string };
+  const contentType = res.headers.get("content-type") ?? "";
+  if (!contentType.includes("application/json")) {
+    const text = (await res.text()).trim();
+    throw new ApiError(text || `上传失败 (${res.status})`, res.status);
+  }
+  let json: ApiResponse<T> & { detail?: string };
+  try {
+    json = (await res.json()) as ApiResponse<T> & { detail?: string };
+  } catch {
+    throw new ApiError(`上传响应解析失败 (${res.status})`, res.status);
+  }
 
   if (!res.ok || !json.success) {
     throw new ApiError(readErrorMessage(json, res.status), res.status);

@@ -3,6 +3,7 @@
 """
 
 import uuid
+import re
 from pathlib import Path
 
 # 允许上传的图片扩展名（错题本等落盘场景）
@@ -78,6 +79,16 @@ FILE_TYPE_LABELS = {
     "audio": "音频",
     "other": "其他",
 }
+
+
+def ascii_storage_filename(filename: str, *, fallback_stem: str = "file") -> str:
+    """Supabase Storage 对象 key 仅允许 ASCII，中文等字符会导致 InvalidKey。"""
+    name = Path(filename).name or fallback_stem
+    stem = Path(name).stem or fallback_stem
+    ext = Path(name).suffix.lower()
+    safe_stem = re.sub(r"[^a-zA-Z0-9._-]", "_", stem).strip("._-") or fallback_stem
+    safe_ext = re.sub(r"[^a-zA-Z0-9.]", "", ext)
+    return f"{safe_stem}{safe_ext}" if safe_ext else safe_stem
 
 
 def ensure_dir(path: Path) -> Path:

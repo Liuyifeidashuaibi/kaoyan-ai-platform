@@ -120,7 +120,11 @@ npm run typecheck    # TypeScript 检查
 npm run db:migrate:013  # 社区表迁移
 ```
 
-择校数据由本机 `E:\Kaoyan\clawer` 抓取、`E:\Kaoyan\re` 存储，发布脚本在本地 `crawler/`（不入库）。详见本地 [docs/schools-module-guide.md](./docs/schools-module-guide.md)。
+择校数据（本机维护，不入 GitHub）：
+
+- 爬虫：`E:\Kaoyan\clawer`（`daily-sync-and-publish.bat` 每日爬取+发布）
+- 数据：`E:\Kaoyan\re`
+- 发布：`npm run crawler:kaoyan:import`（脚本在本地 `crawler/`，已 gitignore）
 
 ## 已知限制（后续迭代）
 

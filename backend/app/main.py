@@ -10,7 +10,7 @@ from contextlib import asynccontextmanager
 from pathlib import Path
 
 from dotenv import load_dotenv
-from fastapi import FastAPI, Request
+from fastapi import Depends, FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
@@ -22,8 +22,13 @@ load_dotenv(_project_root / "crawler" / ".env")
 
 from app.config import get_settings
 from app.database import init_db
-from app.routers import chat, community, schools, wrong_questions
+from app.routers import admin, chat, community, schools, settings, tasks, translator, wrong_questions
+from app.modules.en_learn.router import router as en_learn_router
+from app.modules.tts.router import router as tts_router
+from app.modules.word_dict.router import router as word_dict_router
+from app.modules.word_dict.database import init_word_lib_db
 from app.services.vector_sync_service import get_vector_sync_service
+from app.utils.admin_auth import require_admin
 from app.utils.file_utils import ensure_dir
 from app.utils.response import success_response
 
@@ -46,9 +51,26 @@ async def lifespan(app: FastAPI):
     ensure_dir(settings.chroma_path)
 
     init_db()
+    try:
+        init_word_lib_db()
+        logger.info("word_lib 词库初始化完成")
+    except Exception as exc:
+        logger.warning("word_lib 初始化失败（可先导入 ECDICT）: %s", exc)
     logger.info("数据库初始化完成")
     logger.info("公共资料目录: %s", settings.public_data_path)
     logger.info("错题上传目录: %s", settings.upload_path)
+
+    # Redis 连通性探测（失败则自动降级，不阻断启动）
+    try:
+        from app.infrastructure.cache.redis_client import is_redis_enabled
+
+        if settings.redis_url.strip():
+            logger.info("Redis 已配置: %s", settings.redis_url.split("@")[-1])
+            logger.info("Redis 可用: %s", is_redis_enabled())
+        else:
+            logger.info("未配置 REDIS_URL，缓存与 Celery 将使用内存降级")
+    except Exception as exc:
+        logger.warning("Redis 初始化探测失败: %s", exc)
 
     yield
     logger.info("服务关闭")
@@ -74,7 +96,14 @@ app.add_middleware(
 app.include_router(chat.router)
 app.include_router(schools.router)
 app.include_router(wrong_questions.router)
+app.include_router(translator.router)
+app.include_router(settings.router)
 app.include_router(community.router)
+app.include_router(admin.router)
+app.include_router(tasks.router)
+app.include_router(en_learn_router)
+app.include_router(tts_router)
+app.include_router(word_dict_router)
 
 # 静态文件服务 — 提供上传图片访问（确保目录存在后再挂载）
 _uploads_root = get_settings().root / "uploads"
@@ -83,8 +112,10 @@ app.mount("/uploads", StaticFiles(directory=str(_uploads_root)), name="uploads")
 
 
 @app.post("/api/admin/vector-sync")
-async def trigger_vector_sync():
-    """手动触发 Supabase → Chroma 增量向量同步（需配置 Supabase）。"""
+async def trigger_vector_sync(admin_id: str = Depends(require_admin)):
+    """手动触发 Supabase → Chroma 增量向量同步（需管理员权限）。"""
+    from app.utils.admin_audit import log_admin_action
+
     settings = get_settings()
     if not settings.effective_supabase_url or not settings.effective_supabase_service_key:
         return {"success": False, "message": "未配置 Supabase"}
@@ -92,6 +123,7 @@ async def trigger_vector_sync():
         return {"success": False, "message": "未配置 DASHSCOPE_API_KEY"}
     try:
         result = get_vector_sync_service().sync()
+        log_admin_action(admin_id, "vector_sync.execute", detail=result)
         return {"success": True, "data": result}
     except Exception as exc:
         logger.exception("向量同步失败")
@@ -103,6 +135,13 @@ async def health_check():
     """健康检查接口。"""
     settings = get_settings()
     api_key_ok = bool(settings.dashscope_api_key.strip())
+    redis_ok = False
+    try:
+        from app.infrastructure.cache.redis_client import is_redis_enabled
+
+        redis_ok = is_redis_enabled()
+    except Exception:
+        pass
     return success_response(
         {
             "status": "ok",
@@ -114,6 +153,8 @@ async def health_check():
             "max_image_upload_mb": settings.max_image_upload_bytes // (1024 * 1024),
             "max_audio_seconds": settings.max_audio_seconds,
             "api_key_configured": api_key_ok,
+            "redis_configured": bool(settings.redis_url.strip()),
+            "redis_available": redis_ok,
             "public_data_dir": str(settings.public_data_path),
         }
     )
@@ -153,6 +194,10 @@ async def root():
             "endpoints": {
                 "chat": "/api/chat",
                 "wrong_questions": "/api/wrong-questions",
+                "translator": "/api/translator",
+                "en_learn": "/api/en-learn",
+                "word_query": "/api/word-query",
+                "tts": "/api/tts",
                 "community": "/api/community",
                 "schools": "/api/schools",
                 "majors": "/api/majors",
@@ -160,6 +205,7 @@ async def root():
                 "admissions": "/api/admissions",
                 "score_lines": "/api/score-lines",
                 "health": "/api/health",
+                "tasks": "/api/tasks",
             },
         }
     )

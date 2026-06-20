@@ -24,13 +24,13 @@ export function LogoutButton() {
               setError(
                 signOutError instanceof Error
                   ? signOutError.message
-                  : "退出失败，请重试。"
+                  : "Sign out failed. Try again."
               );
             }
           });
         }}
       >
-        {pending ? "退出中..." : "退出登录"}
+        {pending ? "Signing out…" : "Sign Out"}
       </Button>
       {error ? <p className="text-sm text-destructive">{error}</p> : null}
     </div>

@@ -63,7 +63,7 @@ export function TomatoClock() {
     <div className="mx-auto flex max-w-2xl flex-col gap-6">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">番茄钟</h1>
+          <h1 className="text-2xl font-semibold tracking-tight">Timer</h1>
           <p className="text-muted-foreground">
             专注计时，数据永久保存在本地
           </p>

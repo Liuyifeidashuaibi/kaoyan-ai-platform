@@ -14,6 +14,7 @@ import {
 } from "@/lib/api/schools";
 import { useSchoolsFilter } from "../_context/schools-filter-context";
 import { useSchoolsSync } from "../_context/schools-sync-context";
+import { useIncrementalList } from "@/hooks/use-incremental-list";
 
 interface MajorListViewProps {
   search: string;
@@ -84,6 +85,8 @@ export function MajorListView({
       }),
     [catalog, filter, degreeType, subjectCategory, search]
   );
+
+  const { visibleItems, hasMore, loadMore, total } = useIncrementalList(majors, 30);
 
   const categoryTabs = useMemo(
     () => [
@@ -156,8 +159,9 @@ export function MajorListView({
       {!loading && (
         <p className="mb-3 text-sm text-muted-foreground">
           共找到{" "}
-          <span className="font-semibold text-[#007AFF]">{majors.length}</span>{" "}
+          <span className="font-semibold text-[#007AFF]">{total}</span>{" "}
           个{degreeType === "学硕" ? "学术型" : "专业型"}招生专业
+          {hasMore ? `，已显示 ${visibleItems.length} 个` : null}
         </p>
       )}
 
@@ -197,14 +201,27 @@ export function MajorListView({
           }
         />
       ) : (
-        <div className="flex flex-col gap-3">
-          {majors.map((major) => (
-            <MajorCard
-              key={`${major.code}-${major.degree_type}`}
-              major={major}
-            />
-          ))}
-        </div>
+        <>
+          <div className="flex flex-col gap-3">
+            {visibleItems.map((major) => (
+              <MajorCard
+                key={`${major.code}-${major.degree_type}`}
+                major={major}
+              />
+            ))}
+          </div>
+          {hasMore && (
+            <div className="mt-6 flex justify-center">
+              <button
+                type="button"
+                onClick={loadMore}
+                className="rounded-xl border border-border bg-white px-6 py-2.5 text-sm font-medium hover:bg-muted/50"
+              >
+                加载更多（还剩 {total - visibleItems.length} 个）
+              </button>
+            </div>
+          )}
+        </>
       )}
     </div>
   );

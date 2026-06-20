@@ -1,6 +1,6 @@
 import { Suspense } from "react";
 
-import { ChatApp } from "@/components/chat/chat-app";
+import { ChatPageClient } from "./_components/chat-page-client";
 import { requireAuth } from "@/lib/auth/require-auth";
 
 export default async function ChatPage() {
@@ -10,11 +10,11 @@ export default async function ChatPage() {
     <Suspense
       fallback={
         <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
-          加载聊天...
+          Loading chat…
         </div>
       }
     >
-      <ChatApp />
+      <ChatPageClient />
     </Suspense>
   );
 }

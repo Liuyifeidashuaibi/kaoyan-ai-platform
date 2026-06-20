@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useCallback, useEffect, useState } from "react";
+import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ArrowLeft, RefreshCw, ExternalLink } from "lucide-react";
 import { TabNav } from "@/components/schools/tab-nav";
@@ -53,7 +53,10 @@ function UniversityDetailContent({ universityId }: UniversityDetailClientProps) 
   const [majors, setMajors] = useState<Major[]>([]);
   const [scoredMajorCodes, setScoredMajorCodes] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
+  const [majorsLoading, setMajorsLoading] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
+  const majorsLoadedRef = useRef(false);
+  const scoredLoadedRef = useRef(false);
   const [activeTab, setActiveTab] = useState<DetailTab>(() =>
     resolveInitialTab(tabParam, majorParam)
   );
@@ -120,18 +123,16 @@ function UniversityDetailContent({ universityId }: UniversityDetailClientProps) 
     if (isDetailTab(tabParam)) setActiveTab(tabParam);
   }, [tabParam]);
 
-  const load = async () => {
+  const loadUniversity = async () => {
     setLoading(true);
     setLoadError(null);
+    majorsLoadedRef.current = false;
+    scoredLoadedRef.current = false;
+    setMajors([]);
+    setScoredMajorCodes(new Set());
     try {
-      const [uni, ms, scored] = await Promise.all([
-        getUniversity(universityId),
-        getMajors(universityId),
-        getScoredMajorCodes(universityId),
-      ]);
+      const uni = await getUniversity(universityId);
       setUniversity(uni);
-      setMajors(ms);
-      setScoredMajorCodes(scored);
       if (!uni) setLoadError("not_found");
     } catch (err) {
       console.error("加载院校详情失败:", err);
@@ -142,10 +143,45 @@ function UniversityDetailContent({ universityId }: UniversityDetailClientProps) 
     }
   };
 
+  const ensureMajors = useCallback(async () => {
+    if (!university || majorsLoadedRef.current) return;
+    setMajorsLoading(true);
+    try {
+      const ms = await getMajors(universityId);
+      setMajors(ms);
+      majorsLoadedRef.current = true;
+    } catch (err) {
+      console.error("加载专业列表失败:", err);
+    } finally {
+      setMajorsLoading(false);
+    }
+  }, [university, universityId]);
+
+  const ensureScoredCodes = useCallback(async () => {
+    if (!university || scoredLoadedRef.current) return;
+    try {
+      const scored = await getScoredMajorCodes(universityId);
+      setScoredMajorCodes(scored);
+      scoredLoadedRef.current = true;
+    } catch (err) {
+      console.error("加载分数专业代码失败:", err);
+    }
+  }, [university, universityId]);
+
   useEffect(() => {
-    load();
+    void loadUniversity();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [universityId, refreshKey, version]);
+
+  useEffect(() => {
+    if (!university) return;
+    if (activeTab === "overview" || activeTab === "majors") {
+      void ensureMajors();
+    }
+    if (activeTab === "majors") {
+      void ensureScoredCodes();
+    }
+  }, [activeTab, ensureMajors, ensureScoredCodes, university]);
 
   if (loading) {
     return (
@@ -170,7 +206,7 @@ function UniversityDetailContent({ universityId }: UniversityDetailClientProps) 
             loadError === "failed" ? (
               <button
                 type="button"
-                onClick={() => load()}
+                onClick={() => loadUniversity()}
                 className="rounded-lg bg-[#007AFF] px-4 py-2 text-sm font-medium text-white hover:bg-[#007AFF]/90"
               >
                 重试
@@ -280,28 +316,40 @@ function UniversityDetailContent({ universityId }: UniversityDetailClientProps) 
 
         <div className="mx-4 min-h-[400px] rounded-b-2xl bg-white shadow-sm lg:mx-0">
           {activeTab === "overview" && (
-            <OverviewTab
-              university={university}
-              majors={majors}
-              universityId={universityId}
-              dataVersion={version}
-              highlightMajorCode={majorParam ?? undefined}
-              onGoMajors={() => handleTabChange("majors")}
-              onGoScores={() => handleTabChange("scores")}
-              onClearMajorHighlight={
-                majorParam ? handleClearMajorHighlight : undefined
-              }
-            />
+            majorsLoading && majors.length === 0 ? (
+              <div className="p-6">
+                <SkeletonDetail />
+              </div>
+            ) : (
+              <OverviewTab
+                university={university}
+                majors={majors}
+                universityId={universityId}
+                dataVersion={version}
+                highlightMajorCode={majorParam ?? undefined}
+                onGoMajors={() => handleTabChange("majors")}
+                onGoScores={() => handleTabChange("scores")}
+                onClearMajorHighlight={
+                  majorParam ? handleClearMajorHighlight : undefined
+                }
+              />
+            )
           )}
           {activeTab === "majors" && (
-            <MajorsTab
-              majors={majors}
-              scoredMajorCodes={scoredMajorCodes}
-              highlightMajorCode={majorParam ?? undefined}
-              onViewScores={handleViewScores}
-              onSelectMajor={handleSelectMajor}
-              onClearHighlight={majorParam ? handleClearMajorHighlight : undefined}
-            />
+            majorsLoading && majors.length === 0 ? (
+              <div className="p-6">
+                <SkeletonDetail />
+              </div>
+            ) : (
+              <MajorsTab
+                majors={majors}
+                scoredMajorCodes={scoredMajorCodes}
+                highlightMajorCode={majorParam ?? undefined}
+                onViewScores={handleViewScores}
+                onSelectMajor={handleSelectMajor}
+                onClearHighlight={majorParam ? handleClearMajorHighlight : undefined}
+              />
+            )
           )}
           {activeTab === "scores" && (
             <ScoresTab

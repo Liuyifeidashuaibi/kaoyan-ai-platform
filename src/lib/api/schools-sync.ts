@@ -5,7 +5,7 @@ import { createClient } from "@/lib/supabase/client";
 import { invalidateSchoolsCache } from "@/lib/api/schools";
 
 /** 轮询间隔（毫秒） */
-export const SCHOOLS_SYNC_POLL_MS = 30_000;
+export const SCHOOLS_SYNC_POLL_MS = 60_000;
 
 export type SchoolsSyncMeta = {
   revision: number;

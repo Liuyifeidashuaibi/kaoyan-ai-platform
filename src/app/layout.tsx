@@ -15,10 +15,10 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: "考研 AI 平台",
-    template: "%s | 考研 AI 平台",
+    default: "PNIXPG",
+    template: "%s | PNIXPG",
   },
-  description: "智能考研备考平台 — AI 答疑、择校分析、番茄专注与研友社区",
+  description: "PNIXPG — AI study assistant, school search, focus timer and community",
 };
 
 export default function RootLayout({

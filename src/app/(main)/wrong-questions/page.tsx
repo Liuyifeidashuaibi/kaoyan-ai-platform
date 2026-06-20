@@ -1,4 +1,4 @@
-import { WrongQuestionsApp } from "@/components/wrong-questions/wrong-questions-app";
+import { WrongQuestionsPageClient } from "./_components/wrong-questions-page-client";
 import { requireAuth } from "@/lib/auth/require-auth";
 
 type PageProps = {
@@ -9,5 +9,5 @@ export default async function WrongQuestionsPage({ searchParams }: PageProps) {
   await requireAuth("/wrong-questions");
   const { folder } = await searchParams;
 
-  return <WrongQuestionsApp initialFolder={folder?.trim() || undefined} />;
+  return <WrongQuestionsPageClient initialFolder={folder?.trim() || undefined} />;
 }

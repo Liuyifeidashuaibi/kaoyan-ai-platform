@@ -4,7 +4,6 @@ import {
   FileAudio,
   FileText,
   FileVideo,
-  Globe,
   ImageIcon,
 } from "lucide-react";
 
@@ -123,13 +122,7 @@ export function MaterialTimelineItem({
               </Badge>
               {question.ai_analysis ? (
                 <Badge variant="secondary" className="shrink-0">
-                  已解析
-                </Badge>
-              ) : null}
-              {question.is_public ? (
-                <Badge variant="default" className="shrink-0 gap-1">
-                  <Globe className="size-3" />
-                  公开
+                  Analyzed
                 </Badge>
               ) : null}
             </div>

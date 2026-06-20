@@ -1,0 +1,28 @@
+# Celery Worker + Beat — 本地单机 GPU 任务队列
+# 与 backend 共享代码卷，Redis 作 Broker
+# 构建: docker build -f docker/Dockerfile.celery -t kaoyan-celery .
+
+FROM python:3.11-slim
+
+WORKDIR /app
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY backend/requirements.txt backend/requirements.txt
+RUN pip install --no-cache-dir -r backend/requirements.txt
+
+COPY backend/ backend/
+COPY data/ data/
+
+RUN mkdir -p uploads/wrong_questions uploads/chat uploads/tasks chroma_db
+
+ENV PYTHONPATH=/app/backend
+ENV PROJECT_ROOT=/app
+ENV REDIS_URL=redis://redis:6379/0
+ENV CELERY_BROKER_URL=redis://redis:6379/1
+ENV CELERY_RESULT_BACKEND=redis://redis:6379/2
+
+# 默认启动 Worker；compose 中 celery-beat 服务覆盖 CMD
+CMD ["celery", "-A", "app.infrastructure.tasks.celery_app", "worker", "--loglevel=info", "-Q", "default,heavy", "--concurrency=2"]

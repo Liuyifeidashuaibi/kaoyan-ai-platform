@@ -8,6 +8,10 @@ import { PostCard } from "@/components/community/post-card";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { listFavorites, toggleFavorite } from "@/lib/api/community";
 import type { CommunityPost } from "@/lib/api/types";
+import {
+  COMMUNITY_FAVORITES_DESCRIPTION,
+  COMMUNITY_FAVORITES_LABEL,
+} from "@/lib/community/constants";
 import { createClient, isSupabaseConfigured } from "@/lib/supabase/client";
 
 export function FavoritesClient() {
@@ -40,7 +44,7 @@ export function FavoritesClient() {
       setPage(pageNum);
       setHasMore(data.has_more);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "加载失败");
+      setError(e instanceof Error ? e.message : "Failed to load");
       if (!append) setPosts([]);
     } finally {
       setLoading(false);
@@ -81,14 +85,19 @@ export function FavoritesClient() {
           <div>
             <h1 className="flex items-center gap-2 text-2xl font-semibold tracking-tight">
               <Star className="size-6" />
-              我的收藏
+              {COMMUNITY_FAVORITES_LABEL}
             </h1>
-            <p className="text-muted-foreground">点击帖子可打开原帖</p>
+            <p className="text-muted-foreground">{COMMUNITY_FAVORITES_DESCRIPTION}</p>
           </div>
         </div>
-        <Link href="/community" className={buttonVariants({ variant: "outline", size: "sm" })}>
-          返回社区
-        </Link>
+        <div className="flex flex-wrap gap-2">
+          <Link href="/profile" className={buttonVariants({ variant: "outline", size: "sm" })}>
+            Profile
+          </Link>
+          <Link href="/community" className={buttonVariants({ variant: "outline", size: "sm" })}>
+            Community
+          </Link>
+        </div>
       </div>
 
       <div className="space-y-3">
@@ -100,9 +109,12 @@ export function FavoritesClient() {
           <p className="py-8 text-center text-destructive">{error}</p>
         ) : posts.length === 0 ? (
           <div className="py-16 text-center text-muted-foreground">
-            <p>还没有收藏任何帖子</p>
-            <Link href="/community" className="mt-2 inline-block underline">
-              去社区逛逛
+            <p>No saved community posts yet</p>
+            <p className="mt-1 text-sm">
+              Notebook is separate from Community — your private study library.
+            </p>
+            <Link href="/community" className="mt-3 inline-block underline">
+              Browse Community
             </Link>
           </div>
         ) : (
@@ -123,7 +135,7 @@ export function FavoritesClient() {
                   disabled={loadingMore}
                   onClick={() => void loadFavorites(page + 1, true)}
                 >
-                  {loadingMore ? <Loader2 className="animate-spin" /> : "加载更多"}
+                  {loadingMore ? <Loader2 className="animate-spin" /> : "Load more"}
                 </Button>
               </div>
             )}

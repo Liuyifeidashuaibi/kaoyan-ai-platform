@@ -84,7 +84,7 @@ export function LoginForm() {
     <Card>
       <CardHeader>
         <CardTitle>登录</CardTitle>
-        <CardDescription>使用邮箱和密码登录考研 AI 平台</CardDescription>
+        <CardDescription>使用邮箱和密码登录 PNIXPG</CardDescription>
       </CardHeader>
       <form onSubmit={handleSubmit}>
         <CardContent className="space-y-4">

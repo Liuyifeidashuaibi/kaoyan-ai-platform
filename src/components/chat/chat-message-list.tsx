@@ -8,11 +8,7 @@ import React, {
   useRef,
   useState,
 } from "react";
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
-import remarkMath from "remark-math";
-import rehypeKatex from "rehype-katex";
-import rehypeHighlight from "rehype-highlight";
+import dynamic from "next/dynamic";
 import { Bot, Check, ChevronDown, Copy, RefreshCw, ThumbsDown, ThumbsUp, User } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -21,9 +17,17 @@ import { userMessageDisplayText } from "@/lib/chat/display";
 import { resolveUploadUrl } from "@/lib/config/api";
 import { cn } from "@/lib/utils";
 
-/* ── KaTeX CSS (loaded once) ─────────────────────────────── */
-import "katex/dist/katex.min.css";
-import "highlight.js/styles/github.css";
+const ChatMarkdownContent = dynamic(
+  () =>
+    import("@/components/chat/chat-markdown-content").then(
+      (mod) => mod.ChatMarkdownContent
+    ),
+  {
+    loading: () => (
+      <div className="my-1 h-4 w-40 animate-pulse rounded bg-muted/80" />
+    ),
+  }
+);
 
 /* ── Types ───────────────────────────────────────────────── */
 type MessageActionsProps = {
@@ -66,7 +70,7 @@ function CopyButton({ text, className }: { text: string; className?: string }) {
       size="icon-xs"
       onClick={handleCopy}
       className={cn("size-7 text-muted-foreground hover:text-foreground", className)}
-      aria-label="复制"
+      aria-label="Copy"
     >
       {copied ? <Check className="size-3.5 text-green-500" /> : <Copy className="size-3.5" />}
     </Button>
@@ -92,7 +96,7 @@ const MessageActions = memo(function MessageActions({
           "size-7 text-muted-foreground hover:text-foreground",
           thumbState === "up" && "text-green-500 hover:text-green-500"
         )}
-        aria-label="赞"
+        aria-label="Like"
       >
         <ThumbsUp className="size-3.5" />
       </Button>
@@ -104,7 +108,7 @@ const MessageActions = memo(function MessageActions({
           "size-7 text-muted-foreground hover:text-foreground",
           thumbState === "down" && "text-red-500 hover:text-red-500"
         )}
-        aria-label="踩"
+        aria-label="Dislike"
       >
         <ThumbsDown className="size-3.5" />
       </Button>
@@ -114,102 +118,12 @@ const MessageActions = memo(function MessageActions({
           size="icon-xs"
           onClick={onRegenerate}
           className="size-7 text-muted-foreground hover:text-foreground"
-          aria-label="重新生成"
+          aria-label="Regenerate"
         >
           <RefreshCw className="size-3.5" />
         </Button>
       )}
     </div>
-  );
-});
-
-/* ── Markdown renderer ───────────────────────────────────── */
-const MarkdownContent = memo(function MarkdownContent({
-  content,
-}: {
-  content: string;
-}) {
-  return (
-    <ReactMarkdown
-      remarkPlugins={[remarkGfm, remarkMath]}
-      rehypePlugins={[rehypeKatex, rehypeHighlight]}
-      components={{
-        /* Code blocks */
-        pre({ children, ...props }) {
-          const codeEl = React.isValidElement(children) ? children : null;
-          const code =
-            codeEl?.props &&
-            typeof codeEl.props === "object" &&
-            "children" in codeEl.props
-              ? (codeEl.props as { children?: React.ReactNode }).children
-              : "";
-          const rawCode = typeof code === "string" ? code : String(code ?? "");
-
-          return (
-            <div className="group/code relative my-3">
-              <CopyButton
-                text={rawCode.trim()}
-                className="absolute top-2 right-2 opacity-0 group-hover/code:opacity-100"
-              />
-              <pre
-                {...props}
-                className="overflow-x-auto rounded-lg bg-zinc-950 p-4 text-sm text-zinc-100 dark:bg-zinc-900"
-              >
-                {children}
-              </pre>
-            </div>
-          );
-        },
-        /* Inline code */
-        code({ children, className, ...props }) {
-          const isBlock = className?.startsWith("language-");
-          if (isBlock) return <code className={className} {...props}>{children}</code>;
-          return (
-            <code
-              className="mx-0.5 rounded bg-zinc-100 px-1.5 py-0.5 font-mono text-[0.85em] text-zinc-800 dark:bg-zinc-800 dark:text-zinc-200"
-              {...props}
-            >
-              {children}
-            </code>
-          );
-        },
-        /* Headings */
-        h1: ({ children }) => <h1 className="mt-4 mb-2 text-xl font-bold">{children}</h1>,
-        h2: ({ children }) => <h2 className="mt-4 mb-2 text-lg font-semibold">{children}</h2>,
-        h3: ({ children }) => <h3 className="mt-3 mb-1.5 text-base font-semibold">{children}</h3>,
-        /* Lists */
-        ul: ({ children }) => <ul className="my-2 ml-4 list-disc space-y-1">{children}</ul>,
-        ol: ({ children }) => <ol className="my-2 ml-4 list-decimal space-y-1">{children}</ol>,
-        li: ({ children }) => <li className="leading-relaxed">{children}</li>,
-        /* Table */
-        table: ({ children }) => (
-          <div className="my-3 overflow-x-auto rounded-lg border border-border">
-            <table className="min-w-full text-sm">{children}</table>
-          </div>
-        ),
-        thead: ({ children }) => <thead className="bg-muted">{children}</thead>,
-        th: ({ children }) => (
-          <th className="px-3 py-2 text-left font-medium">{children}</th>
-        ),
-        td: ({ children }) => (
-          <td className="border-t border-border px-3 py-2">{children}</td>
-        ),
-        /* Blockquote */
-        blockquote: ({ children }) => (
-          <blockquote className="my-3 border-l-4 border-primary/40 pl-4 text-muted-foreground italic">
-            {children}
-          </blockquote>
-        ),
-        /* Horizontal rule */
-        hr: () => <hr className="my-4 border-border" />,
-        /* Paragraph */
-        p: ({ children }) => <p className="mb-2 last:mb-0 leading-relaxed">{children}</p>,
-        /* Strong / Em */
-        strong: ({ children }) => <strong className="font-semibold">{children}</strong>,
-      }}
-    >
-      {content}
-    </ReactMarkdown>
   );
 });
 
@@ -233,7 +147,7 @@ function ThinkingDots() {
           />
         ))}
       </span>
-      <span>正在生成回答…</span>
+      <span>Generating response…</span>
     </div>
   );
 }
@@ -278,21 +192,21 @@ const MessageBubble = memo(function MessageBubble({
             "rounded-2xl px-4 py-3 text-sm leading-relaxed",
             isUser
               ? "rounded-tr-sm bg-primary text-primary-foreground"
-              : "rounded-tl-sm bg-muted/60 text-foreground"
+              : "rounded-tl-sm border border-border/40 bg-background text-foreground shadow-sm"
           )}
         >
           {imageSrc && !imageBroken && (
             // eslint-disable-next-line @next/next/no-img-element
             <img
               src={imageSrc}
-              alt="上传图片"
+              alt="Uploaded image"
               className="mb-2 max-h-52 max-w-full rounded-lg border border-black/10 bg-white object-contain"
               onError={() => setImageBroken(true)}
             />
           )}
           {imageSrc && imageBroken && (
             <div className="mb-2 rounded-lg border border-dashed border-black/20 bg-white/90 px-3 py-2 text-xs text-muted-foreground">
-              图片加载失败，请刷新或重新上传
+              Failed to load image. Refresh or upload again.
             </div>
           )}
           {isUser ? (
@@ -301,7 +215,7 @@ const MessageBubble = memo(function MessageBubble({
             ) : null
           ) : (
             <div className="prose-sm max-w-none break-words">
-              <MarkdownContent content={content} />
+              <ChatMarkdownContent content={content} />
               {isStreaming && <TypingCursor />}
             </div>
           )}
@@ -389,11 +303,11 @@ export function ChatMessageList({
               <div className="mb-4 flex size-16 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-500 to-indigo-600 text-white shadow-lg">
                 <Bot className="size-8" />
               </div>
-              <h2 className="text-xl font-semibold">考研 AI 助手</h2>
+              <h2 className="text-xl font-semibold">PNIXPG Assistant</h2>
               <p className="mt-3 max-w-sm text-sm text-muted-foreground leading-relaxed">
-                你的专属考研辅导老师，解答数学、英语、政治等全科问题。
+                Your study assistant for math, English, politics, and more.
                 <br />
-                支持上传题目图片，获得分步解析。
+                Upload problem images for step-by-step solutions.
               </p>
             </div>
           )}
@@ -436,7 +350,7 @@ export function ChatMessageList({
           className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-1.5 rounded-full border border-border bg-background px-3 py-1.5 text-xs text-muted-foreground shadow-md transition-all hover:bg-muted"
         >
           <ChevronDown className="size-3.5" />
-          回到底部
+          Scroll to bottom
         </button>
       )}
     </div>

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Loader2, Plus, Search, Star, Users } from "lucide-react";
 
+import { CommunityFeedSkeleton } from "@/components/community/community-feed-skeleton";
 import { CreatePostDialog } from "@/components/community/create-post-dialog";
 import { PostCard } from "@/components/community/post-card";
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -12,7 +13,13 @@ import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { listPosts, searchCommunity, toggleFavorite } from "@/lib/api/community";
 import type { CommunityPost } from "@/lib/api/types";
-import { COMMUNITY_SORT_TABS, POST_TYPES, communityFavoritesHref, type PostType } from "@/lib/community/constants";
+import {
+  COMMUNITY_FAVORITES_LABEL,
+  COMMUNITY_SORT_TABS,
+  POST_TYPES,
+  communityFavoritesHref,
+  type PostType,
+} from "@/lib/community/constants";
 import { createClient, isSupabaseConfigured } from "@/lib/supabase/client";
 
 export function CommunityClient() {
@@ -28,6 +35,9 @@ export function CommunityClient() {
   const [search, setSearch] = useState(initialQ);
   const [posts, setPosts] = useState<CommunityPost[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(false);
+  const [page, setPage] = useState(1);
   const [error, setError] = useState<string | null>(null);
   const [createOpen, setCreateOpen] = useState(false);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
@@ -42,31 +52,40 @@ export function CommunityClient() {
     });
   }, []);
 
-  const loadPosts = useCallback(async () => {
-    setLoading(true);
-    setError(null);
+  const loadPosts = useCallback(async (pageNum = 1, append = false) => {
+    if (append) {
+      setLoadingMore(true);
+    } else {
+      setLoading(true);
+      setError(null);
+    }
     try {
       const data = await listPosts({
         sort,
+        page: pageNum,
         post_type: postType || undefined,
         subject_category: subjectCategory || undefined,
         q: search.trim() || undefined,
       });
-      setPosts(data.items);
+      setPosts((prev) => (append ? [...prev, ...data.items] : data.items));
+      setPage(pageNum);
+      setHasMore(data.has_more);
     } catch (e) {
-      const msg = e instanceof Error ? e.message : "加载失败";
+      const msg = e instanceof Error ? e.message : "Failed to load";
       setError(
         msg.includes("Supabase")
-          ? "社区服务连接失败，请确认后端已重启"
+          ? "Community service unavailable. Check that the backend is running."
           : msg
       );
+      if (!append) setPosts([]);
     } finally {
       setLoading(false);
+      setLoadingMore(false);
     }
   }, [sort, postType, subjectCategory, search]);
 
   useEffect(() => {
-    void loadPosts();
+    void loadPosts(1);
   }, [loadPosts]);
 
   async function handleFavoriteToggle(postId: string) {
@@ -91,7 +110,7 @@ export function CommunityClient() {
     e.preventDefault();
     const q = search.trim();
     if (!q) {
-      void loadPosts();
+      void loadPosts(1);
       return;
     }
     try {
@@ -108,9 +127,11 @@ export function CommunityClient() {
       }
       if (result.kind === "posts") {
         setPosts(result.posts);
+        setHasMore(false);
+        setPage(1);
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "搜索失败");
+      setError(err instanceof Error ? err.message : "Search failed");
     }
   }
 
@@ -118,32 +139,32 @@ export function CommunityClient() {
     <div className="flex flex-col gap-6 p-6 md:p-8">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">社区</h1>
-          <p className="text-muted-foreground">分享备考经验与学习资料</p>
+          <h1 className="text-2xl font-semibold tracking-tight">Community</h1>
+          <p className="text-muted-foreground">Share study tips and learning resources</p>
         </div>
         <div className="flex flex-wrap gap-2">
           <Link href="/following" className={buttonVariants({ variant: "outline", size: "sm" })}>
             <Users />
-            关注
+            Following
           </Link>
           <Link
             href={communityFavoritesHref()}
             className={buttonVariants({ variant: "outline", size: "sm" })}
           >
             <Star />
-            我的收藏
+            {COMMUNITY_FAVORITES_LABEL}
           </Link>
           {mounted && currentUserId ? (
             <Button size="sm" onClick={() => setCreateOpen(true)}>
               <Plus />
-              发帖
+              New Post
             </Button>
           ) : mounted ? (
             <Link
               href="/login?next=/community"
               className={buttonVariants({ variant: "outline", size: "sm" })}
             >
-              登录后发帖
+              Sign in to post
             </Link>
           ) : (
             <span
@@ -162,12 +183,12 @@ export function CommunityClient() {
           <Input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="搜索用户 ID、专业大类或帖子内容…"
+            placeholder="Search user ID, subject area, or posts…"
             className="pl-9"
           />
         </div>
         <Button type="submit" variant="secondary">
-          搜索
+          Search
         </Button>
       </form>
 
@@ -190,7 +211,7 @@ export function CommunityClient() {
               variant={postType === "" ? "default" : "outline"}
               onClick={() => setPostType("")}
             >
-              全部类型
+              All Types
             </Button>
             {POST_TYPES.map((t) => (
               <Button
@@ -206,7 +227,7 @@ export function CommunityClient() {
 
         {subjectCategory && (
           <p className="text-sm text-muted-foreground">
-            筛选专业：{subjectCategory}
+            Subject filter: {subjectCategory}
             <button
               type="button"
               className="ml-2 underline"
@@ -215,29 +236,47 @@ export function CommunityClient() {
                 router.replace("/community");
               }}
             >
-              清除
+              Clear
             </button>
           </p>
         )}
 
         <div className="space-y-3">
           {loading ? (
-            <div className="flex justify-center py-16">
-              <Loader2 className="size-6 animate-spin text-muted-foreground" />
-            </div>
+            <CommunityFeedSkeleton count={5} />
           ) : error ? (
             <p className="py-8 text-center text-destructive">{error}</p>
           ) : posts.length === 0 ? (
-            <p className="py-16 text-center text-muted-foreground">暂无帖子</p>
+            <p className="py-16 text-center text-muted-foreground">No posts yet</p>
           ) : (
-            posts.map((post) => (
-              <PostCard
-                key={post.id}
-                post={post}
-                canFavorite={!!currentUserId}
-                onFavoriteToggle={handleFavoriteToggle}
-              />
-            ))
+            <>
+              {posts.map((post) => (
+                <PostCard
+                  key={post.id}
+                  post={post}
+                  canFavorite={!!currentUserId}
+                  onFavoriteToggle={handleFavoriteToggle}
+                />
+              ))}
+              {hasMore && (
+                <div className="flex justify-center pt-2">
+                  <Button
+                    variant="outline"
+                    onClick={() => void loadPosts(page + 1, true)}
+                    disabled={loadingMore}
+                  >
+                    {loadingMore ? (
+                      <>
+                        <Loader2 className="animate-spin" />
+                        Loading…
+                      </>
+                    ) : (
+                      "Load more"
+                    )}
+                  </Button>
+                </div>
+              )}
+            </>
           )}
         </div>
       </div>
@@ -246,7 +285,7 @@ export function CommunityClient() {
         open={createOpen}
         onOpenChange={setCreateOpen}
         defaultSubjectCategory={subjectCategory || undefined}
-        onCreated={loadPosts}
+        onCreated={() => void loadPosts(1)}
       />
     </div>
   );

@@ -2,7 +2,6 @@ import { apiFetch, apiUpload } from "@/lib/api/client";
 import { getAuthHeaders } from "@/lib/api/auth-fetch";
 import type {
   MaterialFileType,
-  StartChatFromQuestionResult,
   WrongQuestion,
   WrongQuestionCategory,
 } from "@/lib/api/types";
@@ -50,14 +49,6 @@ export async function listWrongQuestions(
   return authFetch<WrongQuestion[]>(`/api/wrong-questions${q}`);
 }
 
-export async function listPublicMaterials(
-  userId: string
-): Promise<WrongQuestion[]> {
-  return apiFetch<WrongQuestion[]>(
-    `/api/wrong-questions/public?user_id=${encodeURIComponent(userId)}`
-  );
-}
-
 export async function getWrongQuestion(
   id: number
 ): Promise<WrongQuestion> {
@@ -70,7 +61,6 @@ export async function updateWrongQuestion(
     title?: string;
     notes?: string;
     category_id?: number;
-    is_public?: boolean;
   }
 ): Promise<WrongQuestion> {
   return authFetch<WrongQuestion>(`/api/wrong-questions/${id}`, {
@@ -89,7 +79,6 @@ export async function uploadWrongQuestion(params: {
   categoryName?: string;
   title?: string;
   notes?: string;
-  isPublic?: boolean;
 }): Promise<WrongQuestion> {
   const form = new FormData();
   form.append("file", params.file);
@@ -99,7 +88,6 @@ export async function uploadWrongQuestion(params: {
   if (params.categoryName) form.append("category_name", params.categoryName);
   if (params.title) form.append("title", params.title);
   if (params.notes) form.append("notes", params.notes);
-  if (params.isPublic) form.append("is_public", "true");
   return authUpload<WrongQuestion>("/api/wrong-questions/upload", form);
 }
 
@@ -110,13 +98,4 @@ export async function analyzeWrongQuestion(
     method: "POST",
     body: JSON.stringify({ question_id: questionId }),
   });
-}
-
-export async function startChatFromQuestion(
-  questionId: number
-): Promise<StartChatFromQuestionResult> {
-  return authFetch<StartChatFromQuestionResult>(
-    `/api/wrong-questions/${questionId}/start-chat`,
-    { method: "POST" }
-  );
 }

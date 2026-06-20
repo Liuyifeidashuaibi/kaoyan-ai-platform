@@ -48,7 +48,7 @@ export function PostCard({
   const router = useRouter();
   const [favoriting, setFavoriting] = useState(false);
   const [hiding, setHiding] = useState(false);
-  const authorName = post.author.display_id || post.author.nickname || "用户";
+  const authorName = post.author.display_id || post.author.nickname || "User";
   const allImages = getImageAttachments(post.attachments);
   const previewImages = allImages.slice(0, PREVIEW_IMAGE_COUNT);
   const extraImageCount = Math.max(0, allImages.length - PREVIEW_IMAGE_COUNT);
@@ -93,7 +93,7 @@ export function PostCard({
               <Badge variant="secondary">{post.university_name}</Badge>
             )}
             {post.is_hidden && showHiddenControls && (
-              <Badge variant="secondary">已隐藏</Badge>
+              <Badge variant="secondary">Hidden</Badge>
             )}
           </div>
         </div>
@@ -104,7 +104,7 @@ export function PostCard({
             size="icon-sm"
             className="shrink-0"
             disabled={hiding}
-            title={post.is_hidden ? "取消隐藏" : "隐藏帖子"}
+            title={post.is_hidden ? "Unhide post" : "Hide post"}
             onClick={async (e) => {
               e.stopPropagation();
               setHiding(true);
@@ -152,7 +152,7 @@ export function PostCard({
                 >
                   <img
                     src={attachmentPreviewUrl(att)}
-                    alt={att.name || "图片预览"}
+                    alt={att.name || "Image preview"}
                     className="size-full object-cover"
                     loading="lazy"
                   />

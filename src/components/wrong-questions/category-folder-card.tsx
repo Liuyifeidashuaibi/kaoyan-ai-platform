@@ -32,7 +32,7 @@ export function CategoryFolderCard({
         <div className="space-y-1">
           <p className="text-base font-semibold">{category.name}</p>
           <p className="text-sm text-muted-foreground">
-            {category.question_count} 条资料
+            {category.question_count} items
           </p>
         </div>
       </CardContent>

@@ -182,7 +182,7 @@ export function ImageViewer({ open, index, slides, onClose }: ImageViewerProps) 
             type="button"
             onClick={() => zoomAt(1 - BUTTON_STEP)}
             className="flex size-8 items-center justify-center rounded-full transition-colors hover:bg-white/20"
-            aria-label="缩小"
+            aria-label="Zoom out"
           >
             <Minus className="size-4" />
           </button>
@@ -193,7 +193,7 @@ export function ImageViewer({ open, index, slides, onClose }: ImageViewerProps) 
             type="button"
             onClick={() => zoomAt(1 + BUTTON_STEP)}
             className="flex size-8 items-center justify-center rounded-full transition-colors hover:bg-white/20"
-            aria-label="放大"
+            aria-label="Zoom in"
           >
             <Plus className="size-4" />
           </button>
@@ -201,8 +201,8 @@ export function ImageViewer({ open, index, slides, onClose }: ImageViewerProps) 
             type="button"
             onClick={resetTransform}
             className="flex size-8 items-center justify-center rounded-full transition-colors hover:bg-white/20"
-            aria-label="复位"
-            title="复位 (按 0)"
+            aria-label="Reset"
+            title="Reset (press 0)"
           >
             <RotateCcw className="size-4" />
           </button>
@@ -212,7 +212,7 @@ export function ImageViewer({ open, index, slides, onClose }: ImageViewerProps) 
           type="button"
           onClick={onClose}
           className="ml-1 flex size-9 items-center justify-center rounded-full text-white transition-colors hover:bg-white/20"
-          aria-label="关闭"
+          aria-label="Close"
         >
           <X className="size-5" />
         </button>
@@ -249,7 +249,7 @@ export function ImageViewer({ open, index, slides, onClose }: ImageViewerProps) 
               type="button"
               onClick={() => goTo(current - 1)}
               className="absolute left-3 top-1/2 flex size-10 -translate-y-1/2 items-center justify-center rounded-full bg-white/10 text-white transition-colors hover:bg-white/25"
-              aria-label="上一张"
+              aria-label="Previous"
             >
               <ChevronLeft className="size-5" />
             </button>
@@ -257,7 +257,7 @@ export function ImageViewer({ open, index, slides, onClose }: ImageViewerProps) 
               type="button"
               onClick={() => goTo(current + 1)}
               className="absolute right-3 top-1/2 flex size-10 -translate-y-1/2 items-center justify-center rounded-full bg-white/10 text-white transition-colors hover:bg-white/25"
-              aria-label="下一张"
+              aria-label="Next"
             >
               <ChevronRight className="size-5" />
             </button>
@@ -267,7 +267,7 @@ export function ImageViewer({ open, index, slides, onClose }: ImageViewerProps) 
 
       {/* 底部提示 */}
       <div className="shrink-0 px-4 py-2 text-center text-xs text-white/50">
-        滚轮缩放 · 拖拽平移 · 双击放大/复位
+        Scroll to zoom · Drag to pan · Double-click to zoom/reset
         {hasMultiple ? ` · ${current + 1}/${slides.length}` : ""}
       </div>
     </div>

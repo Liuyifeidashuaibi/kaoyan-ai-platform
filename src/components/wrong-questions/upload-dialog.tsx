@@ -65,7 +65,7 @@ function FilePreview({
       /* eslint-disable-next-line @next/next/no-img-element */
       <img
         src={preview}
-        alt="预览"
+        alt="Preview"
         className="max-h-44 w-full rounded-lg border object-contain"
       />
     );
@@ -160,7 +160,7 @@ export function UploadDialog({
       setPreview(null);
     }
     if (!title.trim()) {
-      setTitle(f.name.replace(/\.[^.]+$/, "") || "未命名资料");
+      setTitle(f.name.replace(/\.[^.]+$/, "") || "Untitled");
     }
   };
 
@@ -179,7 +179,7 @@ export function UploadDialog({
         : undefined;
 
     if (!lockedCategory && !resolvedCategoryId && !resolvedCategoryName) {
-      setError("请选择或新建科目文件夹");
+      setError("Select or create a subject folder");
       return;
     }
 
@@ -190,13 +190,13 @@ export function UploadDialog({
         file,
         categoryId: resolvedCategoryId,
         categoryName: resolvedCategoryName,
-        title: title.trim() || "未命名资料",
+        title: title.trim() || "Untitled",
         notes,
       });
       reset();
       onOpenChange(false);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "上传失败，请重试");
+      setError(e instanceof Error ? e.message : "Upload failed. Try again.");
     } finally {
       setSubmitting(false);
     }
@@ -219,8 +219,8 @@ export function UploadDialog({
         <DialogHeader>
           <DialogTitle>
             {lockedCategory
-              ? `上传到「${lockedCategory.name}」`
-              : "上传学习资料"}
+              ? `Upload to "${lockedCategory.name}"`
+              : "Upload Material"}
           </DialogTitle>
         </DialogHeader>
 
@@ -251,34 +251,34 @@ export function UploadDialog({
                 className="flex h-36 w-full flex-col items-center justify-center gap-2 rounded-lg border border-dashed border-border text-muted-foreground hover:bg-muted/50"
               >
                 <ImagePlus className="size-8" />
-                <span className="text-sm">选择图片、视频、文档或音频</span>
+                <span className="text-sm">Choose image, video, document, or audio</span>
                 <span className="text-xs text-muted-foreground">
-                  支持 PDF、Word、PPT、MP4、MP3 等常见格式
+                  PDF, Word, PPT, MP4, MP3, and other common formats
                 </span>
               </button>
             )}
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="wq-title">命名</Label>
+            <Label htmlFor="wq-title">Title</Label>
             <Input
               id="wq-title"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder="如：极限求导第 3 题、英语听力 Unit 5"
+              placeholder="e.g. Calculus problem 3, English listening Unit 5"
             />
           </div>
 
           {!lockedCategory && (
             <div className="space-y-2">
-              <Label>科目文件夹</Label>
+              <Label>Subject folder</Label>
               {!useNewCategory ? (
                 <select
                   value={categoryId}
                   onChange={(e) => setCategoryId(e.target.value)}
                   className="h-9 w-full rounded-lg border border-input bg-transparent px-2.5 text-sm"
                 >
-                  <option value="">选择科目...</option>
+                  <option value="">Select subject…</option>
                   {categories.map((c) => (
                     <option key={c.id} value={c.id}>
                       {c.name}
@@ -287,7 +287,7 @@ export function UploadDialog({
                 </select>
               ) : (
                 <Input
-                  placeholder="新建科目，如：高等数学、英语"
+                  placeholder="New subject, e.g. Math, English"
                   value={newCategory}
                   onChange={(e) => setNewCategory(e.target.value)}
                 />
@@ -297,14 +297,14 @@ export function UploadDialog({
                 className="text-xs text-primary underline"
                 onClick={() => setUseNewCategory(!useNewCategory)}
               >
-                {useNewCategory ? "选择已有科目" : "新建科目文件夹"}
+                {useNewCategory ? "Choose existing subject" : "Create new subject folder"}
               </button>
             </div>
           )}
 
           {lockedCategory && (
             <p className="text-sm text-muted-foreground">
-              将保存到科目：
+              Saving to subject:
               <span className="font-medium text-foreground">
                 {lockedCategory.name}
               </span>
@@ -312,12 +312,12 @@ export function UploadDialog({
           )}
 
           <div className="space-y-2">
-            <Label htmlFor="wq-notes">介绍 / 笔记</Label>
+            <Label htmlFor="wq-notes">Notes</Label>
             <Textarea
               id="wq-notes"
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              placeholder="记录题目要点、易错点、解题思路..."
+              placeholder="Key points, common mistakes, solution ideas…"
               rows={4}
             />
           </div>
@@ -327,7 +327,7 @@ export function UploadDialog({
 
         <DialogFooter>
           <Button onClick={handleSubmit} disabled={submitting || !canSubmit}>
-            {submitting ? "上传中..." : "保存到错题本"}
+            {submitting ? "Uploading…" : "Save to Notebook"}
           </Button>
         </DialogFooter>
       </DialogContent>

@@ -36,11 +36,11 @@ class ChatService:
         self.db.refresh(session)
         return session
 
-    def list_sessions(self, keyword: str = "") -> list[ChatSession]:
+    def list_sessions(self, keyword: str = "", limit: int = 100) -> list[ChatSession]:
         q = self.db.query(ChatSession).order_by(ChatSession.updated_at.desc())
         if keyword.strip():
             q = q.filter(ChatSession.title.contains(keyword.strip()))
-        return q.all()
+        return q.limit(max(1, min(limit, 200))).all()
 
     def get_session(self, session_id: str) -> ChatSession | None:
         return self.db.query(ChatSession).filter(ChatSession.id == session_id).first()

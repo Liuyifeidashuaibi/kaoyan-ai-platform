@@ -1,9 +1,5 @@
-import { TomatoStatsPage } from "@/app/(main)/timer/_components/tomato-stats-page";
+import { redirect } from "next/navigation";
 
-export default function TimerStatsRoutePage() {
-  return (
-    <div className="p-4 sm:p-6 md:p-8">
-      <TomatoStatsPage />
-    </div>
-  );
+export default function TimerStatsRedirectPage() {
+  redirect("/study/tomato/statistics");
 }

@@ -73,16 +73,7 @@ function getDb(): TimerDbClient {
   return createClient() as unknown as TimerDbClient;
 }
 
-const SUBJECT_COLORS = [
-  "#3b82f6",
-  "#6366f1",
-  "#8b5cf6",
-  "#0ea5e9",
-  "#14b8a6",
-  "#22c55e",
-  "#f59e0b",
-  "#ef4444",
-] as const;
+import { assignPastelColor } from "@/components/timer/constants";
 
 function mapSubject(
   row: Pick<
@@ -123,7 +114,7 @@ function mapSession(
 }
 
 export function assignSubjectColor(index: number): string {
-  return SUBJECT_COLORS[index % SUBJECT_COLORS.length];
+  return assignPastelColor(index);
 }
 
 export async function getCurrentUserId(): Promise<string | null> {

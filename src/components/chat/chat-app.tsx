@@ -1,13 +1,16 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
-import { Menu, X } from "lucide-react";
+import { useSearchParams } from "next/navigation";
 
 import { ChatInput, type ChatSendPayload } from "@/components/chat/chat-input";
 import { ChatMessageList } from "@/components/chat/chat-message-list";
 import { ChatSidebar } from "@/components/chat/chat-sidebar";
-import { Button } from "@/components/ui/button";
+import {
+  ChatSidebarCollapsedRail,
+  ChatSidebarMobileHeader,
+} from "@/components/chat/chat-sidebar-chrome";
+import { TooltipProvider } from "@/components/ui/tooltip";
 import {
   createChatSession,
   deleteChatSession,
@@ -17,10 +20,27 @@ import {
 } from "@/lib/api/chat";
 import type { ChatMessage, ChatSession } from "@/lib/api/types";
 import { initApiBaseUrl } from "@/lib/config/api";
+import { cn } from "@/lib/utils";
 
+const SIDEBAR_COLLAPSED_KEY = "chat-sidebar-collapsed";
+
+function syncChatSessionUrl(sessionId: string | null) {
+  if (typeof window === "undefined") return;
+  const url = new URL(window.location.href);
+  if (sessionId) {
+    url.searchParams.set("session", sessionId);
+  } else {
+    url.searchParams.delete("session");
+    url.searchParams.delete("autoReply");
+  }
+  const next = `${url.pathname}${url.search}${url.hash}`;
+  const current = `${window.location.pathname}${window.location.search}${window.location.hash}`;
+  if (current !== next) {
+    window.history.replaceState(null, "", next);
+  }
+}
 
 export function ChatApp() {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const sessionFromUrl = searchParams.get("session");
   const autoReply = searchParams.get("autoReply") === "1";
@@ -36,16 +56,37 @@ export function ChatApp() {
   const [isStreaming, setIsStreaming] = useState(false);
   const [streamingContent, setStreamingContent] = useState("");
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const abortControllerRef = useRef<AbortController | null>(null);
   const autoReplyTriggeredRef = useRef<string | null>(null);
   const isStreamingRef = useRef(false);
   const skipNextMessageLoadRef = useRef(false);
+  const loadGenerationRef = useRef(0);
   const ttsAudioRef = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => {
     void initApiBaseUrl();
+  }, []);
+
+  useEffect(() => {
+    const stored = localStorage.getItem(SIDEBAR_COLLAPSED_KEY);
+    if (stored === "false") {
+      const t = window.setTimeout(() => setSidebarCollapsed(false), 0);
+      return () => window.clearTimeout(t);
+    }
+  }, []);
+
+  const collapseSidebar = useCallback(() => {
+    setSidebarCollapsed(true);
+    localStorage.setItem(SIDEBAR_COLLAPSED_KEY, "true");
+    setSidebarOpen(false);
+  }, []);
+
+  const expandSidebar = useCallback(() => {
+    setSidebarCollapsed(false);
+    localStorage.setItem(SIDEBAR_COLLAPSED_KEY, "false");
   }, []);
 
   useEffect(() => {
@@ -65,7 +106,7 @@ export function ChatApp() {
         const data = await listChatSessions(searchKeyword);
         if (!cancelled) setSessions(data);
       } catch (e) {
-        if (!cancelled) setError(e instanceof Error ? e.message : "加载会话失败");
+        if (!cancelled) setError(e instanceof Error ? e.message : "Failed to load sessions");
       } finally {
         if (!cancelled) setLoadingSessions(false);
       }
@@ -74,29 +115,47 @@ export function ChatApp() {
   }, [searchKeyword]);
 
   useEffect(() => {
-    if (!activeSessionId) return;
+    if (!activeSessionId) {
+      setMessages([]);
+      return;
+    }
     if (skipNextMessageLoadRef.current) {
       skipNextMessageLoadRef.current = false;
+      syncChatSessionUrl(activeSessionId);
       return;
     }
 
+    const generation = ++loadGenerationRef.current;
     let cancelled = false;
+
     (async () => {
       setLoadingMessages(true);
       try {
         const data = await getChatMessages(activeSessionId);
-        if (!cancelled && !isStreamingRef.current) {
+        if (
+          !cancelled &&
+          generation === loadGenerationRef.current &&
+          !isStreamingRef.current
+        ) {
           setMessages(data);
         }
       } catch (e) {
-        if (!cancelled) setError(e instanceof Error ? e.message : "加载消息失败");
+        if (!cancelled && generation === loadGenerationRef.current) {
+          setError(e instanceof Error ? e.message : "Failed to load messages");
+        }
       } finally {
-        if (!cancelled) setLoadingMessages(false);
+        if (!cancelled && generation === loadGenerationRef.current) {
+          setLoadingMessages(false);
+        }
       }
     })();
-    router.replace(`/chat?session=${activeSessionId}`, { scroll: false });
-    return () => { cancelled = true; };
-  }, [activeSessionId, router]);
+
+    syncChatSessionUrl(activeSessionId);
+
+    return () => {
+      cancelled = true;
+    };
+  }, [activeSessionId]);
 
   const refreshSessions = useCallback(async (keyword = searchKeyword) => {
     const data = await listChatSessions(keyword);
@@ -179,7 +238,7 @@ export function ChatApp() {
         await refreshSessions();
       } catch (e) {
         if ((e as Error)?.name === "AbortError") return;
-        setError(e instanceof Error ? e.message : "发送失败");
+        setError(e instanceof Error ? e.message : "Failed to send");
         if (!options?.skipOptimisticUser) {
           setMessages((prev) => prev.filter((m) => m.id !== tempUserMsg.id));
         }
@@ -207,7 +266,7 @@ export function ChatApp() {
     if (hasAssistant || !lastUser) return;
 
     autoReplyTriggeredRef.current = activeSessionId;
-    router.replace(`/chat?session=${activeSessionId}`, { scroll: false });
+    syncChatSessionUrl(activeSessionId);
     void streamAssistantReply(activeSessionId, lastUser.content, {
       imagePath: lastUser.image_path,
       skipOptimisticUser: true,
@@ -215,7 +274,7 @@ export function ChatApp() {
     });
   }, [
     activeSessionId, autoReply, isStreaming,
-    loadingMessages, messages, router, streamAssistantReply,
+    loadingMessages, messages, streamAssistantReply,
   ]);
 
   const handleRegenerate = useCallback(
@@ -251,7 +310,7 @@ export function ChatApp() {
       setMessages([]);
       setSidebarOpen(false);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "创建会话失败");
+      setError(e instanceof Error ? e.message : "Failed to create session");
     }
   };
 
@@ -267,10 +326,10 @@ export function ChatApp() {
       if (activeSessionId === id) {
         setActiveSessionId(null);
         setMessages([]);
-        router.replace("/chat", { scroll: false });
+        syncChatSessionUrl(null);
       }
     } catch (e) {
-      setError(e instanceof Error ? e.message : "删除失败");
+      setError(e instanceof Error ? e.message : "Failed to delete");
     }
   };
 
@@ -297,7 +356,7 @@ export function ChatApp() {
         setMessages([]);
         await streamAssistantReply(session.id, content, sendPayload);
       } catch (e) {
-        setError(e instanceof Error ? e.message : "发送失败");
+        setError(e instanceof Error ? e.message : "Failed to send");
       }
       return;
     }
@@ -306,46 +365,53 @@ export function ChatApp() {
   };
 
   return (
-    <div className="flex h-full overflow-hidden">
-      {sidebarOpen && (
-        <button
-          type="button"
-          className="fixed inset-0 z-40 bg-black/30 md:hidden"
-          onClick={() => setSidebarOpen(false)}
-          aria-label="关闭侧边栏"
-        />
-      )}
+    <TooltipProvider delay={400}>
+      <div className="flex h-full overflow-hidden">
+        {sidebarOpen && (
+          <button
+            type="button"
+            className="fixed inset-0 z-40 bg-black/30 md:hidden"
+            onClick={() => setSidebarOpen(false)}
+            aria-label="Close sidebar"
+          />
+        )}
 
-      <div
-        className={`fixed inset-y-14 left-0 z-50 w-72 transition-transform md:static md:inset-y-0 md:z-auto md:translate-x-0 ${
-          sidebarOpen ? "translate-x-0" : "-translate-x-full"
-        }`}
-      >
-        <ChatSidebar
-          sessions={sessions}
-          activeSessionId={activeSessionId}
-          searchKeyword={searchKeyword}
-          onSearchChange={setSearchKeyword}
-          onNewChat={handleNewChat}
-          onSelectSession={handleSelectSession}
-          onDeleteSession={handleDeleteSession}
-          loading={loadingSessions}
-        />
-      </div>
+        {sidebarCollapsed && (
+          <ChatSidebarCollapsedRail
+            onExpandSidebar={expandSidebar}
+            onNewChat={handleNewChat}
+          />
+        )}
 
-      <div className="flex min-h-0 min-w-0 flex-1 flex-col">
-        <div className="flex shrink-0 items-center gap-2 border-b border-border px-3 py-2 md:hidden">
-          <Button
-            variant="ghost"
-            size="icon-sm"
-            onClick={() => setSidebarOpen(!sidebarOpen)}
-          >
-            {sidebarOpen ? <X className="size-4" /> : <Menu className="size-4" />}
-          </Button>
-          <span className="truncate text-sm font-medium">
-            {sessions.find((s) => s.id === activeSessionId)?.title ?? "AI 聊天"}
-          </span>
+        <div
+          className={cn(
+            "fixed inset-y-12 left-0 z-50 shrink-0 overflow-hidden transition-[width,transform] duration-200 ease-in-out md:static md:inset-y-0 md:z-auto md:min-w-0",
+            sidebarCollapsed ? "md:w-0 md:pointer-events-none" : "md:w-56",
+            sidebarOpen
+              ? "w-56 translate-x-0"
+              : "w-56 -translate-x-full md:translate-x-0"
+          )}
+        >
+          <ChatSidebar
+            sessions={sessions}
+            activeSessionId={activeSessionId}
+            searchKeyword={searchKeyword}
+            onSearchChange={setSearchKeyword}
+            onNewChat={handleNewChat}
+            onSelectSession={handleSelectSession}
+            onDeleteSession={handleDeleteSession}
+            loading={loadingSessions}
+            onCloseSidebar={collapseSidebar}
+          />
         </div>
+
+        <div className="relative flex min-h-0 min-w-0 flex-1 flex-col">
+          <ChatSidebarMobileHeader
+            onToggleSidebar={() => setSidebarOpen((open) => !open)}
+            title={
+              sessions.find((s) => s.id === activeSessionId)?.title ?? "Chat"
+            }
+          />
 
         {error && (
           <div className="shrink-0 border-b border-destructive/30 bg-destructive/10 px-4 py-2 text-sm text-destructive">
@@ -355,14 +421,14 @@ export function ChatApp() {
               className="ml-2 underline"
               onClick={() => setError(null)}
             >
-              关闭
+              Dismiss
             </button>
           </div>
         )}
 
-        {loadingMessages ? (
+        {loadingMessages && messages.length === 0 && !isStreaming ? (
           <div className="flex flex-1 items-center justify-center text-sm text-muted-foreground">
-            加载消息…
+            Loading messages…
           </div>
         ) : (
           <ChatMessageList
@@ -377,9 +443,10 @@ export function ChatApp() {
           onSend={handleSend}
           onStop={handleStop}
           isStreaming={isStreaming}
-          disabled={loadingMessages}
+          disabled={loadingMessages && messages.length === 0 && !isStreaming}
         />
+        </div>
       </div>
-    </div>
+    </TooltipProvider>
   );
 }

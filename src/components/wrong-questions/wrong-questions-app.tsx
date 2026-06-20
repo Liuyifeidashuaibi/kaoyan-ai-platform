@@ -31,7 +31,6 @@ import {
   createCategory,
   listCategories,
   listWrongQuestions,
-  startChatFromQuestion,
   updateWrongQuestion,
   uploadWrongQuestion,
 } from "@/lib/api/wrong-questions";
@@ -65,7 +64,6 @@ export function WrongQuestionsApp({ initialFolder }: WrongQuestionsAppProps = {}
   const [newFolderName, setNewFolderName] = useState("");
   const [loading, setLoading] = useState(true);
   const [analyzing, setAnalyzing] = useState(false);
-  const [startingChat, setStartingChat] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const loadCategories = useCallback(async () => {
@@ -79,7 +77,7 @@ export function WrongQuestionsApp({ initialFolder }: WrongQuestionsAppProps = {}
     try {
       await loadCategories();
     } catch (e) {
-      setError(e instanceof Error ? e.message : "加载失败");
+      setError(e instanceof Error ? e.message : "Failed to load");
     } finally {
       setLoading(false);
     }
@@ -127,7 +125,7 @@ export function WrongQuestionsApp({ initialFolder }: WrongQuestionsAppProps = {}
         if (!cancelled) setQuestions(qs);
       } catch (e) {
         if (!cancelled) {
-          setError(e instanceof Error ? e.message : "加载资料失败");
+          setError(e instanceof Error ? e.message : "Failed to load materials");
         }
       } finally {
         if (!cancelled) setLoading(false);
@@ -176,7 +174,7 @@ export function WrongQuestionsApp({ initialFolder }: WrongQuestionsAppProps = {}
       });
       await loadCategories();
     } catch (e) {
-      setError(e instanceof Error ? e.message : "创建文件夹失败");
+      setError(e instanceof Error ? e.message : "Failed to create folder");
     }
   };
 
@@ -193,34 +191,14 @@ export function WrongQuestionsApp({ initialFolder }: WrongQuestionsAppProps = {}
         );
       }
     } catch (e) {
-      setError(e instanceof Error ? e.message : "AI 解析失败");
+      setError(e instanceof Error ? e.message : "AI analysis failed");
     } finally {
       setAnalyzing(false);
     }
   };
 
-  const handleStartChat = async (id: number): Promise<string> => {
-    setStartingChat(true);
-    try {
-      const result = await startChatFromQuestion(id);
-      return result.session_id;
-    } finally {
-      setStartingChat(false);
-    }
-  };
-
   const handleUpdateNotes = async (id: number, notes: string) => {
     const updated = await updateWrongQuestion(id, { notes });
-    setQuestions((prev) =>
-      prev.map((q) => (q.id === id ? updated : q))
-    );
-    if (selectedQuestion?.id === id) {
-      setSelectedQuestion(updated);
-    }
-  };
-
-  const handleTogglePublic = async (id: number, isPublic: boolean) => {
-    const updated = await updateWrongQuestion(id, { is_public: isPublic });
     setQuestions((prev) =>
       prev.map((q) => (q.id === id ? updated : q))
     );
@@ -250,12 +228,12 @@ export function WrongQuestionsApp({ initialFolder }: WrongQuestionsAppProps = {}
             )}
             <div>
               <h1 className="text-lg font-semibold">
-                {inFolder ? activeCategory.name : "错题本"}
+                {inFolder ? activeCategory.name : "Notebook"}
               </h1>
               <p className="text-sm text-muted-foreground">
                 {inFolder
-                  ? `${questions.length} 条资料 · 按时间顺序排列`
-                  : "按科目整理，可存储图片、视频、文档、音频等学习资料"}
+                  ? `${questions.length} items · sorted by time`
+                  : "Your private library for images, videos, documents, and audio"}
               </p>
             </div>
           </div>
@@ -263,7 +241,7 @@ export function WrongQuestionsApp({ initialFolder }: WrongQuestionsAppProps = {}
             {inFolder ? (
               <Button size="sm" onClick={() => setUploadOpen(true)}>
                 <Upload className="size-4" />
-                添加资料
+                Add Material
               </Button>
             ) : (
               <>
@@ -273,7 +251,7 @@ export function WrongQuestionsApp({ initialFolder }: WrongQuestionsAppProps = {}
                   onClick={() => setFolderDialogOpen(true)}
                 >
                   <FolderPlus className="size-4" />
-                  新建科目
+                  New Subject
                 </Button>
                 <Button
                   size="sm"
@@ -281,7 +259,7 @@ export function WrongQuestionsApp({ initialFolder }: WrongQuestionsAppProps = {}
                   disabled={categories.length === 0}
                 >
                   <Plus className="size-4" />
-                  上传资料
+                  Upload
                 </Button>
               </>
             )}
@@ -297,7 +275,7 @@ export function WrongQuestionsApp({ initialFolder }: WrongQuestionsAppProps = {}
             className="ml-2 underline"
             onClick={() => setError(null)}
           >
-            关闭
+            Dismiss
           </button>
         </div>
       )}
@@ -306,7 +284,7 @@ export function WrongQuestionsApp({ initialFolder }: WrongQuestionsAppProps = {}
         <div className="mx-auto max-w-6xl">
           {loading ? (
             <p className="py-20 text-center text-sm text-muted-foreground">
-              加载中...
+              Loading...
             </p>
           ) : !inFolder ? (
             categories.length === 0 ? (
@@ -314,15 +292,15 @@ export function WrongQuestionsApp({ initialFolder }: WrongQuestionsAppProps = {}
                 <div className="mb-4 flex size-20 items-center justify-center rounded-2xl bg-amber-500/10 text-amber-600">
                   <FolderPlus className="size-10" />
                 </div>
-                <p className="text-muted-foreground">还没有科目文件夹</p>
+                <p className="text-muted-foreground">No subject folders yet</p>
                 <p className="mt-1 text-sm text-muted-foreground">
-                  先创建「高等数学」「英语」等科目，再往里添加学习资料
+                  Create subjects like Math or English, then add your study materials
                 </p>
                 <Button
                   className="mt-6"
                   onClick={() => setFolderDialogOpen(true)}
                 >
-                  创建第一个科目文件夹
+                  Create your first subject folder
                 </Button>
               </div>
             ) : (
@@ -360,11 +338,11 @@ export function WrongQuestionsApp({ initialFolder }: WrongQuestionsAppProps = {}
                 <div className="flex flex-col items-center py-20 text-center">
                   <p className="text-muted-foreground">
                     {typeFilter === "all"
-                      ? `「${activeCategory.name}」里还没有资料`
-                      : `「${activeCategory.name}」里没有${MATERIAL_TYPE_FILTERS.find((f) => f.value === typeFilter)?.label ?? ""}类型的资料`}
+                      ? `No materials in "${activeCategory.name}" yet`
+                      : `No ${MATERIAL_TYPE_FILTERS.find((f) => f.value === typeFilter)?.label ?? ""} materials in "${activeCategory.name}"`}
                   </p>
                   <Button className="mt-4" onClick={() => setUploadOpen(true)}>
-                    添加第一条资料
+                    Add first material
                   </Button>
                 </div>
               ) : (
@@ -417,23 +395,20 @@ export function WrongQuestionsApp({ initialFolder }: WrongQuestionsAppProps = {}
           if (!open) setSelectedQuestion(null);
         }}
         onAnalyze={handleAnalyze}
-        onStartChat={handleStartChat}
         onUpdateNotes={handleUpdateNotes}
-        onTogglePublic={handleTogglePublic}
         analyzing={analyzing}
-        startingChat={startingChat}
       />
 
       <Dialog open={folderDialogOpen} onOpenChange={setFolderDialogOpen}>
         <DialogContent className="sm:max-w-sm">
           <DialogHeader>
-            <DialogTitle>新建科目文件夹</DialogTitle>
+            <DialogTitle>New Subject Folder</DialogTitle>
           </DialogHeader>
           <div className="space-y-2">
-            <Label htmlFor="folder-name">科目名称</Label>
+            <Label htmlFor="folder-name">Subject name</Label>
             <Input
               id="folder-name"
-              placeholder="如：高等数学、英语、政治"
+              placeholder="e.g. Math, English, Politics"
               value={newFolderName}
               onChange={(e) => setNewFolderName(e.target.value)}
               onKeyDown={(e) => {
@@ -446,7 +421,7 @@ export function WrongQuestionsApp({ initialFolder }: WrongQuestionsAppProps = {}
               onClick={() => void handleCreateFolder()}
               disabled={!newFolderName.trim()}
             >
-              创建并打开
+              Create & Open
             </Button>
           </DialogFooter>
         </DialogContent>

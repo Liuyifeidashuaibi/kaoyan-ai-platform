@@ -128,3 +128,12 @@
     @apply font-sans;
   }
 }
+
+/* Admin 运营台：默认浅色，独立于 C 端 */
+.admin-theme {
+  --admin-surface: oklch(0.985 0 0);
+  --admin-sidebar: oklch(0.995 0 0);
+  --admin-elevated: oklch(1 0 0);
+  --admin-border-subtle: oklch(0.94 0 0);
+  color-scheme: light;
+}

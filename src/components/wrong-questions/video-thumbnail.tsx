@@ -97,7 +97,7 @@ export function VideoThumbnail({
         )}
       >
         <FileVideo className="size-8" />
-        <span className="text-[10px]">视频</span>
+        <span className="text-[10px]">Video</span>
       </div>
     );
   }

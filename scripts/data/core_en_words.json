@@ -1,0 +1,5210 @@
+[
+  {
+    "word": "the",
+    "phonetic": "/ðə/",
+    "pos": "art.",
+    "translation": "这；那",
+    "kaoyan_gloss": "这",
+    "tag": "core"
+  },
+  {
+    "word": "be",
+    "phonetic": "/biː/",
+    "pos": "v.",
+    "translation": "是；存在",
+    "kaoyan_gloss": "是",
+    "tag": "core"
+  },
+  {
+    "word": "to",
+    "phonetic": "/tuː/",
+    "pos": "prep.",
+    "translation": "向；到",
+    "kaoyan_gloss": "向",
+    "tag": "core"
+  },
+  {
+    "word": "of",
+    "phonetic": "/ɒv/",
+    "pos": "prep.",
+    "translation": "…的",
+    "kaoyan_gloss": "…的",
+    "tag": "core"
+  },
+  {
+    "word": "and",
+    "phonetic": "/ænd/",
+    "pos": "conj.",
+    "translation": "和；并且",
+    "kaoyan_gloss": "和",
+    "tag": "core"
+  },
+  {
+    "word": "a",
+    "phonetic": "/ə/",
+    "pos": "art.",
+    "translation": "一个",
+    "kaoyan_gloss": "一个",
+    "tag": "core"
+  },
+  {
+    "word": "in",
+    "phonetic": "/ɪn/",
+    "pos": "prep.",
+    "translation": "在…里",
+    "kaoyan_gloss": "在…里",
+    "tag": "core"
+  },
+  {
+    "word": "that",
+    "phonetic": "/ðæt/",
+    "pos": "pron.",
+    "translation": "那；那个",
+    "kaoyan_gloss": "那",
+    "tag": "core"
+  },
+  {
+    "word": "have",
+    "phonetic": "/hæv/",
+    "pos": "v.",
+    "translation": "有；拥有；经历",
+    "kaoyan_gloss": "有",
+    "tag": "core"
+  },
+  {
+    "word": "i",
+    "phonetic": "/aɪ/",
+    "pos": "pron.",
+    "translation": "我",
+    "kaoyan_gloss": "我",
+    "tag": "core"
+  },
+  {
+    "word": "it",
+    "phonetic": "/ɪt/",
+    "pos": "pron.",
+    "translation": "它",
+    "kaoyan_gloss": "它",
+    "tag": "core"
+  },
+  {
+    "word": "for",
+    "phonetic": "/fɔː/",
+    "pos": "prep.",
+    "translation": "为了；对于",
+    "kaoyan_gloss": "为了",
+    "tag": "core"
+  },
+  {
+    "word": "not",
+    "phonetic": "/nɒt/",
+    "pos": "adv.",
+    "translation": "不",
+    "kaoyan_gloss": "不",
+    "tag": "core"
+  },
+  {
+    "word": "on",
+    "phonetic": "/ɒn/",
+    "pos": "prep.",
+    "translation": "在…上",
+    "kaoyan_gloss": "在…上",
+    "tag": "core"
+  },
+  {
+    "word": "with",
+    "phonetic": "/wɪð/",
+    "pos": "prep.",
+    "translation": "和；带有",
+    "kaoyan_gloss": "和",
+    "tag": "core"
+  },
+  {
+    "word": "he",
+    "phonetic": "/hiː/",
+    "pos": "pron.",
+    "translation": "他",
+    "kaoyan_gloss": "他",
+    "tag": "core"
+  },
+  {
+    "word": "as",
+    "phonetic": "/æz/",
+    "pos": "adv.",
+    "translation": "如同",
+    "kaoyan_gloss": "如同",
+    "tag": "core"
+  },
+  {
+    "word": "you",
+    "phonetic": "/juː/",
+    "pos": "pron.",
+    "translation": "你；你们",
+    "kaoyan_gloss": "你",
+    "tag": "core"
+  },
+  {
+    "word": "do",
+    "phonetic": "/duː/",
+    "pos": "v.",
+    "translation": "做；助动词",
+    "kaoyan_gloss": "做",
+    "tag": "core"
+  },
+  {
+    "word": "at",
+    "phonetic": "/æt/",
+    "pos": "prep.",
+    "translation": "在",
+    "kaoyan_gloss": "在",
+    "tag": "core"
+  },
+  {
+    "word": "this",
+    "phonetic": "/ðɪs/",
+    "pos": "pron.",
+    "translation": "这；这个",
+    "kaoyan_gloss": "这",
+    "tag": "core"
+  },
+  {
+    "word": "but",
+    "phonetic": "/bʌt/",
+    "pos": "conj.",
+    "translation": "但是",
+    "kaoyan_gloss": "但是",
+    "tag": "core"
+  },
+  {
+    "word": "his",
+    "phonetic": "/hɪz/",
+    "pos": "pron.",
+    "translation": "他的",
+    "kaoyan_gloss": "他的",
+    "tag": "core"
+  },
+  {
+    "word": "by",
+    "phonetic": "/baɪ/",
+    "pos": "prep.",
+    "translation": "通过；被",
+    "kaoyan_gloss": "通过",
+    "tag": "core"
+  },
+  {
+    "word": "from",
+    "phonetic": "/frɒm/",
+    "pos": "prep.",
+    "translation": "从",
+    "kaoyan_gloss": "从",
+    "tag": "core"
+  },
+  {
+    "word": "they",
+    "phonetic": "/ðeɪ/",
+    "pos": "pron.",
+    "translation": "他们",
+    "kaoyan_gloss": "他们",
+    "tag": "core"
+  },
+  {
+    "word": "we",
+    "phonetic": "/wiː/",
+    "pos": "pron.",
+    "translation": "我们",
+    "kaoyan_gloss": "我们",
+    "tag": "core"
+  },
+  {
+    "word": "say",
+    "phonetic": "/seɪ/",
+    "pos": "v.",
+    "translation": "说",
+    "kaoyan_gloss": "说",
+    "tag": "core"
+  },
+  {
+    "word": "her",
+    "phonetic": "/hɜː/",
+    "pos": "pron.",
+    "translation": "她的；她",
+    "kaoyan_gloss": "她的",
+    "tag": "core"
+  },
+  {
+    "word": "she",
+    "phonetic": "/ʃiː/",
+    "pos": "pron.",
+    "translation": "她",
+    "kaoyan_gloss": "她",
+    "tag": "core"
+  },
+  {
+    "word": "or",
+    "phonetic": "/ɔː/",
+    "pos": "conj.",
+    "translation": "或者",
+    "kaoyan_gloss": "或者",
+    "tag": "core"
+  },
+  {
+    "word": "an",
+    "phonetic": "/æn/",
+    "pos": "art.",
+    "translation": "一个",
+    "kaoyan_gloss": "一个",
+    "tag": "core"
+  },
+  {
+    "word": "will",
+    "phonetic": "/wɪl/",
+    "pos": "v.",
+    "translation": "将；愿意",
+    "kaoyan_gloss": "将",
+    "tag": "core"
+  },
+  {
+    "word": "my",
+    "phonetic": "/maɪ/",
+    "pos": "pron.",
+    "translation": "我的",
+    "kaoyan_gloss": "我的",
+    "tag": "core"
+  },
+  {
+    "word": "one",
+    "phonetic": "/wʌn/",
+    "pos": "num.",
+    "translation": "一；一个",
+    "kaoyan_gloss": "一",
+    "tag": "core"
+  },
+  {
+    "word": "all",
+    "phonetic": "/ɔːl/",
+    "pos": "adj.",
+    "translation": "所有的",
+    "kaoyan_gloss": "所有的",
+    "tag": "core"
+  },
+  {
+    "word": "would",
+    "phonetic": "/wʊd/",
+    "pos": "v.",
+    "translation": "将会；愿意",
+    "kaoyan_gloss": "将会",
+    "tag": "core"
+  },
+  {
+    "word": "there",
+    "phonetic": "/ðeə/",
+    "pos": "adv.",
+    "translation": "那里",
+    "kaoyan_gloss": "那里",
+    "tag": "core"
+  },
+  {
+    "word": "their",
+    "phonetic": "/ðeə/",
+    "pos": "pron.",
+    "translation": "他们的",
+    "kaoyan_gloss": "他们的",
+    "tag": "core"
+  },
+  {
+    "word": "what",
+    "phonetic": "/wɒt/",
+    "pos": "pron.",
+    "translation": "什么",
+    "kaoyan_gloss": "什么",
+    "tag": "core"
+  },
+  {
+    "word": "so",
+    "phonetic": "/səʊ/",
+    "pos": "adv.",
+    "translation": "如此；所以",
+    "kaoyan_gloss": "如此",
+    "tag": "core"
+  },
+  {
+    "word": "up",
+    "phonetic": "/ʌp/",
+    "pos": "adv.",
+    "translation": "向上",
+    "kaoyan_gloss": "向上",
+    "tag": "core"
+  },
+  {
+    "word": "out",
+    "phonetic": "/aʊt/",
+    "pos": "adv.",
+    "translation": "出去",
+    "kaoyan_gloss": "出去",
+    "tag": "core"
+  },
+  {
+    "word": "if",
+    "phonetic": "/ɪf/",
+    "pos": "conj.",
+    "translation": "如果",
+    "kaoyan_gloss": "如果",
+    "tag": "core"
+  },
+  {
+    "word": "about",
+    "phonetic": "/əˈbaʊt/",
+    "pos": "prep.",
+    "translation": "关于；大约",
+    "kaoyan_gloss": "关于",
+    "tag": "core"
+  },
+  {
+    "word": "who",
+    "phonetic": "/huː/",
+    "pos": "pron.",
+    "translation": "谁",
+    "kaoyan_gloss": "谁",
+    "tag": "core"
+  },
+  {
+    "word": "get",
+    "phonetic": "/ɡet/",
+    "pos": "v.",
+    "translation": "得到；变得",
+    "kaoyan_gloss": "得到",
+    "tag": "core"
+  },
+  {
+    "word": "which",
+    "phonetic": "/wɪtʃ/",
+    "pos": "pron.",
+    "translation": "哪一个",
+    "kaoyan_gloss": "哪一个",
+    "tag": "core"
+  },
+  {
+    "word": "go",
+    "phonetic": "/ɡəʊ/",
+    "pos": "v.",
+    "translation": "去",
+    "kaoyan_gloss": "去",
+    "tag": "core"
+  },
+  {
+    "word": "me",
+    "phonetic": "/miː/",
+    "pos": "pron.",
+    "translation": "我（宾格）",
+    "kaoyan_gloss": "我（宾格）",
+    "tag": "core"
+  },
+  {
+    "word": "when",
+    "phonetic": "/wen/",
+    "pos": "adv.",
+    "translation": "何时",
+    "kaoyan_gloss": "何时",
+    "tag": "core"
+  },
+  {
+    "word": "make",
+    "phonetic": "/meɪk/",
+    "pos": "v.",
+    "translation": "制作；使",
+    "kaoyan_gloss": "制作",
+    "tag": "core"
+  },
+  {
+    "word": "can",
+    "phonetic": "/kæn/",
+    "pos": "v.",
+    "translation": "能；可以",
+    "kaoyan_gloss": "能",
+    "tag": "core"
+  },
+  {
+    "word": "like",
+    "phonetic": "/laɪk/",
+    "pos": "v.",
+    "translation": "喜欢；像",
+    "kaoyan_gloss": "喜欢",
+    "tag": "core"
+  },
+  {
+    "word": "time",
+    "phonetic": "/taɪm/",
+    "pos": "n.",
+    "translation": "时间",
+    "kaoyan_gloss": "时间",
+    "tag": "core"
+  },
+  {
+    "word": "no",
+    "phonetic": "/nəʊ/",
+    "pos": "adv.",
+    "translation": "不",
+    "kaoyan_gloss": "不",
+    "tag": "core"
+  },
+  {
+    "word": "just",
+    "phonetic": "/dʒʌst/",
+    "pos": "adv.",
+    "translation": "刚刚；仅仅",
+    "kaoyan_gloss": "刚刚",
+    "tag": "core"
+  },
+  {
+    "word": "him",
+    "phonetic": "/hɪm/",
+    "pos": "pron.",
+    "translation": "他（宾格）",
+    "kaoyan_gloss": "他（宾格）",
+    "tag": "core"
+  },
+  {
+    "word": "know",
+    "phonetic": "/nəʊ/",
+    "pos": "v.",
+    "translation": "知道",
+    "kaoyan_gloss": "知道",
+    "tag": "core"
+  },
+  {
+    "word": "take",
+    "phonetic": "/teɪk/",
+    "pos": "v.",
+    "translation": "拿；取",
+    "kaoyan_gloss": "拿",
+    "tag": "core"
+  },
+  {
+    "word": "people",
+    "phonetic": "/ˈpiːpl/",
+    "pos": "n.",
+    "translation": "人们",
+    "kaoyan_gloss": "人们",
+    "tag": "core"
+  },
+  {
+    "word": "into",
+    "phonetic": "/ˈɪntuː/",
+    "pos": "prep.",
+    "translation": "进入",
+    "kaoyan_gloss": "进入",
+    "tag": "core"
+  },
+  {
+    "word": "year",
+    "phonetic": "/jɪə/",
+    "pos": "n.",
+    "translation": "年",
+    "kaoyan_gloss": "年",
+    "tag": "core"
+  },
+  {
+    "word": "your",
+    "phonetic": "/jɔː/",
+    "pos": "pron.",
+    "translation": "你的",
+    "kaoyan_gloss": "你的",
+    "tag": "core"
+  },
+  {
+    "word": "good",
+    "phonetic": "/ɡʊd/",
+    "pos": "adj.",
+    "translation": "好的",
+    "kaoyan_gloss": "好的",
+    "tag": "core"
+  },
+  {
+    "word": "some",
+    "phonetic": "/sʌm/",
+    "pos": "adj.",
+    "translation": "一些",
+    "kaoyan_gloss": "一些",
+    "tag": "core"
+  },
+  {
+    "word": "could",
+    "phonetic": "/kʊd/",
+    "pos": "v.",
+    "translation": "能够",
+    "kaoyan_gloss": "能够",
+    "tag": "core"
+  },
+  {
+    "word": "them",
+    "phonetic": "/ðem/",
+    "pos": "pron.",
+    "translation": "他们（宾格）",
+    "kaoyan_gloss": "他们（宾格）",
+    "tag": "core"
+  },
+  {
+    "word": "see",
+    "phonetic": "/siː/",
+    "pos": "v.",
+    "translation": "看见",
+    "kaoyan_gloss": "看见",
+    "tag": "core"
+  },
+  {
+    "word": "other",
+    "phonetic": "/ˈʌðə/",
+    "pos": "adj.",
+    "translation": "其他的",
+    "kaoyan_gloss": "其他的",
+    "tag": "core"
+  },
+  {
+    "word": "than",
+    "phonetic": "/ðæn/",
+    "pos": "conj.",
+    "translation": "比",
+    "kaoyan_gloss": "比",
+    "tag": "core"
+  },
+  {
+    "word": "then",
+    "phonetic": "/ðen/",
+    "pos": "adv.",
+    "translation": "然后",
+    "kaoyan_gloss": "然后",
+    "tag": "core"
+  },
+  {
+    "word": "now",
+    "phonetic": "/naʊ/",
+    "pos": "adv.",
+    "translation": "现在",
+    "kaoyan_gloss": "现在",
+    "tag": "core"
+  },
+  {
+    "word": "look",
+    "phonetic": "/lʊk/",
+    "pos": "v.",
+    "translation": "看",
+    "kaoyan_gloss": "看",
+    "tag": "core"
+  },
+  {
+    "word": "only",
+    "phonetic": "/ˈəʊnli/",
+    "pos": "adv.",
+    "translation": "仅仅",
+    "kaoyan_gloss": "仅仅",
+    "tag": "core"
+  },
+  {
+    "word": "come",
+    "phonetic": "/kʌm/",
+    "pos": "v.",
+    "translation": "来",
+    "kaoyan_gloss": "来",
+    "tag": "core"
+  },
+  {
+    "word": "its",
+    "phonetic": "/ɪts/",
+    "pos": "pron.",
+    "translation": "它的",
+    "kaoyan_gloss": "它的",
+    "tag": "core"
+  },
+  {
+    "word": "over",
+    "phonetic": "/ˈəʊvə/",
+    "pos": "prep.",
+    "translation": "在…上方",
+    "kaoyan_gloss": "在…上方",
+    "tag": "core"
+  },
+  {
+    "word": "think",
+    "phonetic": "/θɪŋk/",
+    "pos": "v.",
+    "translation": "思考",
+    "kaoyan_gloss": "思考",
+    "tag": "core"
+  },
+  {
+    "word": "also",
+    "phonetic": "/ˈɔːlsəʊ/",
+    "pos": "adv.",
+    "translation": "也",
+    "kaoyan_gloss": "也",
+    "tag": "core"
+  },
+  {
+    "word": "back",
+    "phonetic": "/bæk/",
+    "pos": "adv.",
+    "translation": "回来",
+    "kaoyan_gloss": "回来",
+    "tag": "core"
+  },
+  {
+    "word": "after",
+    "phonetic": "/ˈɑːftə/",
+    "pos": "prep.",
+    "translation": "在…之后",
+    "kaoyan_gloss": "在…之后",
+    "tag": "core"
+  },
+  {
+    "word": "use",
+    "phonetic": "/juːz/",
+    "pos": "v.",
+    "translation": "使用",
+    "kaoyan_gloss": "使用",
+    "tag": "core"
+  },
+  {
+    "word": "two",
+    "phonetic": "/tuː/",
+    "pos": "num.",
+    "translation": "二",
+    "kaoyan_gloss": "二",
+    "tag": "core"
+  },
+  {
+    "word": "how",
+    "phonetic": "/haʊ/",
+    "pos": "adv.",
+    "translation": "如何",
+    "kaoyan_gloss": "如何",
+    "tag": "core"
+  },
+  {
+    "word": "our",
+    "phonetic": "/ˈaʊə/",
+    "pos": "pron.",
+    "translation": "我们的",
+    "kaoyan_gloss": "我们的",
+    "tag": "core"
+  },
+  {
+    "word": "work",
+    "phonetic": "/wɜːk/",
+    "pos": "v.",
+    "translation": "工作",
+    "kaoyan_gloss": "工作",
+    "tag": "core"
+  },
+  {
+    "word": "first",
+    "phonetic": "/fɜːst/",
+    "pos": "adj.",
+    "translation": "第一的",
+    "kaoyan_gloss": "第一的",
+    "tag": "core"
+  },
+  {
+    "word": "well",
+    "phonetic": "/wel/",
+    "pos": "adv.",
+    "translation": "好地",
+    "kaoyan_gloss": "好地",
+    "tag": "core"
+  },
+  {
+    "word": "way",
+    "phonetic": "/weɪ/",
+    "pos": "n.",
+    "translation": "方式；路",
+    "kaoyan_gloss": "方式",
+    "tag": "core"
+  },
+  {
+    "word": "even",
+    "phonetic": "/ˈiːvən/",
+    "pos": "adv.",
+    "translation": "甚至",
+    "kaoyan_gloss": "甚至",
+    "tag": "core"
+  },
+  {
+    "word": "new",
+    "phonetic": "/njuː/",
+    "pos": "adj.",
+    "translation": "新的",
+    "kaoyan_gloss": "新的",
+    "tag": "core"
+  },
+  {
+    "word": "want",
+    "phonetic": "/wɒnt/",
+    "pos": "v.",
+    "translation": "想要",
+    "kaoyan_gloss": "想要",
+    "tag": "core"
+  },
+  {
+    "word": "because",
+    "phonetic": "/bɪˈkɒz/",
+    "pos": "conj.",
+    "translation": "因为",
+    "kaoyan_gloss": "因为",
+    "tag": "core"
+  },
+  {
+    "word": "any",
+    "phonetic": "/ˈeni/",
+    "pos": "adj.",
+    "translation": "任何",
+    "kaoyan_gloss": "任何",
+    "tag": "core"
+  },
+  {
+    "word": "these",
+    "phonetic": "/ðiːz/",
+    "pos": "pron.",
+    "translation": "这些",
+    "kaoyan_gloss": "这些",
+    "tag": "core"
+  },
+  {
+    "word": "give",
+    "phonetic": "/ɡɪv/",
+    "pos": "v.",
+    "translation": "给",
+    "kaoyan_gloss": "给",
+    "tag": "core"
+  },
+  {
+    "word": "day",
+    "phonetic": "/deɪ/",
+    "pos": "n.",
+    "translation": "天",
+    "kaoyan_gloss": "天",
+    "tag": "core"
+  },
+  {
+    "word": "most",
+    "phonetic": "/məʊst/",
+    "pos": "adv.",
+    "translation": "最",
+    "kaoyan_gloss": "最",
+    "tag": "core"
+  },
+  {
+    "word": "us",
+    "phonetic": "/ʌs/",
+    "pos": "pron.",
+    "translation": "我们（宾格）",
+    "kaoyan_gloss": "我们（宾格）",
+    "tag": "core"
+  },
+  {
+    "word": "is",
+    "phonetic": "/ɪz/",
+    "pos": "v.",
+    "translation": "是",
+    "kaoyan_gloss": "是",
+    "tag": "core"
+  },
+  {
+    "word": "are",
+    "phonetic": "/ɑː/",
+    "pos": "v.",
+    "translation": "是",
+    "kaoyan_gloss": "是",
+    "tag": "core"
+  },
+  {
+    "word": "was",
+    "phonetic": "/wɒz/",
+    "pos": "v.",
+    "translation": "是（过去）",
+    "kaoyan_gloss": "是（过去）",
+    "tag": "core"
+  },
+  {
+    "word": "were",
+    "phonetic": "/wɜː/",
+    "pos": "v.",
+    "translation": "是（过去复数）",
+    "kaoyan_gloss": "是（过去复数）",
+    "tag": "core"
+  },
+  {
+    "word": "been",
+    "phonetic": "/biːn/",
+    "pos": "v.",
+    "translation": "是（完成）",
+    "kaoyan_gloss": "是（完成）",
+    "tag": "core"
+  },
+  {
+    "word": "being",
+    "phonetic": "/ˈbiːɪŋ/",
+    "pos": "n.",
+    "translation": "存在；生物",
+    "kaoyan_gloss": "存在",
+    "tag": "core"
+  },
+  {
+    "word": "has",
+    "phonetic": "/hæz/",
+    "pos": "v.",
+    "translation": "有（三单）",
+    "kaoyan_gloss": "有（三单）",
+    "tag": "core"
+  },
+  {
+    "word": "had",
+    "phonetic": "/hæd/",
+    "pos": "v.",
+    "translation": "有（过去）",
+    "kaoyan_gloss": "有（过去）",
+    "tag": "core"
+  },
+  {
+    "word": "having",
+    "phonetic": "/ˈhævɪŋ/",
+    "pos": "v.",
+    "translation": "拥有（现在分词）",
+    "kaoyan_gloss": "拥有（现在分词）",
+    "tag": "core"
+  },
+  {
+    "word": "very",
+    "phonetic": "/ˈveri/",
+    "pos": "adv.",
+    "translation": "非常；很",
+    "kaoyan_gloss": "非常",
+    "tag": "core"
+  },
+  {
+    "word": "more",
+    "phonetic": "/mɔː/",
+    "pos": "adv.",
+    "translation": "更多",
+    "kaoyan_gloss": "更多",
+    "tag": "core"
+  },
+  {
+    "word": "much",
+    "phonetic": "/mʌtʃ/",
+    "pos": "adv.",
+    "translation": "很多",
+    "kaoyan_gloss": "很多",
+    "tag": "core"
+  },
+  {
+    "word": "many",
+    "phonetic": "/ˈmeni/",
+    "pos": "adj.",
+    "translation": "许多",
+    "kaoyan_gloss": "许多",
+    "tag": "core"
+  },
+  {
+    "word": "such",
+    "phonetic": "/sʌtʃ/",
+    "pos": "adj.",
+    "translation": "这样的",
+    "kaoyan_gloss": "这样的",
+    "tag": "core"
+  },
+  {
+    "word": "own",
+    "phonetic": "/əʊn/",
+    "pos": "adj.",
+    "translation": "自己的",
+    "kaoyan_gloss": "自己的",
+    "tag": "core"
+  },
+  {
+    "word": "same",
+    "phonetic": "/seɪm/",
+    "pos": "adj.",
+    "translation": "相同的",
+    "kaoyan_gloss": "相同的",
+    "tag": "core"
+  },
+  {
+    "word": "too",
+    "phonetic": "/tuː/",
+    "pos": "adv.",
+    "translation": "也；太",
+    "kaoyan_gloss": "也",
+    "tag": "core"
+  },
+  {
+    "word": "here",
+    "phonetic": "/hɪə/",
+    "pos": "adv.",
+    "translation": "这里",
+    "kaoyan_gloss": "这里",
+    "tag": "core"
+  },
+  {
+    "word": "where",
+    "phonetic": "/weə/",
+    "pos": "adv.",
+    "translation": "哪里",
+    "kaoyan_gloss": "哪里",
+    "tag": "core"
+  },
+  {
+    "word": "why",
+    "phonetic": "/waɪ/",
+    "pos": "adv.",
+    "translation": "为什么",
+    "kaoyan_gloss": "为什么",
+    "tag": "core"
+  },
+  {
+    "word": "each",
+    "phonetic": "/iːtʃ/",
+    "pos": "adj.",
+    "translation": "每个",
+    "kaoyan_gloss": "每个",
+    "tag": "core"
+  },
+  {
+    "word": "few",
+    "phonetic": "/fjuː/",
+    "pos": "adj.",
+    "translation": "少数",
+    "kaoyan_gloss": "少数",
+    "tag": "core"
+  },
+  {
+    "word": "little",
+    "phonetic": "/ˈlɪtl/",
+    "pos": "adj.",
+    "translation": "小的；少的",
+    "kaoyan_gloss": "小的",
+    "tag": "core"
+  },
+  {
+    "word": "every",
+    "phonetic": "/ˈevri/",
+    "pos": "adj.",
+    "translation": "每个",
+    "kaoyan_gloss": "每个",
+    "tag": "core"
+  },
+  {
+    "word": "both",
+    "phonetic": "/bəʊθ/",
+    "pos": "adj.",
+    "translation": "两者",
+    "kaoyan_gloss": "两者",
+    "tag": "core"
+  },
+  {
+    "word": "between",
+    "phonetic": "/bɪˈtwiːn/",
+    "pos": "prep.",
+    "translation": "在…之间",
+    "kaoyan_gloss": "在…之间",
+    "tag": "core"
+  },
+  {
+    "word": "through",
+    "phonetic": "/θruː/",
+    "pos": "prep.",
+    "translation": "通过",
+    "kaoyan_gloss": "通过",
+    "tag": "core"
+  },
+  {
+    "word": "during",
+    "phonetic": "/ˈdjʊərɪŋ/",
+    "pos": "prep.",
+    "translation": "在…期间",
+    "kaoyan_gloss": "在…期间",
+    "tag": "core"
+  },
+  {
+    "word": "before",
+    "phonetic": "/bɪˈfɔː/",
+    "pos": "prep.",
+    "translation": "在…之前",
+    "kaoyan_gloss": "在…之前",
+    "tag": "core"
+  },
+  {
+    "word": "without",
+    "phonetic": "/wɪˈðaʊt/",
+    "pos": "prep.",
+    "translation": "没有",
+    "kaoyan_gloss": "没有",
+    "tag": "core"
+  },
+  {
+    "word": "within",
+    "phonetic": "/wɪˈðɪn/",
+    "pos": "prep.",
+    "translation": "在…之内",
+    "kaoyan_gloss": "在…之内",
+    "tag": "core"
+  },
+  {
+    "word": "against",
+    "phonetic": "/əˈɡenst/",
+    "pos": "prep.",
+    "translation": "反对；靠着",
+    "kaoyan_gloss": "反对",
+    "tag": "core"
+  },
+  {
+    "word": "among",
+    "phonetic": "/əˈmʌŋ/",
+    "pos": "prep.",
+    "translation": "在…之中",
+    "kaoyan_gloss": "在…之中",
+    "tag": "core"
+  },
+  {
+    "word": "while",
+    "phonetic": "/waɪl/",
+    "pos": "conj.",
+    "translation": "当…时",
+    "kaoyan_gloss": "当…时",
+    "tag": "core"
+  },
+  {
+    "word": "although",
+    "phonetic": "/ɔːlˈðəʊ/",
+    "pos": "conj.",
+    "translation": "虽然",
+    "kaoyan_gloss": "虽然",
+    "tag": "core"
+  },
+  {
+    "word": "since",
+    "phonetic": "/sɪns/",
+    "pos": "conj.",
+    "translation": "自从",
+    "kaoyan_gloss": "自从",
+    "tag": "core"
+  },
+  {
+    "word": "until",
+    "phonetic": "/ənˈtɪl/",
+    "pos": "conj.",
+    "translation": "直到",
+    "kaoyan_gloss": "直到",
+    "tag": "core"
+  },
+  {
+    "word": "once",
+    "phonetic": "/wʌns/",
+    "pos": "adv.",
+    "translation": "一次",
+    "kaoyan_gloss": "一次",
+    "tag": "core"
+  },
+  {
+    "word": "again",
+    "phonetic": "/əˈɡen/",
+    "pos": "adv.",
+    "translation": "再次",
+    "kaoyan_gloss": "再次",
+    "tag": "core"
+  },
+  {
+    "word": "never",
+    "phonetic": "/ˈnevə/",
+    "pos": "adv.",
+    "translation": "从不",
+    "kaoyan_gloss": "从不",
+    "tag": "core"
+  },
+  {
+    "word": "always",
+    "phonetic": "/ˈɔːlweɪz/",
+    "pos": "adv.",
+    "translation": "总是",
+    "kaoyan_gloss": "总是",
+    "tag": "core"
+  },
+  {
+    "word": "often",
+    "phonetic": "/ˈɒfn/",
+    "pos": "adv.",
+    "translation": "经常",
+    "kaoyan_gloss": "经常",
+    "tag": "core"
+  },
+  {
+    "word": "still",
+    "phonetic": "/stɪl/",
+    "pos": "adv.",
+    "translation": "仍然",
+    "kaoyan_gloss": "仍然",
+    "tag": "core"
+  },
+  {
+    "word": "already",
+    "phonetic": "/ɔːlˈredi/",
+    "pos": "adv.",
+    "translation": "已经",
+    "kaoyan_gloss": "已经",
+    "tag": "core"
+  },
+  {
+    "word": "yet",
+    "phonetic": "/jet/",
+    "pos": "adv.",
+    "translation": "还；然而",
+    "kaoyan_gloss": "还",
+    "tag": "core"
+  },
+  {
+    "word": "perhaps",
+    "phonetic": "/pəˈhæps/",
+    "pos": "adv.",
+    "translation": "也许",
+    "kaoyan_gloss": "也许",
+    "tag": "core"
+  },
+  {
+    "word": "really",
+    "phonetic": "/ˈrɪəli/",
+    "pos": "adv.",
+    "translation": "真正地",
+    "kaoyan_gloss": "真正地",
+    "tag": "core"
+  },
+  {
+    "word": "quite",
+    "phonetic": "/kwaɪt/",
+    "pos": "adv.",
+    "translation": "相当",
+    "kaoyan_gloss": "相当",
+    "tag": "core"
+  },
+  {
+    "word": "rather",
+    "phonetic": "/ˈrɑːðə/",
+    "pos": "adv.",
+    "translation": "相当",
+    "kaoyan_gloss": "相当",
+    "tag": "core"
+  },
+  {
+    "word": "almost",
+    "phonetic": "/ˈɔːlməʊst/",
+    "pos": "adv.",
+    "translation": "几乎",
+    "kaoyan_gloss": "几乎",
+    "tag": "core"
+  },
+  {
+    "word": "enough",
+    "phonetic": "/ɪˈnʌf/",
+    "pos": "adv.",
+    "translation": "足够",
+    "kaoyan_gloss": "足够",
+    "tag": "core"
+  },
+  {
+    "word": "however",
+    "phonetic": "/haʊˈevə/",
+    "pos": "adv.",
+    "translation": "然而",
+    "kaoyan_gloss": "然而",
+    "tag": "core"
+  },
+  {
+    "word": "therefore",
+    "phonetic": "/ˈðeəfɔː/",
+    "pos": "adv.",
+    "translation": "因此",
+    "kaoyan_gloss": "因此",
+    "tag": "core"
+  },
+  {
+    "word": "thus",
+    "phonetic": "/ðʌs/",
+    "pos": "adv.",
+    "translation": "因此",
+    "kaoyan_gloss": "因此",
+    "tag": "core"
+  },
+  {
+    "word": "else",
+    "phonetic": "/els/",
+    "pos": "adv.",
+    "translation": "其他",
+    "kaoyan_gloss": "其他",
+    "tag": "core"
+  },
+  {
+    "word": "something",
+    "phonetic": "/ˈsʌmθɪŋ/",
+    "pos": "pron.",
+    "translation": "某事",
+    "kaoyan_gloss": "某事",
+    "tag": "core"
+  },
+  {
+    "word": "someone",
+    "phonetic": "/ˈsʌmwʌn/",
+    "pos": "pron.",
+    "translation": "某人",
+    "kaoyan_gloss": "某人",
+    "tag": "core"
+  },
+  {
+    "word": "anything",
+    "phonetic": "/ˈeniθɪŋ/",
+    "pos": "pron.",
+    "translation": "任何事",
+    "kaoyan_gloss": "任何事",
+    "tag": "core"
+  },
+  {
+    "word": "everything",
+    "phonetic": "/ˈevriθɪŋ/",
+    "pos": "pron.",
+    "translation": "一切",
+    "kaoyan_gloss": "一切",
+    "tag": "core"
+  },
+  {
+    "word": "nothing",
+    "phonetic": "/ˈnʌθɪŋ/",
+    "pos": "pron.",
+    "translation": "没有东西",
+    "kaoyan_gloss": "没有东西",
+    "tag": "core"
+  },
+  {
+    "word": "another",
+    "phonetic": "/əˈnʌðə/",
+    "pos": "adj.",
+    "translation": "另一个",
+    "kaoyan_gloss": "另一个",
+    "tag": "core"
+  },
+  {
+    "word": "everyone",
+    "phonetic": "/ˈevriwʌn/",
+    "pos": "pron.",
+    "translation": "每个人",
+    "kaoyan_gloss": "每个人",
+    "tag": "core"
+  },
+  {
+    "word": "anyone",
+    "phonetic": "/ˈeniwʌn/",
+    "pos": "pron.",
+    "translation": "任何人",
+    "kaoyan_gloss": "任何人",
+    "tag": "core"
+  },
+  {
+    "word": "myself",
+    "phonetic": "/maɪˈself/",
+    "pos": "pron.",
+    "translation": "我自己",
+    "kaoyan_gloss": "我自己",
+    "tag": "core"
+  },
+  {
+    "word": "yourself",
+    "phonetic": "/jɔːˈself/",
+    "pos": "pron.",
+    "translation": "你自己",
+    "kaoyan_gloss": "你自己",
+    "tag": "core"
+  },
+  {
+    "word": "himself",
+    "phonetic": "/hɪmˈself/",
+    "pos": "pron.",
+    "translation": "他自己",
+    "kaoyan_gloss": "他自己",
+    "tag": "core"
+  },
+  {
+    "word": "herself",
+    "phonetic": "/hɜːˈself/",
+    "pos": "pron.",
+    "translation": "她自己",
+    "kaoyan_gloss": "她自己",
+    "tag": "core"
+  },
+  {
+    "word": "itself",
+    "phonetic": "/ɪtˈself/",
+    "pos": "pron.",
+    "translation": "它自己",
+    "kaoyan_gloss": "它自己",
+    "tag": "core"
+  },
+  {
+    "word": "ourselves",
+    "phonetic": "/aʊəˈselvz/",
+    "pos": "pron.",
+    "translation": "我们自己",
+    "kaoyan_gloss": "我们自己",
+    "tag": "core"
+  },
+  {
+    "word": "themselves",
+    "phonetic": "/ðəmˈselvz/",
+    "pos": "pron.",
+    "translation": "他们自己",
+    "kaoyan_gloss": "他们自己",
+    "tag": "core"
+  },
+  {
+    "word": "man",
+    "phonetic": "/mæn/",
+    "pos": "n.",
+    "translation": "男人",
+    "kaoyan_gloss": "男人",
+    "tag": "core"
+  },
+  {
+    "word": "woman",
+    "phonetic": "/ˈwʊmən/",
+    "pos": "n.",
+    "translation": "女人",
+    "kaoyan_gloss": "女人",
+    "tag": "core"
+  },
+  {
+    "word": "child",
+    "phonetic": "/tʃaɪld/",
+    "pos": "n.",
+    "translation": "孩子",
+    "kaoyan_gloss": "孩子",
+    "tag": "core"
+  },
+  {
+    "word": "world",
+    "phonetic": "/wɜːld/",
+    "pos": "n.",
+    "translation": "世界",
+    "kaoyan_gloss": "世界",
+    "tag": "core"
+  },
+  {
+    "word": "life",
+    "phonetic": "/laɪf/",
+    "pos": "n.",
+    "translation": "生活；生命",
+    "kaoyan_gloss": "生活",
+    "tag": "core"
+  },
+  {
+    "word": "hand",
+    "phonetic": "/hænd/",
+    "pos": "n.",
+    "translation": "手",
+    "kaoyan_gloss": "手",
+    "tag": "core"
+  },
+  {
+    "word": "part",
+    "phonetic": "/pɑːt/",
+    "pos": "n.",
+    "translation": "部分",
+    "kaoyan_gloss": "部分",
+    "tag": "core"
+  },
+  {
+    "word": "place",
+    "phonetic": "/pleɪs/",
+    "pos": "n.",
+    "translation": "地方",
+    "kaoyan_gloss": "地方",
+    "tag": "core"
+  },
+  {
+    "word": "case",
+    "phonetic": "/keɪs/",
+    "pos": "n.",
+    "translation": "情况；案例",
+    "kaoyan_gloss": "情况",
+    "tag": "core"
+  },
+  {
+    "word": "week",
+    "phonetic": "/wiːk/",
+    "pos": "n.",
+    "translation": "周",
+    "kaoyan_gloss": "周",
+    "tag": "core"
+  },
+  {
+    "word": "company",
+    "phonetic": "/ˈkʌmpəni/",
+    "pos": "n.",
+    "translation": "公司",
+    "kaoyan_gloss": "公司",
+    "tag": "core"
+  },
+  {
+    "word": "system",
+    "phonetic": "/ˈsɪstəm/",
+    "pos": "n.",
+    "translation": "系统",
+    "kaoyan_gloss": "系统",
+    "tag": "core"
+  },
+  {
+    "word": "program",
+    "phonetic": "/ˈprəʊɡræm/",
+    "pos": "n.",
+    "translation": "程序；计划",
+    "kaoyan_gloss": "程序",
+    "tag": "core"
+  },
+  {
+    "word": "question",
+    "phonetic": "/ˈkwestʃən/",
+    "pos": "n.",
+    "translation": "问题",
+    "kaoyan_gloss": "问题",
+    "tag": "core"
+  },
+  {
+    "word": "government",
+    "phonetic": "/ˈɡʌvənmənt/",
+    "pos": "n.",
+    "translation": "政府",
+    "kaoyan_gloss": "政府",
+    "tag": "core"
+  },
+  {
+    "word": "number",
+    "phonetic": "/ˈnʌmbə/",
+    "pos": "n.",
+    "translation": "数字",
+    "kaoyan_gloss": "数字",
+    "tag": "core"
+  },
+  {
+    "word": "group",
+    "phonetic": "/ɡruːp/",
+    "pos": "n.",
+    "translation": "组",
+    "kaoyan_gloss": "组",
+    "tag": "core"
+  },
+  {
+    "word": "problem",
+    "phonetic": "/ˈprɒbləm/",
+    "pos": "n.",
+    "translation": "问题",
+    "kaoyan_gloss": "问题",
+    "tag": "core"
+  },
+  {
+    "word": "fact",
+    "phonetic": "/fækt/",
+    "pos": "n.",
+    "translation": "事实",
+    "kaoyan_gloss": "事实",
+    "tag": "core"
+  },
+  {
+    "word": "become",
+    "phonetic": "/bɪˈkʌm/",
+    "pos": "v.",
+    "translation": "成为",
+    "kaoyan_gloss": "成为",
+    "tag": "core"
+  },
+  {
+    "word": "need",
+    "phonetic": "/niːd/",
+    "pos": "v.",
+    "translation": "需要",
+    "kaoyan_gloss": "需要",
+    "tag": "core"
+  },
+  {
+    "word": "feel",
+    "phonetic": "/fiːl/",
+    "pos": "v.",
+    "translation": "感觉",
+    "kaoyan_gloss": "感觉",
+    "tag": "core"
+  },
+  {
+    "word": "seem",
+    "phonetic": "/siːm/",
+    "pos": "v.",
+    "translation": "似乎",
+    "kaoyan_gloss": "似乎",
+    "tag": "core"
+  },
+  {
+    "word": "leave",
+    "phonetic": "/liːv/",
+    "pos": "v.",
+    "translation": "离开",
+    "kaoyan_gloss": "离开",
+    "tag": "core"
+  },
+  {
+    "word": "put",
+    "phonetic": "/pʊt/",
+    "pos": "v.",
+    "translation": "放",
+    "kaoyan_gloss": "放",
+    "tag": "core"
+  },
+  {
+    "word": "mean",
+    "phonetic": "/miːn/",
+    "pos": "v.",
+    "translation": "意味着",
+    "kaoyan_gloss": "意味着",
+    "tag": "core"
+  },
+  {
+    "word": "keep",
+    "phonetic": "/kiːp/",
+    "pos": "v.",
+    "translation": "保持",
+    "kaoyan_gloss": "保持",
+    "tag": "core"
+  },
+  {
+    "word": "let",
+    "phonetic": "/let/",
+    "pos": "v.",
+    "translation": "让",
+    "kaoyan_gloss": "让",
+    "tag": "core"
+  },
+  {
+    "word": "begin",
+    "phonetic": "/bɪˈɡɪn/",
+    "pos": "v.",
+    "translation": "开始",
+    "kaoyan_gloss": "开始",
+    "tag": "core"
+  },
+  {
+    "word": "show",
+    "phonetic": "/ʃəʊ/",
+    "pos": "v.",
+    "translation": "展示",
+    "kaoyan_gloss": "展示",
+    "tag": "core"
+  },
+  {
+    "word": "hear",
+    "phonetic": "/hɪə/",
+    "pos": "v.",
+    "translation": "听见",
+    "kaoyan_gloss": "听见",
+    "tag": "core"
+  },
+  {
+    "word": "run",
+    "phonetic": "/rʌn/",
+    "pos": "v.",
+    "translation": "跑；运行",
+    "kaoyan_gloss": "跑",
+    "tag": "core"
+  },
+  {
+    "word": "move",
+    "phonetic": "/muːv/",
+    "pos": "v.",
+    "translation": "移动",
+    "kaoyan_gloss": "移动",
+    "tag": "core"
+  },
+  {
+    "word": "live",
+    "phonetic": "/lɪv/",
+    "pos": "v.",
+    "translation": "生活",
+    "kaoyan_gloss": "生活",
+    "tag": "core"
+  },
+  {
+    "word": "believe",
+    "phonetic": "/bɪˈliːv/",
+    "pos": "v.",
+    "translation": "相信",
+    "kaoyan_gloss": "相信",
+    "tag": "core"
+  },
+  {
+    "word": "hold",
+    "phonetic": "/həʊld/",
+    "pos": "v.",
+    "translation": "持有",
+    "kaoyan_gloss": "持有",
+    "tag": "core"
+  },
+  {
+    "word": "bring",
+    "phonetic": "/brɪŋ/",
+    "pos": "v.",
+    "translation": "带来",
+    "kaoyan_gloss": "带来",
+    "tag": "core"
+  },
+  {
+    "word": "happen",
+    "phonetic": "/ˈhæpən/",
+    "pos": "v.",
+    "translation": "发生",
+    "kaoyan_gloss": "发生",
+    "tag": "core"
+  },
+  {
+    "word": "write",
+    "phonetic": "/raɪt/",
+    "pos": "v.",
+    "translation": "写",
+    "kaoyan_gloss": "写",
+    "tag": "core"
+  },
+  {
+    "word": "provide",
+    "phonetic": "/prəˈvaɪd/",
+    "pos": "v.",
+    "translation": "提供",
+    "kaoyan_gloss": "提供",
+    "tag": "core"
+  },
+  {
+    "word": "sit",
+    "phonetic": "/sɪt/",
+    "pos": "v.",
+    "translation": "坐",
+    "kaoyan_gloss": "坐",
+    "tag": "core"
+  },
+  {
+    "word": "stand",
+    "phonetic": "/stænd/",
+    "pos": "v.",
+    "translation": "站立",
+    "kaoyan_gloss": "站立",
+    "tag": "core"
+  },
+  {
+    "word": "lose",
+    "phonetic": "/luːz/",
+    "pos": "v.",
+    "translation": "失去",
+    "kaoyan_gloss": "失去",
+    "tag": "core"
+  },
+  {
+    "word": "pay",
+    "phonetic": "/peɪ/",
+    "pos": "v.",
+    "translation": "支付",
+    "kaoyan_gloss": "支付",
+    "tag": "core"
+  },
+  {
+    "word": "meet",
+    "phonetic": "/miːt/",
+    "pos": "v.",
+    "translation": "遇见",
+    "kaoyan_gloss": "遇见",
+    "tag": "core"
+  },
+  {
+    "word": "include",
+    "phonetic": "/ɪnˈkluːd/",
+    "pos": "v.",
+    "translation": "包括",
+    "kaoyan_gloss": "包括",
+    "tag": "core"
+  },
+  {
+    "word": "continue",
+    "phonetic": "/kənˈtɪnjuː/",
+    "pos": "v.",
+    "translation": "继续",
+    "kaoyan_gloss": "继续",
+    "tag": "core"
+  },
+  {
+    "word": "set",
+    "phonetic": "/set/",
+    "pos": "v.",
+    "translation": "设置",
+    "kaoyan_gloss": "设置",
+    "tag": "core"
+  },
+  {
+    "word": "learn",
+    "phonetic": "/lɜːn/",
+    "pos": "v.",
+    "translation": "学习",
+    "kaoyan_gloss": "学习",
+    "tag": "core"
+  },
+  {
+    "word": "change",
+    "phonetic": "/tʃeɪndʒ/",
+    "pos": "v.",
+    "translation": "改变",
+    "kaoyan_gloss": "改变",
+    "tag": "core"
+  },
+  {
+    "word": "lead",
+    "phonetic": "/liːd/",
+    "pos": "v.",
+    "translation": "领导",
+    "kaoyan_gloss": "领导",
+    "tag": "core"
+  },
+  {
+    "word": "understand",
+    "phonetic": "/ˌʌndəˈstænd/",
+    "pos": "v.",
+    "translation": "理解",
+    "kaoyan_gloss": "理解",
+    "tag": "core"
+  },
+  {
+    "word": "watch",
+    "phonetic": "/wɒtʃ/",
+    "pos": "v.",
+    "translation": "观看",
+    "kaoyan_gloss": "观看",
+    "tag": "core"
+  },
+  {
+    "word": "follow",
+    "phonetic": "/ˈfɒləʊ/",
+    "pos": "v.",
+    "translation": "跟随",
+    "kaoyan_gloss": "跟随",
+    "tag": "core"
+  },
+  {
+    "word": "stop",
+    "phonetic": "/stɒp/",
+    "pos": "v.",
+    "translation": "停止",
+    "kaoyan_gloss": "停止",
+    "tag": "core"
+  },
+  {
+    "word": "create",
+    "phonetic": "/kriˈeɪt/",
+    "pos": "v.",
+    "translation": "创造",
+    "kaoyan_gloss": "创造",
+    "tag": "core"
+  },
+  {
+    "word": "speak",
+    "phonetic": "/spiːk/",
+    "pos": "v.",
+    "translation": "说话",
+    "kaoyan_gloss": "说话",
+    "tag": "core"
+  },
+  {
+    "word": "read",
+    "phonetic": "/riːd/",
+    "pos": "v.",
+    "translation": "阅读",
+    "kaoyan_gloss": "阅读",
+    "tag": "core"
+  },
+  {
+    "word": "allow",
+    "phonetic": "/əˈlaʊ/",
+    "pos": "v.",
+    "translation": "允许",
+    "kaoyan_gloss": "允许",
+    "tag": "core"
+  },
+  {
+    "word": "add",
+    "phonetic": "/æd/",
+    "pos": "v.",
+    "translation": "添加",
+    "kaoyan_gloss": "添加",
+    "tag": "core"
+  },
+  {
+    "word": "spend",
+    "phonetic": "/spend/",
+    "pos": "v.",
+    "translation": "花费",
+    "kaoyan_gloss": "花费",
+    "tag": "core"
+  },
+  {
+    "word": "grow",
+    "phonetic": "/ɡrəʊ/",
+    "pos": "v.",
+    "translation": "成长",
+    "kaoyan_gloss": "成长",
+    "tag": "core"
+  },
+  {
+    "word": "open",
+    "phonetic": "/ˈəʊpən/",
+    "pos": "v.",
+    "translation": "打开",
+    "kaoyan_gloss": "打开",
+    "tag": "core"
+  },
+  {
+    "word": "walk",
+    "phonetic": "/wɔːk/",
+    "pos": "v.",
+    "translation": "走",
+    "kaoyan_gloss": "走",
+    "tag": "core"
+  },
+  {
+    "word": "win",
+    "phonetic": "/wɪn/",
+    "pos": "v.",
+    "translation": "赢",
+    "kaoyan_gloss": "赢",
+    "tag": "core"
+  },
+  {
+    "word": "offer",
+    "phonetic": "/ˈɒfə/",
+    "pos": "v.",
+    "translation": "提供",
+    "kaoyan_gloss": "提供",
+    "tag": "core"
+  },
+  {
+    "word": "remember",
+    "phonetic": "/rɪˈmembə/",
+    "pos": "v.",
+    "translation": "记得",
+    "kaoyan_gloss": "记得",
+    "tag": "core"
+  },
+  {
+    "word": "love",
+    "phonetic": "/lʌv/",
+    "pos": "v.",
+    "translation": "爱",
+    "kaoyan_gloss": "爱",
+    "tag": "core"
+  },
+  {
+    "word": "consider",
+    "phonetic": "/kənˈsɪdə/",
+    "pos": "v.",
+    "translation": "考虑",
+    "kaoyan_gloss": "考虑",
+    "tag": "core"
+  },
+  {
+    "word": "appear",
+    "phonetic": "/əˈpɪə/",
+    "pos": "v.",
+    "translation": "出现",
+    "kaoyan_gloss": "出现",
+    "tag": "core"
+  },
+  {
+    "word": "buy",
+    "phonetic": "/baɪ/",
+    "pos": "v.",
+    "translation": "买",
+    "kaoyan_gloss": "买",
+    "tag": "core"
+  },
+  {
+    "word": "wait",
+    "phonetic": "/weɪt/",
+    "pos": "v.",
+    "translation": "等待",
+    "kaoyan_gloss": "等待",
+    "tag": "core"
+  },
+  {
+    "word": "serve",
+    "phonetic": "/sɜːv/",
+    "pos": "v.",
+    "translation": "服务",
+    "kaoyan_gloss": "服务",
+    "tag": "core"
+  },
+  {
+    "word": "die",
+    "phonetic": "/daɪ/",
+    "pos": "v.",
+    "translation": "死亡",
+    "kaoyan_gloss": "死亡",
+    "tag": "core"
+  },
+  {
+    "word": "send",
+    "phonetic": "/send/",
+    "pos": "v.",
+    "translation": "发送",
+    "kaoyan_gloss": "发送",
+    "tag": "core"
+  },
+  {
+    "word": "expect",
+    "phonetic": "/ɪkˈspekt/",
+    "pos": "v.",
+    "translation": "期望",
+    "kaoyan_gloss": "期望",
+    "tag": "core"
+  },
+  {
+    "word": "build",
+    "phonetic": "/bɪld/",
+    "pos": "v.",
+    "translation": "建造",
+    "kaoyan_gloss": "建造",
+    "tag": "core"
+  },
+  {
+    "word": "stay",
+    "phonetic": "/steɪ/",
+    "pos": "v.",
+    "translation": "停留",
+    "kaoyan_gloss": "停留",
+    "tag": "core"
+  },
+  {
+    "word": "fall",
+    "phonetic": "/fɔːl/",
+    "pos": "v.",
+    "translation": "落下",
+    "kaoyan_gloss": "落下",
+    "tag": "core"
+  },
+  {
+    "word": "cut",
+    "phonetic": "/kʌt/",
+    "pos": "v.",
+    "translation": "切",
+    "kaoyan_gloss": "切",
+    "tag": "core"
+  },
+  {
+    "word": "reach",
+    "phonetic": "/riːtʃ/",
+    "pos": "v.",
+    "translation": "到达",
+    "kaoyan_gloss": "到达",
+    "tag": "core"
+  },
+  {
+    "word": "kill",
+    "phonetic": "/kɪl/",
+    "pos": "v.",
+    "translation": "杀死",
+    "kaoyan_gloss": "杀死",
+    "tag": "core"
+  },
+  {
+    "word": "remain",
+    "phonetic": "/rɪˈmeɪn/",
+    "pos": "v.",
+    "translation": "保持",
+    "kaoyan_gloss": "保持",
+    "tag": "core"
+  },
+  {
+    "word": "suggest",
+    "phonetic": "/səˈdʒest/",
+    "pos": "v.",
+    "translation": "建议",
+    "kaoyan_gloss": "建议",
+    "tag": "core"
+  },
+  {
+    "word": "raise",
+    "phonetic": "/reɪz/",
+    "pos": "v.",
+    "translation": "提高",
+    "kaoyan_gloss": "提高",
+    "tag": "core"
+  },
+  {
+    "word": "pass",
+    "phonetic": "/pɑːs/",
+    "pos": "v.",
+    "translation": "通过",
+    "kaoyan_gloss": "通过",
+    "tag": "core"
+  },
+  {
+    "word": "sell",
+    "phonetic": "/sel/",
+    "pos": "v.",
+    "translation": "卖",
+    "kaoyan_gloss": "卖",
+    "tag": "core"
+  },
+  {
+    "word": "require",
+    "phonetic": "/rɪˈkwaɪə/",
+    "pos": "v.",
+    "translation": "需要",
+    "kaoyan_gloss": "需要",
+    "tag": "core"
+  },
+  {
+    "word": "report",
+    "phonetic": "/rɪˈpɔːt/",
+    "pos": "v.",
+    "translation": "报告",
+    "kaoyan_gloss": "报告",
+    "tag": "core"
+  },
+  {
+    "word": "decide",
+    "phonetic": "/dɪˈsaɪd/",
+    "pos": "v.",
+    "translation": "决定",
+    "kaoyan_gloss": "决定",
+    "tag": "core"
+  },
+  {
+    "word": "pull",
+    "phonetic": "/pʊl/",
+    "pos": "v.",
+    "translation": "拉",
+    "kaoyan_gloss": "拉",
+    "tag": "core"
+  },
+  {
+    "word": "big",
+    "phonetic": "/bɪɡ/",
+    "pos": "adj.",
+    "translation": "大的",
+    "kaoyan_gloss": "大的",
+    "tag": "core"
+  },
+  {
+    "word": "long",
+    "phonetic": "/lɒŋ/",
+    "pos": "adj.",
+    "translation": "长的",
+    "kaoyan_gloss": "长的",
+    "tag": "core"
+  },
+  {
+    "word": "great",
+    "phonetic": "/ɡreɪt/",
+    "pos": "adj.",
+    "translation": "伟大的",
+    "kaoyan_gloss": "伟大的",
+    "tag": "core"
+  },
+  {
+    "word": "high",
+    "phonetic": "/haɪ/",
+    "pos": "adj.",
+    "translation": "高的",
+    "kaoyan_gloss": "高的",
+    "tag": "core"
+  },
+  {
+    "word": "small",
+    "phonetic": "/smɔːl/",
+    "pos": "adj.",
+    "translation": "小的",
+    "kaoyan_gloss": "小的",
+    "tag": "core"
+  },
+  {
+    "word": "large",
+    "phonetic": "/lɑːdʒ/",
+    "pos": "adj.",
+    "translation": "大的",
+    "kaoyan_gloss": "大的",
+    "tag": "core"
+  },
+  {
+    "word": "next",
+    "phonetic": "/nekst/",
+    "pos": "adj.",
+    "translation": "下一个",
+    "kaoyan_gloss": "下一个",
+    "tag": "core"
+  },
+  {
+    "word": "early",
+    "phonetic": "/ˈɜːli/",
+    "pos": "adj.",
+    "translation": "早的",
+    "kaoyan_gloss": "早的",
+    "tag": "core"
+  },
+  {
+    "word": "young",
+    "phonetic": "/jʌŋ/",
+    "pos": "adj.",
+    "translation": "年轻的",
+    "kaoyan_gloss": "年轻的",
+    "tag": "core"
+  },
+  {
+    "word": "important",
+    "phonetic": "/ɪmˈpɔːtnt/",
+    "pos": "adj.",
+    "translation": "重要的",
+    "kaoyan_gloss": "重要的",
+    "tag": "core"
+  },
+  {
+    "word": "public",
+    "phonetic": "/ˈpʌblɪk/",
+    "pos": "adj.",
+    "translation": "公共的",
+    "kaoyan_gloss": "公共的",
+    "tag": "core"
+  },
+  {
+    "word": "bad",
+    "phonetic": "/bæd/",
+    "pos": "adj.",
+    "translation": "坏的",
+    "kaoyan_gloss": "坏的",
+    "tag": "core"
+  },
+  {
+    "word": "able",
+    "phonetic": "/ˈeɪbl/",
+    "pos": "adj.",
+    "translation": "能够的",
+    "kaoyan_gloss": "能够的",
+    "tag": "core"
+  },
+  {
+    "word": "human",
+    "phonetic": "/ˈhjuːmən/",
+    "pos": "adj.",
+    "translation": "人类的",
+    "kaoyan_gloss": "人类的",
+    "tag": "core"
+  },
+  {
+    "word": "local",
+    "phonetic": "/ˈləʊkl/",
+    "pos": "adj.",
+    "translation": "本地的",
+    "kaoyan_gloss": "本地的",
+    "tag": "core"
+  },
+  {
+    "word": "sure",
+    "phonetic": "/ʃʊə/",
+    "pos": "adj.",
+    "translation": "确定的",
+    "kaoyan_gloss": "确定的",
+    "tag": "core"
+  },
+  {
+    "word": "clear",
+    "phonetic": "/klɪə/",
+    "pos": "adj.",
+    "translation": "清楚的",
+    "kaoyan_gloss": "清楚的",
+    "tag": "core"
+  },
+  {
+    "word": "recent",
+    "phonetic": "/ˈriːsnt/",
+    "pos": "adj.",
+    "translation": "最近的",
+    "kaoyan_gloss": "最近的",
+    "tag": "core"
+  },
+  {
+    "word": "strong",
+    "phonetic": "/strɒŋ/",
+    "pos": "adj.",
+    "translation": "强壮的",
+    "kaoyan_gloss": "强壮的",
+    "tag": "core"
+  },
+  {
+    "word": "possible",
+    "phonetic": "/ˈpɒsəbl/",
+    "pos": "adj.",
+    "translation": "可能的",
+    "kaoyan_gloss": "可能的",
+    "tag": "core"
+  },
+  {
+    "word": "whole",
+    "phonetic": "/həʊl/",
+    "pos": "adj.",
+    "translation": "整个的",
+    "kaoyan_gloss": "整个的",
+    "tag": "core"
+  },
+  {
+    "word": "free",
+    "phonetic": "/friː/",
+    "pos": "adj.",
+    "translation": "自由的",
+    "kaoyan_gloss": "自由的",
+    "tag": "core"
+  },
+  {
+    "word": "full",
+    "phonetic": "/fʊl/",
+    "pos": "adj.",
+    "translation": "满的",
+    "kaoyan_gloss": "满的",
+    "tag": "core"
+  },
+  {
+    "word": "special",
+    "phonetic": "/ˈspeʃl/",
+    "pos": "adj.",
+    "translation": "特别的",
+    "kaoyan_gloss": "特别的",
+    "tag": "core"
+  },
+  {
+    "word": "easy",
+    "phonetic": "/ˈiːzi/",
+    "pos": "adj.",
+    "translation": "容易的",
+    "kaoyan_gloss": "容易的",
+    "tag": "core"
+  },
+  {
+    "word": "hard",
+    "phonetic": "/hɑːd/",
+    "pos": "adj.",
+    "translation": "困难的",
+    "kaoyan_gloss": "困难的",
+    "tag": "core"
+  },
+  {
+    "word": "real",
+    "phonetic": "/rɪəl/",
+    "pos": "adj.",
+    "translation": "真实的",
+    "kaoyan_gloss": "真实的",
+    "tag": "core"
+  },
+  {
+    "word": "best",
+    "phonetic": "/best/",
+    "pos": "adj.",
+    "translation": "最好的",
+    "kaoyan_gloss": "最好的",
+    "tag": "core"
+  },
+  {
+    "word": "better",
+    "phonetic": "/ˈbetə/",
+    "pos": "adj.",
+    "translation": "更好的",
+    "kaoyan_gloss": "更好的",
+    "tag": "core"
+  },
+  {
+    "word": "different",
+    "phonetic": "/ˈdɪfrənt/",
+    "pos": "adj.",
+    "translation": "不同的",
+    "kaoyan_gloss": "不同的",
+    "tag": "core"
+  },
+  {
+    "word": "social",
+    "phonetic": "/ˈsəʊʃl/",
+    "pos": "adj.",
+    "translation": "社会的",
+    "kaoyan_gloss": "社会的",
+    "tag": "core"
+  },
+  {
+    "word": "political",
+    "phonetic": "/pəˈlɪtɪkl/",
+    "pos": "adj.",
+    "translation": "政治的",
+    "kaoyan_gloss": "政治的",
+    "tag": "core"
+  },
+  {
+    "word": "economic",
+    "phonetic": "/ˌiːkəˈnɒmɪk/",
+    "pos": "adj.",
+    "translation": "经济的",
+    "kaoyan_gloss": "经济的",
+    "tag": "core"
+  },
+  {
+    "word": "international",
+    "phonetic": "/ˌɪntəˈnæʃnəl/",
+    "pos": "adj.",
+    "translation": "国际的",
+    "kaoyan_gloss": "国际的",
+    "tag": "core"
+  },
+  {
+    "word": "national",
+    "phonetic": "/ˈnæʃnəl/",
+    "pos": "adj.",
+    "translation": "国家的",
+    "kaoyan_gloss": "国家的",
+    "tag": "core"
+  },
+  {
+    "word": "common",
+    "phonetic": "/ˈkɒmən/",
+    "pos": "adj.",
+    "translation": "常见的",
+    "kaoyan_gloss": "常见的",
+    "tag": "core"
+  },
+  {
+    "word": "general",
+    "phonetic": "/ˈdʒenrəl/",
+    "pos": "adj.",
+    "translation": "一般的",
+    "kaoyan_gloss": "一般的",
+    "tag": "core"
+  },
+  {
+    "word": "particular",
+    "phonetic": "/pəˈtɪkjələ/",
+    "pos": "adj.",
+    "translation": "特别的",
+    "kaoyan_gloss": "特别的",
+    "tag": "core"
+  },
+  {
+    "word": "major",
+    "phonetic": "/ˈmeɪdʒə/",
+    "pos": "adj.",
+    "translation": "主要的",
+    "kaoyan_gloss": "主要的",
+    "tag": "core"
+  },
+  {
+    "word": "available",
+    "phonetic": "/əˈveɪləbl/",
+    "pos": "adj.",
+    "translation": "可用的",
+    "kaoyan_gloss": "可用的",
+    "tag": "core"
+  },
+  {
+    "word": "likely",
+    "phonetic": "/ˈlaɪkli/",
+    "pos": "adj.",
+    "translation": "可能的",
+    "kaoyan_gloss": "可能的",
+    "tag": "core"
+  },
+  {
+    "word": "certain",
+    "phonetic": "/ˈsɜːtn/",
+    "pos": "adj.",
+    "translation": "确定的",
+    "kaoyan_gloss": "确定的",
+    "tag": "core"
+  },
+  {
+    "word": "various",
+    "phonetic": "/ˈveəriəs/",
+    "pos": "adj.",
+    "translation": "各种各样的",
+    "kaoyan_gloss": "各种各样的",
+    "tag": "core"
+  },
+  {
+    "word": "similar",
+    "phonetic": "/ˈsɪmələ/",
+    "pos": "adj.",
+    "translation": "相似的",
+    "kaoyan_gloss": "相似的",
+    "tag": "core"
+  },
+  {
+    "word": "necessary",
+    "phonetic": "/ˈnesəsəri/",
+    "pos": "adj.",
+    "translation": "必要的",
+    "kaoyan_gloss": "必要的",
+    "tag": "core"
+  },
+  {
+    "word": "personal",
+    "phonetic": "/ˈpɜːsənl/",
+    "pos": "adj.",
+    "translation": "个人的",
+    "kaoyan_gloss": "个人的",
+    "tag": "core"
+  },
+  {
+    "word": "single",
+    "phonetic": "/ˈsɪŋɡl/",
+    "pos": "adj.",
+    "translation": "单一的",
+    "kaoyan_gloss": "单一的",
+    "tag": "core"
+  },
+  {
+    "word": "simple",
+    "phonetic": "/ˈsɪmpl/",
+    "pos": "adj.",
+    "translation": "简单的",
+    "kaoyan_gloss": "简单的",
+    "tag": "core"
+  },
+  {
+    "word": "natural",
+    "phonetic": "/ˈnætʃrəl/",
+    "pos": "adj.",
+    "translation": "自然的",
+    "kaoyan_gloss": "自然的",
+    "tag": "core"
+  },
+  {
+    "word": "physical",
+    "phonetic": "/ˈfɪzɪkl/",
+    "pos": "adj.",
+    "translation": "身体的；物理的",
+    "kaoyan_gloss": "身体的",
+    "tag": "core"
+  },
+  {
+    "word": "mental",
+    "phonetic": "/ˈmentl/",
+    "pos": "adj.",
+    "translation": "精神的",
+    "kaoyan_gloss": "精神的",
+    "tag": "core"
+  },
+  {
+    "word": "medical",
+    "phonetic": "/ˈmedɪkl/",
+    "pos": "adj.",
+    "translation": "医学的",
+    "kaoyan_gloss": "医学的",
+    "tag": "core"
+  },
+  {
+    "word": "financial",
+    "phonetic": "/faɪˈnænʃl/",
+    "pos": "adj.",
+    "translation": "金融的",
+    "kaoyan_gloss": "金融的",
+    "tag": "core"
+  },
+  {
+    "word": "legal",
+    "phonetic": "/ˈliːɡl/",
+    "pos": "adj.",
+    "translation": "法律的",
+    "kaoyan_gloss": "法律的",
+    "tag": "core"
+  },
+  {
+    "word": "cultural",
+    "phonetic": "/ˈkʌltʃərəl/",
+    "pos": "adj.",
+    "translation": "文化的",
+    "kaoyan_gloss": "文化的",
+    "tag": "core"
+  },
+  {
+    "word": "historical",
+    "phonetic": "/hɪˈstɒrɪkl/",
+    "pos": "adj.",
+    "translation": "历史的",
+    "kaoyan_gloss": "历史的",
+    "tag": "core"
+  },
+  {
+    "word": "scientific",
+    "phonetic": "/ˌsaɪənˈtɪfɪk/",
+    "pos": "adj.",
+    "translation": "科学的",
+    "kaoyan_gloss": "科学的",
+    "tag": "core"
+  },
+  {
+    "word": "technical",
+    "phonetic": "/ˈteknɪkl/",
+    "pos": "adj.",
+    "translation": "技术的",
+    "kaoyan_gloss": "技术的",
+    "tag": "core"
+  },
+  {
+    "word": "modern",
+    "phonetic": "/ˈmɒdn/",
+    "pos": "adj.",
+    "translation": "现代的",
+    "kaoyan_gloss": "现代的",
+    "tag": "core"
+  },
+  {
+    "word": "traditional",
+    "phonetic": "/trəˈdɪʃnəl/",
+    "pos": "adj.",
+    "translation": "传统的",
+    "kaoyan_gloss": "传统的",
+    "tag": "core"
+  },
+  {
+    "word": "global",
+    "phonetic": "/ˈɡləʊbl/",
+    "pos": "adj.",
+    "translation": "全球的",
+    "kaoyan_gloss": "全球的",
+    "tag": "core"
+  },
+  {
+    "word": "central",
+    "phonetic": "/ˈsentrəl/",
+    "pos": "adj.",
+    "translation": "中央的",
+    "kaoyan_gloss": "中央的",
+    "tag": "core"
+  },
+  {
+    "word": "final",
+    "phonetic": "/ˈfaɪnl/",
+    "pos": "adj.",
+    "translation": "最终的",
+    "kaoyan_gloss": "最终的",
+    "tag": "core"
+  },
+  {
+    "word": "main",
+    "phonetic": "/meɪn/",
+    "pos": "adj.",
+    "translation": "主要的",
+    "kaoyan_gloss": "主要的",
+    "tag": "core"
+  },
+  {
+    "word": "current",
+    "phonetic": "/ˈkʌrənt/",
+    "pos": "adj.",
+    "translation": "当前的",
+    "kaoyan_gloss": "当前的",
+    "tag": "core"
+  },
+  {
+    "word": "future",
+    "phonetic": "/ˈfjuːtʃə/",
+    "pos": "n.",
+    "translation": "未来",
+    "kaoyan_gloss": "未来",
+    "tag": "core"
+  },
+  {
+    "word": "past",
+    "phonetic": "/pɑːst/",
+    "pos": "n.",
+    "translation": "过去",
+    "kaoyan_gloss": "过去",
+    "tag": "core"
+  },
+  {
+    "word": "present",
+    "phonetic": "/ˈpreznt/",
+    "pos": "n.",
+    "translation": "现在",
+    "kaoyan_gloss": "现在",
+    "tag": "core"
+  },
+  {
+    "word": "history",
+    "phonetic": "/ˈhɪstri/",
+    "pos": "n.",
+    "translation": "历史",
+    "kaoyan_gloss": "历史",
+    "tag": "core"
+  },
+  {
+    "word": "research",
+    "phonetic": "/rɪˈsɜːtʃ/",
+    "pos": "n.",
+    "translation": "研究",
+    "kaoyan_gloss": "研究",
+    "tag": "core"
+  },
+  {
+    "word": "study",
+    "phonetic": "/ˈstʌdi/",
+    "pos": "n.",
+    "translation": "学习；研究",
+    "kaoyan_gloss": "学习",
+    "tag": "core"
+  },
+  {
+    "word": "student",
+    "phonetic": "/ˈstjuːdnt/",
+    "pos": "n.",
+    "translation": "学生",
+    "kaoyan_gloss": "学生",
+    "tag": "core"
+  },
+  {
+    "word": "teacher",
+    "phonetic": "/ˈtiːtʃə/",
+    "pos": "n.",
+    "translation": "教师",
+    "kaoyan_gloss": "教师",
+    "tag": "core"
+  },
+  {
+    "word": "school",
+    "phonetic": "/skuːl/",
+    "pos": "n.",
+    "translation": "学校",
+    "kaoyan_gloss": "学校",
+    "tag": "core"
+  },
+  {
+    "word": "university",
+    "phonetic": "/ˌjuːnɪˈvɜːsəti/",
+    "pos": "n.",
+    "translation": "大学",
+    "kaoyan_gloss": "大学",
+    "tag": "core"
+  },
+  {
+    "word": "education",
+    "phonetic": "/ˌedʒuˈkeɪʃn/",
+    "pos": "n.",
+    "translation": "教育",
+    "kaoyan_gloss": "教育",
+    "tag": "core"
+  },
+  {
+    "word": "knowledge",
+    "phonetic": "/ˈnɒlɪdʒ/",
+    "pos": "n.",
+    "translation": "知识",
+    "kaoyan_gloss": "知识",
+    "tag": "core"
+  },
+  {
+    "word": "information",
+    "phonetic": "/ˌɪnfəˈmeɪʃn/",
+    "pos": "n.",
+    "translation": "信息",
+    "kaoyan_gloss": "信息",
+    "tag": "core"
+  },
+  {
+    "word": "data",
+    "phonetic": "/ˈdeɪtə/",
+    "pos": "n.",
+    "translation": "数据",
+    "kaoyan_gloss": "数据",
+    "tag": "core"
+  },
+  {
+    "word": "technology",
+    "phonetic": "/tekˈnɒlədʒi/",
+    "pos": "n.",
+    "translation": "技术",
+    "kaoyan_gloss": "技术",
+    "tag": "core"
+  },
+  {
+    "word": "computer",
+    "phonetic": "/kəmˈpjuːtə/",
+    "pos": "n.",
+    "translation": "计算机",
+    "kaoyan_gloss": "计算机",
+    "tag": "core"
+  },
+  {
+    "word": "internet",
+    "phonetic": "/ˈɪntənet/",
+    "pos": "n.",
+    "translation": "互联网",
+    "kaoyan_gloss": "互联网",
+    "tag": "core"
+  },
+  {
+    "word": "network",
+    "phonetic": "/ˈnetwɜːk/",
+    "pos": "n.",
+    "translation": "网络",
+    "kaoyan_gloss": "网络",
+    "tag": "core"
+  },
+  {
+    "word": "software",
+    "phonetic": "/ˈsɒftweə/",
+    "pos": "n.",
+    "translation": "软件",
+    "kaoyan_gloss": "软件",
+    "tag": "core"
+  },
+  {
+    "word": "machine",
+    "phonetic": "/məˈʃiːn/",
+    "pos": "n.",
+    "translation": "机器",
+    "kaoyan_gloss": "机器",
+    "tag": "core"
+  },
+  {
+    "word": "learning",
+    "phonetic": "/ˈlɜːnɪŋ/",
+    "pos": "n.",
+    "translation": "学习",
+    "kaoyan_gloss": "学习",
+    "tag": "core"
+  },
+  {
+    "word": "language",
+    "phonetic": "/ˈlæŋɡwɪdʒ/",
+    "pos": "n.",
+    "translation": "语言",
+    "kaoyan_gloss": "语言",
+    "tag": "core"
+  },
+  {
+    "word": "english",
+    "phonetic": "/ˈɪŋɡlɪʃ/",
+    "pos": "n.",
+    "translation": "英语",
+    "kaoyan_gloss": "英语",
+    "tag": "core"
+  },
+  {
+    "word": "word",
+    "phonetic": "/wɜːd/",
+    "pos": "n.",
+    "translation": "单词",
+    "kaoyan_gloss": "单词",
+    "tag": "core"
+  },
+  {
+    "word": "sentence",
+    "phonetic": "/ˈsentəns/",
+    "pos": "n.",
+    "translation": "句子",
+    "kaoyan_gloss": "句子",
+    "tag": "core"
+  },
+  {
+    "word": "text",
+    "phonetic": "/tekst/",
+    "pos": "n.",
+    "translation": "文本",
+    "kaoyan_gloss": "文本",
+    "tag": "core"
+  },
+  {
+    "word": "meaning",
+    "phonetic": "/ˈmiːnɪŋ/",
+    "pos": "n.",
+    "translation": "意义",
+    "kaoyan_gloss": "意义",
+    "tag": "core"
+  },
+  {
+    "word": "example",
+    "phonetic": "/ɪɡˈzɑːmpl/",
+    "pos": "n.",
+    "translation": "例子",
+    "kaoyan_gloss": "例子",
+    "tag": "core"
+  },
+  {
+    "word": "method",
+    "phonetic": "/ˈmeθəd/",
+    "pos": "n.",
+    "translation": "方法",
+    "kaoyan_gloss": "方法",
+    "tag": "core"
+  },
+  {
+    "word": "process",
+    "phonetic": "/ˈprəʊses/",
+    "pos": "n.",
+    "translation": "过程",
+    "kaoyan_gloss": "过程",
+    "tag": "core"
+  },
+  {
+    "word": "result",
+    "phonetic": "/rɪˈzʌlt/",
+    "pos": "n.",
+    "translation": "结果",
+    "kaoyan_gloss": "结果",
+    "tag": "core"
+  },
+  {
+    "word": "effect",
+    "phonetic": "/ɪˈfekt/",
+    "pos": "n.",
+    "translation": "效果",
+    "kaoyan_gloss": "效果",
+    "tag": "core"
+  },
+  {
+    "word": "cause",
+    "phonetic": "/kɔːz/",
+    "pos": "n.",
+    "translation": "原因",
+    "kaoyan_gloss": "原因",
+    "tag": "core"
+  },
+  {
+    "word": "reason",
+    "phonetic": "/ˈriːzn/",
+    "pos": "n.",
+    "translation": "理由",
+    "kaoyan_gloss": "理由",
+    "tag": "core"
+  },
+  {
+    "word": "idea",
+    "phonetic": "/aɪˈdɪə/",
+    "pos": "n.",
+    "translation": "想法",
+    "kaoyan_gloss": "想法",
+    "tag": "core"
+  },
+  {
+    "word": "theory",
+    "phonetic": "/ˈθɪəri/",
+    "pos": "n.",
+    "translation": "理论",
+    "kaoyan_gloss": "理论",
+    "tag": "core"
+  },
+  {
+    "word": "practice",
+    "phonetic": "/ˈpræktɪs/",
+    "pos": "n.",
+    "translation": "实践",
+    "kaoyan_gloss": "实践",
+    "tag": "core"
+  },
+  {
+    "word": "experience",
+    "phonetic": "/ɪkˈspɪəriəns/",
+    "pos": "n.",
+    "translation": "经验",
+    "kaoyan_gloss": "经验",
+    "tag": "core"
+  },
+  {
+    "word": "skill",
+    "phonetic": "/skɪl/",
+    "pos": "n.",
+    "translation": "技能",
+    "kaoyan_gloss": "技能",
+    "tag": "core"
+  },
+  {
+    "word": "ability",
+    "phonetic": "/əˈbɪləti/",
+    "pos": "n.",
+    "translation": "能力",
+    "kaoyan_gloss": "能力",
+    "tag": "core"
+  },
+  {
+    "word": "effort",
+    "phonetic": "/ˈefət/",
+    "pos": "n.",
+    "translation": "努力",
+    "kaoyan_gloss": "努力",
+    "tag": "core"
+  },
+  {
+    "word": "success",
+    "phonetic": "/səkˈses/",
+    "pos": "n.",
+    "translation": "成功",
+    "kaoyan_gloss": "成功",
+    "tag": "core"
+  },
+  {
+    "word": "failure",
+    "phonetic": "/ˈfeɪljə/",
+    "pos": "n.",
+    "translation": "失败",
+    "kaoyan_gloss": "失败",
+    "tag": "core"
+  },
+  {
+    "word": "risk",
+    "phonetic": "/rɪsk/",
+    "pos": "n.",
+    "translation": "风险",
+    "kaoyan_gloss": "风险",
+    "tag": "core"
+  },
+  {
+    "word": "value",
+    "phonetic": "/ˈvæljuː/",
+    "pos": "n.",
+    "translation": "价值",
+    "kaoyan_gloss": "价值",
+    "tag": "core"
+  },
+  {
+    "word": "quality",
+    "phonetic": "/ˈkwɒləti/",
+    "pos": "n.",
+    "translation": "质量",
+    "kaoyan_gloss": "质量",
+    "tag": "core"
+  },
+  {
+    "word": "price",
+    "phonetic": "/praɪs/",
+    "pos": "n.",
+    "translation": "价格",
+    "kaoyan_gloss": "价格",
+    "tag": "core"
+  },
+  {
+    "word": "market",
+    "phonetic": "/ˈmɑːkɪt/",
+    "pos": "n.",
+    "translation": "市场",
+    "kaoyan_gloss": "市场",
+    "tag": "core"
+  },
+  {
+    "word": "business",
+    "phonetic": "/ˈbɪznəs/",
+    "pos": "n.",
+    "translation": "商业",
+    "kaoyan_gloss": "商业",
+    "tag": "core"
+  },
+  {
+    "word": "industry",
+    "phonetic": "/ˈɪndəstri/",
+    "pos": "n.",
+    "translation": "工业",
+    "kaoyan_gloss": "工业",
+    "tag": "core"
+  },
+  {
+    "word": "energy",
+    "phonetic": "/ˈenədʒi/",
+    "pos": "n.",
+    "translation": "能源",
+    "kaoyan_gloss": "能源",
+    "tag": "core"
+  },
+  {
+    "word": "environment",
+    "phonetic": "/ɪnˈvaɪrənmənt/",
+    "pos": "n.",
+    "translation": "环境",
+    "kaoyan_gloss": "环境",
+    "tag": "core"
+  },
+  {
+    "word": "nature",
+    "phonetic": "/ˈneɪtʃə/",
+    "pos": "n.",
+    "translation": "自然",
+    "kaoyan_gloss": "自然",
+    "tag": "core"
+  },
+  {
+    "word": "water",
+    "phonetic": "/ˈwɔːtə/",
+    "pos": "n.",
+    "translation": "水",
+    "kaoyan_gloss": "水",
+    "tag": "core"
+  },
+  {
+    "word": "food",
+    "phonetic": "/fuːd/",
+    "pos": "n.",
+    "translation": "食物",
+    "kaoyan_gloss": "食物",
+    "tag": "core"
+  },
+  {
+    "word": "health",
+    "phonetic": "/helθ/",
+    "pos": "n.",
+    "translation": "健康",
+    "kaoyan_gloss": "健康",
+    "tag": "core"
+  },
+  {
+    "word": "body",
+    "phonetic": "/ˈbɒdi/",
+    "pos": "n.",
+    "translation": "身体",
+    "kaoyan_gloss": "身体",
+    "tag": "core"
+  },
+  {
+    "word": "mind",
+    "phonetic": "/maɪnd/",
+    "pos": "n.",
+    "translation": "思想",
+    "kaoyan_gloss": "思想",
+    "tag": "core"
+  },
+  {
+    "word": "heart",
+    "phonetic": "/hɑːt/",
+    "pos": "n.",
+    "translation": "心脏",
+    "kaoyan_gloss": "心脏",
+    "tag": "core"
+  },
+  {
+    "word": "family",
+    "phonetic": "/ˈfæməli/",
+    "pos": "n.",
+    "translation": "家庭",
+    "kaoyan_gloss": "家庭",
+    "tag": "core"
+  },
+  {
+    "word": "friend",
+    "phonetic": "/frend/",
+    "pos": "n.",
+    "translation": "朋友",
+    "kaoyan_gloss": "朋友",
+    "tag": "core"
+  },
+  {
+    "word": "community",
+    "phonetic": "/kəˈmjuːnəti/",
+    "pos": "n.",
+    "translation": "社区",
+    "kaoyan_gloss": "社区",
+    "tag": "core"
+  },
+  {
+    "word": "society",
+    "phonetic": "/səˈsaɪəti/",
+    "pos": "n.",
+    "translation": "社会",
+    "kaoyan_gloss": "社会",
+    "tag": "core"
+  },
+  {
+    "word": "culture",
+    "phonetic": "/ˈkʌltʃə/",
+    "pos": "n.",
+    "translation": "文化",
+    "kaoyan_gloss": "文化",
+    "tag": "core"
+  },
+  {
+    "word": "country",
+    "phonetic": "/ˈkʌntri/",
+    "pos": "n.",
+    "translation": "国家",
+    "kaoyan_gloss": "国家",
+    "tag": "core"
+  },
+  {
+    "word": "city",
+    "phonetic": "/ˈsɪti/",
+    "pos": "n.",
+    "translation": "城市",
+    "kaoyan_gloss": "城市",
+    "tag": "core"
+  },
+  {
+    "word": "area",
+    "phonetic": "/ˈeəriə/",
+    "pos": "n.",
+    "translation": "区域",
+    "kaoyan_gloss": "区域",
+    "tag": "core"
+  },
+  {
+    "word": "state",
+    "phonetic": "/steɪt/",
+    "pos": "n.",
+    "translation": "状态；州",
+    "kaoyan_gloss": "状态",
+    "tag": "core"
+  },
+  {
+    "word": "law",
+    "phonetic": "/lɔː/",
+    "pos": "n.",
+    "translation": "法律",
+    "kaoyan_gloss": "法律",
+    "tag": "core"
+  },
+  {
+    "word": "right",
+    "phonetic": "/raɪt/",
+    "pos": "n.",
+    "translation": "权利",
+    "kaoyan_gloss": "权利",
+    "tag": "core"
+  },
+  {
+    "word": "power",
+    "phonetic": "/ˈpaʊə/",
+    "pos": "n.",
+    "translation": "权力",
+    "kaoyan_gloss": "权力",
+    "tag": "core"
+  },
+  {
+    "word": "policy",
+    "phonetic": "/ˈpɒləsi/",
+    "pos": "n.",
+    "translation": "政策",
+    "kaoyan_gloss": "政策",
+    "tag": "core"
+  },
+  {
+    "word": "interest",
+    "phonetic": "/ˈɪntrest/",
+    "pos": "n.",
+    "translation": "兴趣",
+    "kaoyan_gloss": "兴趣",
+    "tag": "core"
+  },
+  {
+    "word": "support",
+    "phonetic": "/səˈpɔːt/",
+    "pos": "n.",
+    "translation": "支持",
+    "kaoyan_gloss": "支持",
+    "tag": "core"
+  },
+  {
+    "word": "development",
+    "phonetic": "/dɪˈveləpmənt/",
+    "pos": "n.",
+    "translation": "发展",
+    "kaoyan_gloss": "发展",
+    "tag": "core"
+  },
+  {
+    "word": "growth",
+    "phonetic": "/ɡrəʊθ/",
+    "pos": "n.",
+    "translation": "增长",
+    "kaoyan_gloss": "增长",
+    "tag": "core"
+  },
+  {
+    "word": "increase",
+    "phonetic": "/ɪnˈkriːs/",
+    "pos": "v.",
+    "translation": "增加",
+    "kaoyan_gloss": "增加",
+    "tag": "core"
+  },
+  {
+    "word": "decrease",
+    "phonetic": "/dɪˈkriːs/",
+    "pos": "v.",
+    "translation": "减少",
+    "kaoyan_gloss": "减少",
+    "tag": "core"
+  },
+  {
+    "word": "improve",
+    "phonetic": "/ɪmˈpruːv/",
+    "pos": "v.",
+    "translation": "改善",
+    "kaoyan_gloss": "改善",
+    "tag": "core"
+  },
+  {
+    "word": "reduce",
+    "phonetic": "/rɪˈdjuːs/",
+    "pos": "v.",
+    "translation": "减少",
+    "kaoyan_gloss": "减少",
+    "tag": "core"
+  },
+  {
+    "word": "develop",
+    "phonetic": "/dɪˈveləp/",
+    "pos": "v.",
+    "translation": "发展",
+    "kaoyan_gloss": "发展",
+    "tag": "core"
+  },
+  {
+    "word": "produce",
+    "phonetic": "/prəˈdjuːs/",
+    "pos": "v.",
+    "translation": "生产",
+    "kaoyan_gloss": "生产",
+    "tag": "core"
+  },
+  {
+    "word": "design",
+    "phonetic": "/dɪˈzaɪn/",
+    "pos": "v.",
+    "translation": "设计",
+    "kaoyan_gloss": "设计",
+    "tag": "core"
+  },
+  {
+    "word": "manage",
+    "phonetic": "/ˈmænɪdʒ/",
+    "pos": "v.",
+    "translation": "管理",
+    "kaoyan_gloss": "管理",
+    "tag": "core"
+  },
+  {
+    "word": "control",
+    "phonetic": "/kənˈtrəʊl/",
+    "pos": "v.",
+    "translation": "控制",
+    "kaoyan_gloss": "控制",
+    "tag": "core"
+  },
+  {
+    "word": "analyze",
+    "phonetic": "/ˈænəlaɪz/",
+    "pos": "v.",
+    "translation": "分析",
+    "kaoyan_gloss": "分析",
+    "tag": "core"
+  },
+  {
+    "word": "explain",
+    "phonetic": "/ɪkˈspleɪn/",
+    "pos": "v.",
+    "translation": "解释",
+    "kaoyan_gloss": "解释",
+    "tag": "core"
+  },
+  {
+    "word": "describe",
+    "phonetic": "/dɪˈskraɪb/",
+    "pos": "v.",
+    "translation": "描述",
+    "kaoyan_gloss": "描述",
+    "tag": "core"
+  },
+  {
+    "word": "discuss",
+    "phonetic": "/dɪˈskʌs/",
+    "pos": "v.",
+    "translation": "讨论",
+    "kaoyan_gloss": "讨论",
+    "tag": "core"
+  },
+  {
+    "word": "compare",
+    "phonetic": "/kəmˈpeə/",
+    "pos": "v.",
+    "translation": "比较",
+    "kaoyan_gloss": "比较",
+    "tag": "core"
+  },
+  {
+    "word": "identify",
+    "phonetic": "/aɪˈdentɪfaɪ/",
+    "pos": "v.",
+    "translation": "识别",
+    "kaoyan_gloss": "识别",
+    "tag": "core"
+  },
+  {
+    "word": "define",
+    "phonetic": "/dɪˈfaɪn/",
+    "pos": "v.",
+    "translation": "定义",
+    "kaoyan_gloss": "定义",
+    "tag": "core"
+  },
+  {
+    "word": "establish",
+    "phonetic": "/ɪˈstæblɪʃ/",
+    "pos": "v.",
+    "translation": "建立",
+    "kaoyan_gloss": "建立",
+    "tag": "core"
+  },
+  {
+    "word": "maintain",
+    "phonetic": "/meɪnˈteɪn/",
+    "pos": "v.",
+    "translation": "维持",
+    "kaoyan_gloss": "维持",
+    "tag": "core"
+  },
+  {
+    "word": "achieve",
+    "phonetic": "/əˈtʃiːv/",
+    "pos": "v.",
+    "translation": "实现",
+    "kaoyan_gloss": "实现",
+    "tag": "core"
+  },
+  {
+    "word": "obtain",
+    "phonetic": "/əbˈteɪn/",
+    "pos": "v.",
+    "translation": "获得",
+    "kaoyan_gloss": "获得",
+    "tag": "core"
+  },
+  {
+    "word": "contain",
+    "phonetic": "/kənˈteɪn/",
+    "pos": "v.",
+    "translation": "包含",
+    "kaoyan_gloss": "包含",
+    "tag": "core"
+  },
+  {
+    "word": "represent",
+    "phonetic": "/ˌreprɪˈzent/",
+    "pos": "v.",
+    "translation": "代表",
+    "kaoyan_gloss": "代表",
+    "tag": "core"
+  },
+  {
+    "word": "indicate",
+    "phonetic": "/ˈɪndɪkeɪt/",
+    "pos": "v.",
+    "translation": "表明",
+    "kaoyan_gloss": "表明",
+    "tag": "core"
+  },
+  {
+    "word": "demonstrate",
+    "phonetic": "/ˈdemənstreɪt/",
+    "pos": "v.",
+    "translation": "证明",
+    "kaoyan_gloss": "证明",
+    "tag": "core"
+  },
+  {
+    "word": "assume",
+    "phonetic": "/əˈsjuːm/",
+    "pos": "v.",
+    "translation": "假设",
+    "kaoyan_gloss": "假设",
+    "tag": "core"
+  },
+  {
+    "word": "argue",
+    "phonetic": "/ˈɑːɡjuː/",
+    "pos": "v.",
+    "translation": "论证",
+    "kaoyan_gloss": "论证",
+    "tag": "core"
+  },
+  {
+    "word": "claim",
+    "phonetic": "/kleɪm/",
+    "pos": "v.",
+    "translation": "声称",
+    "kaoyan_gloss": "声称",
+    "tag": "core"
+  },
+  {
+    "word": "focus",
+    "phonetic": "/ˈfəʊkəs/",
+    "pos": "v.",
+    "translation": "聚焦",
+    "kaoyan_gloss": "聚焦",
+    "tag": "core"
+  },
+  {
+    "word": "apply",
+    "phonetic": "/əˈplaɪ/",
+    "pos": "v.",
+    "translation": "应用",
+    "kaoyan_gloss": "应用",
+    "tag": "core"
+  },
+  {
+    "word": "respond",
+    "phonetic": "/rɪˈspɒnd/",
+    "pos": "v.",
+    "translation": "回应",
+    "kaoyan_gloss": "回应",
+    "tag": "core"
+  },
+  {
+    "word": "accept",
+    "phonetic": "/əkˈsept/",
+    "pos": "v.",
+    "translation": "接受",
+    "kaoyan_gloss": "接受",
+    "tag": "core"
+  },
+  {
+    "word": "avoid",
+    "phonetic": "/əˈvɔɪd/",
+    "pos": "v.",
+    "translation": "避免",
+    "kaoyan_gloss": "避免",
+    "tag": "core"
+  },
+  {
+    "word": "prevent",
+    "phonetic": "/prɪˈvent/",
+    "pos": "v.",
+    "translation": "预防",
+    "kaoyan_gloss": "预防",
+    "tag": "core"
+  },
+  {
+    "word": "protect",
+    "phonetic": "/prəˈtekt/",
+    "pos": "v.",
+    "translation": "保护",
+    "kaoyan_gloss": "保护",
+    "tag": "core"
+  },
+  {
+    "word": "express",
+    "phonetic": "/ɪkˈspres/",
+    "pos": "v.",
+    "translation": "表达",
+    "kaoyan_gloss": "表达",
+    "tag": "core"
+  },
+  {
+    "word": "perform",
+    "phonetic": "/pəˈfɔːm/",
+    "pos": "v.",
+    "translation": "执行",
+    "kaoyan_gloss": "执行",
+    "tag": "core"
+  },
+  {
+    "word": "complete",
+    "phonetic": "/kəmˈpliːt/",
+    "pos": "v.",
+    "translation": "完成",
+    "kaoyan_gloss": "完成",
+    "tag": "core"
+  },
+  {
+    "word": "finish",
+    "phonetic": "/ˈfɪnɪʃ/",
+    "pos": "v.",
+    "translation": "完成",
+    "kaoyan_gloss": "完成",
+    "tag": "core"
+  },
+  {
+    "word": "start",
+    "phonetic": "/stɑːt/",
+    "pos": "v.",
+    "translation": "开始",
+    "kaoyan_gloss": "开始",
+    "tag": "core"
+  },
+  {
+    "word": "end",
+    "phonetic": "/end/",
+    "pos": "v.",
+    "translation": "结束",
+    "kaoyan_gloss": "结束",
+    "tag": "core"
+  },
+  {
+    "word": "return",
+    "phonetic": "/rɪˈtɜːn/",
+    "pos": "v.",
+    "translation": "返回",
+    "kaoyan_gloss": "返回",
+    "tag": "core"
+  },
+  {
+    "word": "turn",
+    "phonetic": "/tɜːn/",
+    "pos": "v.",
+    "translation": "转动",
+    "kaoyan_gloss": "转动",
+    "tag": "core"
+  },
+  {
+    "word": "break",
+    "phonetic": "/breɪk/",
+    "pos": "v.",
+    "translation": "打破",
+    "kaoyan_gloss": "打破",
+    "tag": "core"
+  },
+  {
+    "word": "close",
+    "phonetic": "/kləʊz/",
+    "pos": "v.",
+    "translation": "关闭",
+    "kaoyan_gloss": "关闭",
+    "tag": "core"
+  },
+  {
+    "word": "carry",
+    "phonetic": "/ˈkæri/",
+    "pos": "v.",
+    "translation": "携带",
+    "kaoyan_gloss": "携带",
+    "tag": "core"
+  },
+  {
+    "word": "drive",
+    "phonetic": "/draɪv/",
+    "pos": "v.",
+    "translation": "驾驶",
+    "kaoyan_gloss": "驾驶",
+    "tag": "core"
+  },
+  {
+    "word": "fly",
+    "phonetic": "/flaɪ/",
+    "pos": "v.",
+    "translation": "飞",
+    "kaoyan_gloss": "飞",
+    "tag": "core"
+  },
+  {
+    "word": "travel",
+    "phonetic": "/ˈtrævl/",
+    "pos": "v.",
+    "translation": "旅行",
+    "kaoyan_gloss": "旅行",
+    "tag": "core"
+  },
+  {
+    "word": "visit",
+    "phonetic": "/ˈvɪzɪt/",
+    "pos": "v.",
+    "translation": "访问",
+    "kaoyan_gloss": "访问",
+    "tag": "core"
+  },
+  {
+    "word": "call",
+    "phonetic": "/kɔːl/",
+    "pos": "v.",
+    "translation": "呼叫",
+    "kaoyan_gloss": "呼叫",
+    "tag": "core"
+  },
+  {
+    "word": "help",
+    "phonetic": "/help/",
+    "pos": "v.",
+    "translation": "帮助",
+    "kaoyan_gloss": "帮助",
+    "tag": "core"
+  },
+  {
+    "word": "try",
+    "phonetic": "/traɪ/",
+    "pos": "v.",
+    "translation": "尝试",
+    "kaoyan_gloss": "尝试",
+    "tag": "core"
+  },
+  {
+    "word": "find",
+    "phonetic": "/faɪnd/",
+    "pos": "v.",
+    "translation": "找到",
+    "kaoyan_gloss": "找到",
+    "tag": "core"
+  },
+  {
+    "word": "tell",
+    "phonetic": "/tel/",
+    "pos": "v.",
+    "translation": "告诉",
+    "kaoyan_gloss": "告诉",
+    "tag": "core"
+  },
+  {
+    "word": "ask",
+    "phonetic": "/ɑːsk/",
+    "pos": "v.",
+    "translation": "问",
+    "kaoyan_gloss": "问",
+    "tag": "core"
+  },
+  {
+    "word": "answer",
+    "phonetic": "/ˈɑːnsə/",
+    "pos": "v.",
+    "translation": "回答",
+    "kaoyan_gloss": "回答",
+    "tag": "core"
+  },
+  {
+    "word": "play",
+    "phonetic": "/pleɪ/",
+    "pos": "v.",
+    "translation": "玩",
+    "kaoyan_gloss": "玩",
+    "tag": "core"
+  },
+  {
+    "word": "enjoy",
+    "phonetic": "/ɪnˈdʒɔɪ/",
+    "pos": "v.",
+    "translation": "享受",
+    "kaoyan_gloss": "享受",
+    "tag": "core"
+  },
+  {
+    "word": "hope",
+    "phonetic": "/həʊp/",
+    "pos": "v.",
+    "translation": "希望",
+    "kaoyan_gloss": "希望",
+    "tag": "core"
+  },
+  {
+    "word": "wish",
+    "phonetic": "/wɪʃ/",
+    "pos": "v.",
+    "translation": "希望",
+    "kaoyan_gloss": "希望",
+    "tag": "core"
+  },
+  {
+    "word": "fear",
+    "phonetic": "/fɪə/",
+    "pos": "v.",
+    "translation": "害怕",
+    "kaoyan_gloss": "害怕",
+    "tag": "core"
+  },
+  {
+    "word": "worry",
+    "phonetic": "/ˈwʌri/",
+    "pos": "v.",
+    "translation": "担心",
+    "kaoyan_gloss": "担心",
+    "tag": "core"
+  },
+  {
+    "word": "care",
+    "phonetic": "/keə/",
+    "pos": "v.",
+    "translation": "关心",
+    "kaoyan_gloss": "关心",
+    "tag": "core"
+  },
+  {
+    "word": "share",
+    "phonetic": "/ʃeə/",
+    "pos": "v.",
+    "translation": "分享",
+    "kaoyan_gloss": "分享",
+    "tag": "core"
+  },
+  {
+    "word": "choose",
+    "phonetic": "/tʃuːz/",
+    "pos": "v.",
+    "translation": "选择",
+    "kaoyan_gloss": "选择",
+    "tag": "core"
+  },
+  {
+    "word": "prefer",
+    "phonetic": "/prɪˈfɜː/",
+    "pos": "v.",
+    "translation": "更喜欢",
+    "kaoyan_gloss": "更喜欢",
+    "tag": "core"
+  },
+  {
+    "word": "agree",
+    "phonetic": "/əˈɡriː/",
+    "pos": "v.",
+    "translation": "同意",
+    "kaoyan_gloss": "同意",
+    "tag": "core"
+  },
+  {
+    "word": "disagree",
+    "phonetic": "/ˌdɪsəˈɡriː/",
+    "pos": "v.",
+    "translation": "不同意",
+    "kaoyan_gloss": "不同意",
+    "tag": "core"
+  },
+  {
+    "word": "succeed",
+    "phonetic": "/səkˈsiːd/",
+    "pos": "v.",
+    "translation": "成功",
+    "kaoyan_gloss": "成功",
+    "tag": "core"
+  },
+  {
+    "word": "fail",
+    "phonetic": "/feɪl/",
+    "pos": "v.",
+    "translation": "失败",
+    "kaoyan_gloss": "失败",
+    "tag": "core"
+  },
+  {
+    "word": "exist",
+    "phonetic": "/ɪɡˈzɪst/",
+    "pos": "v.",
+    "translation": "存在",
+    "kaoyan_gloss": "存在",
+    "tag": "core"
+  },
+  {
+    "word": "occur",
+    "phonetic": "/əˈkɜː/",
+    "pos": "v.",
+    "translation": "发生",
+    "kaoyan_gloss": "发生",
+    "tag": "core"
+  },
+  {
+    "word": "form",
+    "phonetic": "/fɔːm/",
+    "pos": "v.",
+    "translation": "形成",
+    "kaoyan_gloss": "形成",
+    "tag": "core"
+  },
+  {
+    "word": "base",
+    "phonetic": "/beɪs/",
+    "pos": "v.",
+    "translation": "基于",
+    "kaoyan_gloss": "基于",
+    "tag": "core"
+  },
+  {
+    "word": "depend",
+    "phonetic": "/dɪˈpend/",
+    "pos": "v.",
+    "translation": "依赖",
+    "kaoyan_gloss": "依赖",
+    "tag": "core"
+  },
+  {
+    "word": "involve",
+    "phonetic": "/ɪnˈvɒlv/",
+    "pos": "v.",
+    "translation": "涉及",
+    "kaoyan_gloss": "涉及",
+    "tag": "core"
+  },
+  {
+    "word": "relate",
+    "phonetic": "/rɪˈleɪt/",
+    "pos": "v.",
+    "translation": "关联",
+    "kaoyan_gloss": "关联",
+    "tag": "core"
+  },
+  {
+    "word": "refer",
+    "phonetic": "/rɪˈfɜː/",
+    "pos": "v.",
+    "translation": "提及",
+    "kaoyan_gloss": "提及",
+    "tag": "core"
+  },
+  {
+    "word": "recognize",
+    "phonetic": "/ˈrekəɡnaɪz/",
+    "pos": "v.",
+    "translation": "识别",
+    "kaoyan_gloss": "识别",
+    "tag": "core"
+  },
+  {
+    "word": "notice",
+    "phonetic": "/ˈnəʊtɪs/",
+    "pos": "v.",
+    "translation": "注意到",
+    "kaoyan_gloss": "注意到",
+    "tag": "core"
+  },
+  {
+    "word": "observe",
+    "phonetic": "/əbˈzɜːv/",
+    "pos": "v.",
+    "translation": "观察",
+    "kaoyan_gloss": "观察",
+    "tag": "core"
+  },
+  {
+    "word": "measure",
+    "phonetic": "/ˈmeʒə/",
+    "pos": "v.",
+    "translation": "测量",
+    "kaoyan_gloss": "测量",
+    "tag": "core"
+  },
+  {
+    "word": "test",
+    "phonetic": "/test/",
+    "pos": "v.",
+    "translation": "测试",
+    "kaoyan_gloss": "测试",
+    "tag": "core"
+  },
+  {
+    "word": "check",
+    "phonetic": "/tʃek/",
+    "pos": "v.",
+    "translation": "检查",
+    "kaoyan_gloss": "检查",
+    "tag": "core"
+  },
+  {
+    "word": "solve",
+    "phonetic": "/sɒlv/",
+    "pos": "v.",
+    "translation": "解决",
+    "kaoyan_gloss": "解决",
+    "tag": "core"
+  },
+  {
+    "word": "deal",
+    "phonetic": "/diːl/",
+    "pos": "v.",
+    "translation": "处理",
+    "kaoyan_gloss": "处理",
+    "tag": "core"
+  },
+  {
+    "word": "handle",
+    "phonetic": "/ˈhændl/",
+    "pos": "v.",
+    "translation": "处理",
+    "kaoyan_gloss": "处理",
+    "tag": "core"
+  },
+  {
+    "word": "face",
+    "phonetic": "/feɪs/",
+    "pos": "v.",
+    "translation": "面对",
+    "kaoyan_gloss": "面对",
+    "tag": "core"
+  },
+  {
+    "word": "cover",
+    "phonetic": "/ˈkʌvə/",
+    "pos": "v.",
+    "translation": "覆盖",
+    "kaoyan_gloss": "覆盖",
+    "tag": "core"
+  },
+  {
+    "word": "draw",
+    "phonetic": "/drɔː/",
+    "pos": "v.",
+    "translation": "画；拉",
+    "kaoyan_gloss": "画",
+    "tag": "core"
+  },
+  {
+    "word": "push",
+    "phonetic": "/pʊʃ/",
+    "pos": "v.",
+    "translation": "推",
+    "kaoyan_gloss": "推",
+    "tag": "core"
+  },
+  {
+    "word": "throw",
+    "phonetic": "/θrəʊ/",
+    "pos": "v.",
+    "translation": "扔",
+    "kaoyan_gloss": "扔",
+    "tag": "core"
+  },
+  {
+    "word": "catch",
+    "phonetic": "/kætʃ/",
+    "pos": "v.",
+    "translation": "抓住",
+    "kaoyan_gloss": "抓住",
+    "tag": "core"
+  },
+  {
+    "word": "hit",
+    "phonetic": "/hɪt/",
+    "pos": "v.",
+    "translation": "打",
+    "kaoyan_gloss": "打",
+    "tag": "core"
+  },
+  {
+    "word": "fight",
+    "phonetic": "/faɪt/",
+    "pos": "v.",
+    "translation": "战斗",
+    "kaoyan_gloss": "战斗",
+    "tag": "core"
+  },
+  {
+    "word": "attack",
+    "phonetic": "/əˈtæk/",
+    "pos": "v.",
+    "translation": "攻击",
+    "kaoyan_gloss": "攻击",
+    "tag": "core"
+  },
+  {
+    "word": "defend",
+    "phonetic": "/dɪˈfend/",
+    "pos": "v.",
+    "translation": "防御",
+    "kaoyan_gloss": "防御",
+    "tag": "core"
+  },
+  {
+    "word": "save",
+    "phonetic": "/seɪv/",
+    "pos": "v.",
+    "translation": "保存；拯救",
+    "kaoyan_gloss": "保存",
+    "tag": "core"
+  },
+  {
+    "word": "store",
+    "phonetic": "/stɔː/",
+    "pos": "v.",
+    "translation": "存储",
+    "kaoyan_gloss": "存储",
+    "tag": "core"
+  },
+  {
+    "word": "record",
+    "phonetic": "/rɪˈkɔːd/",
+    "pos": "v.",
+    "translation": "记录",
+    "kaoyan_gloss": "记录",
+    "tag": "core"
+  },
+  {
+    "word": "publish",
+    "phonetic": "/ˈpʌblɪʃ/",
+    "pos": "v.",
+    "translation": "出版",
+    "kaoyan_gloss": "出版",
+    "tag": "core"
+  },
+  {
+    "word": "release",
+    "phonetic": "/rɪˈliːs/",
+    "pos": "v.",
+    "translation": "发布",
+    "kaoyan_gloss": "发布",
+    "tag": "core"
+  },
+  {
+    "word": "introduce",
+    "phonetic": "/ˌɪntrəˈdjuːs/",
+    "pos": "v.",
+    "translation": "介绍",
+    "kaoyan_gloss": "介绍",
+    "tag": "core"
+  },
+  {
+    "word": "replace",
+    "phonetic": "/rɪˈpleɪs/",
+    "pos": "v.",
+    "translation": "替换",
+    "kaoyan_gloss": "替换",
+    "tag": "core"
+  },
+  {
+    "word": "remove",
+    "phonetic": "/rɪˈmuːv/",
+    "pos": "v.",
+    "translation": "移除",
+    "kaoyan_gloss": "移除",
+    "tag": "core"
+  },
+  {
+    "word": "combine",
+    "phonetic": "/kəmˈbaɪn/",
+    "pos": "v.",
+    "translation": "结合",
+    "kaoyan_gloss": "结合",
+    "tag": "core"
+  },
+  {
+    "word": "connect",
+    "phonetic": "/kəˈnekt/",
+    "pos": "v.",
+    "translation": "连接",
+    "kaoyan_gloss": "连接",
+    "tag": "core"
+  },
+  {
+    "word": "separate",
+    "phonetic": "/ˈsepəreɪt/",
+    "pos": "v.",
+    "translation": "分离",
+    "kaoyan_gloss": "分离",
+    "tag": "core"
+  },
+  {
+    "word": "divide",
+    "phonetic": "/dɪˈvaɪd/",
+    "pos": "v.",
+    "translation": "划分",
+    "kaoyan_gloss": "划分",
+    "tag": "core"
+  },
+  {
+    "word": "extend",
+    "phonetic": "/ɪkˈstend/",
+    "pos": "v.",
+    "translation": "延伸",
+    "kaoyan_gloss": "延伸",
+    "tag": "core"
+  },
+  {
+    "word": "expand",
+    "phonetic": "/ɪkˈspænd/",
+    "pos": "v.",
+    "translation": "扩展",
+    "kaoyan_gloss": "扩展",
+    "tag": "core"
+  },
+  {
+    "word": "limit",
+    "phonetic": "/ˈlɪmɪt/",
+    "pos": "v.",
+    "translation": "限制",
+    "kaoyan_gloss": "限制",
+    "tag": "core"
+  },
+  {
+    "word": "restrict",
+    "phonetic": "/rɪˈstrɪkt/",
+    "pos": "v.",
+    "translation": "限制",
+    "kaoyan_gloss": "限制",
+    "tag": "core"
+  },
+  {
+    "word": "ensure",
+    "phonetic": "/ɪnˈʃʊə/",
+    "pos": "v.",
+    "translation": "确保",
+    "kaoyan_gloss": "确保",
+    "tag": "core"
+  },
+  {
+    "word": "enable",
+    "phonetic": "/ɪˈneɪbl/",
+    "pos": "v.",
+    "translation": "使能够",
+    "kaoyan_gloss": "使能够",
+    "tag": "core"
+  },
+  {
+    "word": "encourage",
+    "phonetic": "/ɪnˈkʌrɪdʒ/",
+    "pos": "v.",
+    "translation": "鼓励",
+    "kaoyan_gloss": "鼓励",
+    "tag": "core"
+  },
+  {
+    "word": "influence",
+    "phonetic": "/ˈɪnfluəns/",
+    "pos": "v.",
+    "translation": "影响",
+    "kaoyan_gloss": "影响",
+    "tag": "core"
+  },
+  {
+    "word": "affect",
+    "phonetic": "/əˈfekt/",
+    "pos": "v.",
+    "translation": "影响",
+    "kaoyan_gloss": "影响",
+    "tag": "core"
+  },
+  {
+    "word": "impact",
+    "phonetic": "/ˈɪmpækt/",
+    "pos": "v.",
+    "translation": "冲击",
+    "kaoyan_gloss": "冲击",
+    "tag": "core"
+  },
+  {
+    "word": "benefit",
+    "phonetic": "/ˈbenɪfɪt/",
+    "pos": "v.",
+    "translation": "受益",
+    "kaoyan_gloss": "受益",
+    "tag": "core"
+  },
+  {
+    "word": "challenge",
+    "phonetic": "/ˈtʃælɪndʒ/",
+    "pos": "n.",
+    "translation": "挑战",
+    "kaoyan_gloss": "挑战",
+    "tag": "core"
+  },
+  {
+    "word": "opportunity",
+    "phonetic": "/ˌɒpəˈtjuːnəti/",
+    "pos": "n.",
+    "translation": "机会",
+    "kaoyan_gloss": "机会",
+    "tag": "core"
+  },
+  {
+    "word": "advantage",
+    "phonetic": "/ədˈvɑːntɪdʒ/",
+    "pos": "n.",
+    "translation": "优势",
+    "kaoyan_gloss": "优势",
+    "tag": "core"
+  },
+  {
+    "word": "disadvantage",
+    "phonetic": "/ˌdɪsədˈvɑːntɪdʒ/",
+    "pos": "n.",
+    "translation": "劣势",
+    "kaoyan_gloss": "劣势",
+    "tag": "core"
+  },
+  {
+    "word": "difference",
+    "phonetic": "/ˈdɪfrəns/",
+    "pos": "n.",
+    "translation": "差异",
+    "kaoyan_gloss": "差异",
+    "tag": "core"
+  },
+  {
+    "word": "relationship",
+    "phonetic": "/rɪˈleɪʃnʃɪp/",
+    "pos": "n.",
+    "translation": "关系",
+    "kaoyan_gloss": "关系",
+    "tag": "core"
+  },
+  {
+    "word": "communication",
+    "phonetic": "/kəˌmjuːnɪˈkeɪʃn/",
+    "pos": "n.",
+    "translation": "交流",
+    "kaoyan_gloss": "交流",
+    "tag": "core"
+  },
+  {
+    "word": "decision",
+    "phonetic": "/dɪˈsɪʒn/",
+    "pos": "n.",
+    "translation": "决定",
+    "kaoyan_gloss": "决定",
+    "tag": "core"
+  },
+  {
+    "word": "action",
+    "phonetic": "/ˈækʃn/",
+    "pos": "n.",
+    "translation": "行动",
+    "kaoyan_gloss": "行动",
+    "tag": "core"
+  },
+  {
+    "word": "activity",
+    "phonetic": "/ækˈtɪvəti/",
+    "pos": "n.",
+    "translation": "活动",
+    "kaoyan_gloss": "活动",
+    "tag": "core"
+  },
+  {
+    "word": "event",
+    "phonetic": "/ɪˈvent/",
+    "pos": "n.",
+    "translation": "事件",
+    "kaoyan_gloss": "事件",
+    "tag": "core"
+  },
+  {
+    "word": "issue",
+    "phonetic": "/ˈɪʃuː/",
+    "pos": "n.",
+    "translation": "问题",
+    "kaoyan_gloss": "问题",
+    "tag": "core"
+  },
+  {
+    "word": "matter",
+    "phonetic": "/ˈmætə/",
+    "pos": "n.",
+    "translation": "事情",
+    "kaoyan_gloss": "事情",
+    "tag": "core"
+  },
+  {
+    "word": "subject",
+    "phonetic": "/ˈsʌbdʒɪkt/",
+    "pos": "n.",
+    "translation": "主题",
+    "kaoyan_gloss": "主题",
+    "tag": "core"
+  },
+  {
+    "word": "topic",
+    "phonetic": "/ˈtɒpɪk/",
+    "pos": "n.",
+    "translation": "话题",
+    "kaoyan_gloss": "话题",
+    "tag": "core"
+  },
+  {
+    "word": "content",
+    "phonetic": "/ˈkɒntent/",
+    "pos": "n.",
+    "translation": "内容",
+    "kaoyan_gloss": "内容",
+    "tag": "core"
+  },
+  {
+    "word": "context",
+    "phonetic": "/ˈkɒntekst/",
+    "pos": "n.",
+    "translation": "语境",
+    "kaoyan_gloss": "语境",
+    "tag": "core"
+  },
+  {
+    "word": "structure",
+    "phonetic": "/ˈstrʌktʃə/",
+    "pos": "n.",
+    "translation": "结构",
+    "kaoyan_gloss": "结构",
+    "tag": "core"
+  },
+  {
+    "word": "function",
+    "phonetic": "/ˈfʌŋkʃn/",
+    "pos": "n.",
+    "translation": "功能",
+    "kaoyan_gloss": "功能",
+    "tag": "core"
+  },
+  {
+    "word": "feature",
+    "phonetic": "/ˈfiːtʃə/",
+    "pos": "n.",
+    "translation": "特征",
+    "kaoyan_gloss": "特征",
+    "tag": "core"
+  },
+  {
+    "word": "element",
+    "phonetic": "/ˈelɪmənt/",
+    "pos": "n.",
+    "translation": "元素",
+    "kaoyan_gloss": "元素",
+    "tag": "core"
+  },
+  {
+    "word": "factor",
+    "phonetic": "/ˈfæktə/",
+    "pos": "n.",
+    "translation": "因素",
+    "kaoyan_gloss": "因素",
+    "tag": "core"
+  },
+  {
+    "word": "source",
+    "phonetic": "/sɔːs/",
+    "pos": "n.",
+    "translation": "来源",
+    "kaoyan_gloss": "来源",
+    "tag": "core"
+  },
+  {
+    "word": "resource",
+    "phonetic": "/rɪˈsɔːs/",
+    "pos": "n.",
+    "translation": "资源",
+    "kaoyan_gloss": "资源",
+    "tag": "core"
+  },
+  {
+    "word": "material",
+    "phonetic": "/məˈtɪəriəl/",
+    "pos": "n.",
+    "translation": "材料",
+    "kaoyan_gloss": "材料",
+    "tag": "core"
+  },
+  {
+    "word": "evidence",
+    "phonetic": "/ˈevɪdəns/",
+    "pos": "n.",
+    "translation": "证据",
+    "kaoyan_gloss": "证据",
+    "tag": "core"
+  },
+  {
+    "word": "argument",
+    "phonetic": "/ˈɑːɡjumənt/",
+    "pos": "n.",
+    "translation": "论点",
+    "kaoyan_gloss": "论点",
+    "tag": "core"
+  },
+  {
+    "word": "conclusion",
+    "phonetic": "/kənˈkluːʒn/",
+    "pos": "n.",
+    "translation": "结论",
+    "kaoyan_gloss": "结论",
+    "tag": "core"
+  },
+  {
+    "word": "summary",
+    "phonetic": "/ˈsʌməri/",
+    "pos": "n.",
+    "translation": "总结",
+    "kaoyan_gloss": "总结",
+    "tag": "core"
+  },
+  {
+    "word": "analysis",
+    "phonetic": "/əˈnæləsɪs/",
+    "pos": "n.",
+    "translation": "分析",
+    "kaoyan_gloss": "分析",
+    "tag": "core"
+  },
+  {
+    "word": "strategy",
+    "phonetic": "/ˈstrætədʒi/",
+    "pos": "n.",
+    "translation": "策略",
+    "kaoyan_gloss": "策略",
+    "tag": "core"
+  },
+  {
+    "word": "goal",
+    "phonetic": "/ɡəʊl/",
+    "pos": "n.",
+    "translation": "目标",
+    "kaoyan_gloss": "目标",
+    "tag": "core"
+  },
+  {
+    "word": "purpose",
+    "phonetic": "/ˈpɜːpəs/",
+    "pos": "n.",
+    "translation": "目的",
+    "kaoyan_gloss": "目的",
+    "tag": "core"
+  },
+  {
+    "word": "task",
+    "phonetic": "/tɑːsk/",
+    "pos": "n.",
+    "translation": "任务",
+    "kaoyan_gloss": "任务",
+    "tag": "core"
+  },
+  {
+    "word": "project",
+    "phonetic": "/ˈprɒdʒekt/",
+    "pos": "n.",
+    "translation": "项目",
+    "kaoyan_gloss": "项目",
+    "tag": "core"
+  },
+  {
+    "word": "plan",
+    "phonetic": "/plæn/",
+    "pos": "n.",
+    "translation": "计划",
+    "kaoyan_gloss": "计划",
+    "tag": "core"
+  },
+  {
+    "word": "stage",
+    "phonetic": "/steɪdʒ/",
+    "pos": "n.",
+    "translation": "阶段",
+    "kaoyan_gloss": "阶段",
+    "tag": "core"
+  },
+  {
+    "word": "step",
+    "phonetic": "/step/",
+    "pos": "n.",
+    "translation": "步骤",
+    "kaoyan_gloss": "步骤",
+    "tag": "core"
+  },
+  {
+    "word": "level",
+    "phonetic": "/ˈlevl/",
+    "pos": "n.",
+    "translation": "水平",
+    "kaoyan_gloss": "水平",
+    "tag": "core"
+  },
+  {
+    "word": "degree",
+    "phonetic": "/dɪˈɡriː/",
+    "pos": "n.",
+    "translation": "程度",
+    "kaoyan_gloss": "程度",
+    "tag": "core"
+  },
+  {
+    "word": "rate",
+    "phonetic": "/reɪt/",
+    "pos": "n.",
+    "translation": "比率",
+    "kaoyan_gloss": "比率",
+    "tag": "core"
+  },
+  {
+    "word": "amount",
+    "phonetic": "/əˈmaʊnt/",
+    "pos": "n.",
+    "translation": "数量",
+    "kaoyan_gloss": "数量",
+    "tag": "core"
+  },
+  {
+    "word": "size",
+    "phonetic": "/saɪz/",
+    "pos": "n.",
+    "translation": "大小",
+    "kaoyan_gloss": "大小",
+    "tag": "core"
+  },
+  {
+    "word": "length",
+    "phonetic": "/leŋθ/",
+    "pos": "n.",
+    "translation": "长度",
+    "kaoyan_gloss": "长度",
+    "tag": "core"
+  },
+  {
+    "word": "distance",
+    "phonetic": "/ˈdɪstəns/",
+    "pos": "n.",
+    "translation": "距离",
+    "kaoyan_gloss": "距离",
+    "tag": "core"
+  },
+  {
+    "word": "speed",
+    "phonetic": "/spiːd/",
+    "pos": "n.",
+    "translation": "速度",
+    "kaoyan_gloss": "速度",
+    "tag": "core"
+  },
+  {
+    "word": "weight",
+    "phonetic": "/weɪt/",
+    "pos": "n.",
+    "translation": "重量",
+    "kaoyan_gloss": "重量",
+    "tag": "core"
+  },
+  {
+    "word": "temperature",
+    "phonetic": "/ˈtemprətʃə/",
+    "pos": "n.",
+    "translation": "温度",
+    "kaoyan_gloss": "温度",
+    "tag": "core"
+  },
+  {
+    "word": "pressure",
+    "phonetic": "/ˈpreʃə/",
+    "pos": "n.",
+    "translation": "压力",
+    "kaoyan_gloss": "压力",
+    "tag": "core"
+  },
+  {
+    "word": "force",
+    "phonetic": "/fɔːs/",
+    "pos": "n.",
+    "translation": "力量",
+    "kaoyan_gloss": "力量",
+    "tag": "core"
+  },
+  {
+    "word": "light",
+    "phonetic": "/laɪt/",
+    "pos": "n.",
+    "translation": "光",
+    "kaoyan_gloss": "光",
+    "tag": "core"
+  },
+  {
+    "word": "sound",
+    "phonetic": "/saʊnd/",
+    "pos": "n.",
+    "translation": "声音",
+    "kaoyan_gloss": "声音",
+    "tag": "core"
+  },
+  {
+    "word": "color",
+    "phonetic": "/ˈkʌlə/",
+    "pos": "n.",
+    "translation": "颜色",
+    "kaoyan_gloss": "颜色",
+    "tag": "core"
+  },
+  {
+    "word": "colour",
+    "phonetic": "/ˈkʌlə/",
+    "pos": "n.",
+    "translation": "颜色",
+    "kaoyan_gloss": "颜色",
+    "tag": "core"
+  },
+  {
+    "word": "black",
+    "phonetic": "/blæk/",
+    "pos": "adj.",
+    "translation": "黑色的",
+    "kaoyan_gloss": "黑色的",
+    "tag": "core"
+  },
+  {
+    "word": "white",
+    "phonetic": "/waɪt/",
+    "pos": "adj.",
+    "translation": "白色的",
+    "kaoyan_gloss": "白色的",
+    "tag": "core"
+  },
+  {
+    "word": "red",
+    "phonetic": "/red/",
+    "pos": "adj.",
+    "translation": "红色的",
+    "kaoyan_gloss": "红色的",
+    "tag": "core"
+  },
+  {
+    "word": "blue",
+    "phonetic": "/bluː/",
+    "pos": "adj.",
+    "translation": "蓝色的",
+    "kaoyan_gloss": "蓝色的",
+    "tag": "core"
+  },
+  {
+    "word": "green",
+    "phonetic": "/ɡriːn/",
+    "pos": "adj.",
+    "translation": "绿色的",
+    "kaoyan_gloss": "绿色的",
+    "tag": "core"
+  },
+  {
+    "word": "yellow",
+    "phonetic": "/ˈjeləʊ/",
+    "pos": "adj.",
+    "translation": "黄色的",
+    "kaoyan_gloss": "黄色的",
+    "tag": "core"
+  },
+  {
+    "word": "dark",
+    "phonetic": "/dɑːk/",
+    "pos": "adj.",
+    "translation": "黑暗的",
+    "kaoyan_gloss": "黑暗的",
+    "tag": "core"
+  },
+  {
+    "word": "deep",
+    "phonetic": "/diːp/",
+    "pos": "adj.",
+    "translation": "深的",
+    "kaoyan_gloss": "深的",
+    "tag": "core"
+  },
+  {
+    "word": "wide",
+    "phonetic": "/waɪd/",
+    "pos": "adj.",
+    "translation": "宽的",
+    "kaoyan_gloss": "宽的",
+    "tag": "core"
+  },
+  {
+    "word": "narrow",
+    "phonetic": "/ˈnærəʊ/",
+    "pos": "adj.",
+    "translation": "窄的",
+    "kaoyan_gloss": "窄的",
+    "tag": "core"
+  },
+  {
+    "word": "thick",
+    "phonetic": "/θɪk/",
+    "pos": "adj.",
+    "translation": "厚的",
+    "kaoyan_gloss": "厚的",
+    "tag": "core"
+  },
+  {
+    "word": "thin",
+    "phonetic": "/θɪn/",
+    "pos": "adj.",
+    "translation": "薄的",
+    "kaoyan_gloss": "薄的",
+    "tag": "core"
+  },
+  {
+    "word": "heavy",
+    "phonetic": "/ˈhevi/",
+    "pos": "adj.",
+    "translation": "重的",
+    "kaoyan_gloss": "重的",
+    "tag": "core"
+  },
+  {
+    "word": "fast",
+    "phonetic": "/fɑːst/",
+    "pos": "adj.",
+    "translation": "快的",
+    "kaoyan_gloss": "快的",
+    "tag": "core"
+  },
+  {
+    "word": "slow",
+    "phonetic": "/sləʊ/",
+    "pos": "adj.",
+    "translation": "慢的",
+    "kaoyan_gloss": "慢的",
+    "tag": "core"
+  },
+  {
+    "word": "quick",
+    "phonetic": "/kwɪk/",
+    "pos": "adj.",
+    "translation": "快的",
+    "kaoyan_gloss": "快的",
+    "tag": "core"
+  },
+  {
+    "word": "hot",
+    "phonetic": "/hɒt/",
+    "pos": "adj.",
+    "translation": "热的",
+    "kaoyan_gloss": "热的",
+    "tag": "core"
+  },
+  {
+    "word": "cold",
+    "phonetic": "/kəʊld/",
+    "pos": "adj.",
+    "translation": "冷的",
+    "kaoyan_gloss": "冷的",
+    "tag": "core"
+  },
+  {
+    "word": "warm",
+    "phonetic": "/wɔːm/",
+    "pos": "adj.",
+    "translation": "温暖的",
+    "kaoyan_gloss": "温暖的",
+    "tag": "core"
+  },
+  {
+    "word": "cool",
+    "phonetic": "/kuːl/",
+    "pos": "adj.",
+    "translation": "凉爽的",
+    "kaoyan_gloss": "凉爽的",
+    "tag": "core"
+  },
+  {
+    "word": "dry",
+    "phonetic": "/draɪ/",
+    "pos": "adj.",
+    "translation": "干燥的",
+    "kaoyan_gloss": "干燥的",
+    "tag": "core"
+  },
+  {
+    "word": "wet",
+    "phonetic": "/wet/",
+    "pos": "adj.",
+    "translation": "湿的",
+    "kaoyan_gloss": "湿的",
+    "tag": "core"
+  },
+  {
+    "word": "clean",
+    "phonetic": "/kliːn/",
+    "pos": "adj.",
+    "translation": "干净的",
+    "kaoyan_gloss": "干净的",
+    "tag": "core"
+  },
+  {
+    "word": "dirty",
+    "phonetic": "/ˈdɜːti/",
+    "pos": "adj.",
+    "translation": "脏的",
+    "kaoyan_gloss": "脏的",
+    "tag": "core"
+  },
+  {
+    "word": "safe",
+    "phonetic": "/seɪf/",
+    "pos": "adj.",
+    "translation": "安全的",
+    "kaoyan_gloss": "安全的",
+    "tag": "core"
+  },
+  {
+    "word": "dangerous",
+    "phonetic": "/ˈdeɪndʒərəs/",
+    "pos": "adj.",
+    "translation": "危险的",
+    "kaoyan_gloss": "危险的",
+    "tag": "core"
+  },
+  {
+    "word": "true",
+    "phonetic": "/truː/",
+    "pos": "adj.",
+    "translation": "真实的",
+    "kaoyan_gloss": "真实的",
+    "tag": "core"
+  },
+  {
+    "word": "false",
+    "phonetic": "/fɔːls/",
+    "pos": "adj.",
+    "translation": "错误的",
+    "kaoyan_gloss": "错误的",
+    "tag": "core"
+  },
+  {
+    "word": "correct",
+    "phonetic": "/kəˈrekt/",
+    "pos": "adj.",
+    "translation": "正确的",
+    "kaoyan_gloss": "正确的",
+    "tag": "core"
+  },
+  {
+    "word": "wrong",
+    "phonetic": "/rɒŋ/",
+    "pos": "adj.",
+    "translation": "错误的",
+    "kaoyan_gloss": "错误的",
+    "tag": "core"
+  },
+  {
+    "word": "positive",
+    "phonetic": "/ˈpɒzətɪv/",
+    "pos": "adj.",
+    "translation": "积极的",
+    "kaoyan_gloss": "积极的",
+    "tag": "core"
+  },
+  {
+    "word": "negative",
+    "phonetic": "/ˈneɡətɪv/",
+    "pos": "adj.",
+    "translation": "消极的",
+    "kaoyan_gloss": "消极的",
+    "tag": "core"
+  },
+  {
+    "word": "active",
+    "phonetic": "/ˈæktɪv/",
+    "pos": "adj.",
+    "translation": "活跃的",
+    "kaoyan_gloss": "活跃的",
+    "tag": "core"
+  },
+  {
+    "word": "passive",
+    "phonetic": "/ˈpæsɪv/",
+    "pos": "adj.",
+    "translation": "被动的",
+    "kaoyan_gloss": "被动的",
+    "tag": "core"
+  },
+  {
+    "word": "direct",
+    "phonetic": "/dəˈrekt/",
+    "pos": "adj.",
+    "translation": "直接的",
+    "kaoyan_gloss": "直接的",
+    "tag": "core"
+  },
+  {
+    "word": "indirect",
+    "phonetic": "/ˌɪndəˈrekt/",
+    "pos": "adj.",
+    "translation": "间接的",
+    "kaoyan_gloss": "间接的",
+    "tag": "core"
+  },
+  {
+    "word": "formal",
+    "phonetic": "/ˈfɔːml/",
+    "pos": "adj.",
+    "translation": "正式的",
+    "kaoyan_gloss": "正式的",
+    "tag": "core"
+  },
+  {
+    "word": "informal",
+    "phonetic": "/ɪnˈfɔːml/",
+    "pos": "adj.",
+    "translation": "非正式的",
+    "kaoyan_gloss": "非正式的",
+    "tag": "core"
+  },
+  {
+    "word": "basic",
+    "phonetic": "/ˈbeɪsɪk/",
+    "pos": "adj.",
+    "translation": "基本的",
+    "kaoyan_gloss": "基本的",
+    "tag": "core"
+  },
+  {
+    "word": "advanced",
+    "phonetic": "/ədˈvɑːnst/",
+    "pos": "adj.",
+    "translation": "高级的",
+    "kaoyan_gloss": "高级的",
+    "tag": "core"
+  },
+  {
+    "word": "primary",
+    "phonetic": "/ˈpraɪməri/",
+    "pos": "adj.",
+    "translation": "主要的",
+    "kaoyan_gloss": "主要的",
+    "tag": "core"
+  },
+  {
+    "word": "secondary",
+    "phonetic": "/ˈsekəndri/",
+    "pos": "adj.",
+    "translation": "次要的",
+    "kaoyan_gloss": "次要的",
+    "tag": "core"
+  },
+  {
+    "word": "additional",
+    "phonetic": "/əˈdɪʃənl/",
+    "pos": "adj.",
+    "translation": "额外的",
+    "kaoyan_gloss": "额外的",
+    "tag": "core"
+  },
+  {
+    "word": "extra",
+    "phonetic": "/ˈekstrə/",
+    "pos": "adj.",
+    "translation": "额外的",
+    "kaoyan_gloss": "额外的",
+    "tag": "core"
+  },
+  {
+    "word": "total",
+    "phonetic": "/ˈtəʊtl/",
+    "pos": "adj.",
+    "translation": "总的",
+    "kaoyan_gloss": "总的",
+    "tag": "core"
+  },
+  {
+    "word": "average",
+    "phonetic": "/ˈævərɪdʒ/",
+    "pos": "adj.",
+    "translation": "平均的",
+    "kaoyan_gloss": "平均的",
+    "tag": "core"
+  },
+  {
+    "word": "maximum",
+    "phonetic": "/ˈmæksɪməm/",
+    "pos": "adj.",
+    "translation": "最大的",
+    "kaoyan_gloss": "最大的",
+    "tag": "core"
+  },
+  {
+    "word": "minimum",
+    "phonetic": "/ˈmɪnɪməm/",
+    "pos": "adj.",
+    "translation": "最小的",
+    "kaoyan_gloss": "最小的",
+    "tag": "core"
+  },
+  {
+    "word": "equal",
+    "phonetic": "/ˈiːkwəl/",
+    "pos": "adj.",
+    "translation": "相等的",
+    "kaoyan_gloss": "相等的",
+    "tag": "core"
+  },
+  {
+    "word": "opposite",
+    "phonetic": "/ˈɒpəzɪt/",
+    "pos": "adj.",
+    "translation": "相反的",
+    "kaoyan_gloss": "相反的",
+    "tag": "core"
+  },
+  {
+    "word": "alone",
+    "phonetic": "/əˈləʊn/",
+    "pos": "adj.",
+    "translation": "单独的",
+    "kaoyan_gloss": "单独的",
+    "tag": "core"
+  },
+  {
+    "word": "together",
+    "phonetic": "/təˈɡeðə/",
+    "pos": "adv.",
+    "translation": "一起",
+    "kaoyan_gloss": "一起",
+    "tag": "core"
+  },
+  {
+    "word": "apart",
+    "phonetic": "/əˈpɑːt/",
+    "pos": "adv.",
+    "translation": "分开",
+    "kaoyan_gloss": "分开",
+    "tag": "core"
+  },
+  {
+    "word": "away",
+    "phonetic": "/əˈweɪ/",
+    "pos": "adv.",
+    "translation": "离开",
+    "kaoyan_gloss": "离开",
+    "tag": "core"
+  },
+  {
+    "word": "near",
+    "phonetic": "/nɪə/",
+    "pos": "adv.",
+    "translation": "附近",
+    "kaoyan_gloss": "附近",
+    "tag": "core"
+  },
+  {
+    "word": "far",
+    "phonetic": "/fɑː/",
+    "pos": "adv.",
+    "translation": "远",
+    "kaoyan_gloss": "远",
+    "tag": "core"
+  },
+  {
+    "word": "above",
+    "phonetic": "/əˈbʌv/",
+    "pos": "prep.",
+    "translation": "在…上方",
+    "kaoyan_gloss": "在…上方",
+    "tag": "core"
+  },
+  {
+    "word": "below",
+    "phonetic": "/bɪˈləʊ/",
+    "pos": "prep.",
+    "translation": "在…下方",
+    "kaoyan_gloss": "在…下方",
+    "tag": "core"
+  },
+  {
+    "word": "under",
+    "phonetic": "/ˈʌndə/",
+    "pos": "prep.",
+    "translation": "在…下",
+    "kaoyan_gloss": "在…下",
+    "tag": "core"
+  },
+  {
+    "word": "behind",
+    "phonetic": "/bɪˈhaɪnd/",
+    "pos": "prep.",
+    "translation": "在…后面",
+    "kaoyan_gloss": "在…后面",
+    "tag": "core"
+  },
+  {
+    "word": "front",
+    "phonetic": "/frʌnt/",
+    "pos": "n.",
+    "translation": "前面",
+    "kaoyan_gloss": "前面",
+    "tag": "core"
+  },
+  {
+    "word": "side",
+    "phonetic": "/saɪd/",
+    "pos": "n.",
+    "translation": "边",
+    "kaoyan_gloss": "边",
+    "tag": "core"
+  },
+  {
+    "word": "top",
+    "phonetic": "/tɒp/",
+    "pos": "n.",
+    "translation": "顶部",
+    "kaoyan_gloss": "顶部",
+    "tag": "core"
+  },
+  {
+    "word": "bottom",
+    "phonetic": "/ˈbɒtəm/",
+    "pos": "n.",
+    "translation": "底部",
+    "kaoyan_gloss": "底部",
+    "tag": "core"
+  },
+  {
+    "word": "middle",
+    "phonetic": "/ˈmɪdl/",
+    "pos": "n.",
+    "translation": "中间",
+    "kaoyan_gloss": "中间",
+    "tag": "core"
+  },
+  {
+    "word": "center",
+    "phonetic": "/ˈsentə/",
+    "pos": "n.",
+    "translation": "中心",
+    "kaoyan_gloss": "中心",
+    "tag": "core"
+  },
+  {
+    "word": "centre",
+    "phonetic": "/ˈsentə/",
+    "pos": "n.",
+    "translation": "中心",
+    "kaoyan_gloss": "中心",
+    "tag": "core"
+  },
+  {
+    "word": "corner",
+    "phonetic": "/ˈkɔːnə/",
+    "pos": "n.",
+    "translation": "角落",
+    "kaoyan_gloss": "角落",
+    "tag": "core"
+  },
+  {
+    "word": "line",
+    "phonetic": "/laɪn/",
+    "pos": "n.",
+    "translation": "线",
+    "kaoyan_gloss": "线",
+    "tag": "core"
+  },
+  {
+    "word": "point",
+    "phonetic": "/pɔɪnt/",
+    "pos": "n.",
+    "translation": "点",
+    "kaoyan_gloss": "点",
+    "tag": "core"
+  },
+  {
+    "word": "surface",
+    "phonetic": "/ˈsɜːfɪs/",
+    "pos": "n.",
+    "translation": "表面",
+    "kaoyan_gloss": "表面",
+    "tag": "core"
+  },
+  {
+    "word": "protocol",
+    "phonetic": "/ˈprəʊtəkɒl/",
+    "pos": "n.",
+    "translation": "协议",
+    "kaoyan_gloss": "协议",
+    "tag": "core"
+  },
+  {
+    "word": "macro",
+    "phonetic": "/ˈmækrəʊ/",
+    "pos": "n.",
+    "translation": "宏",
+    "kaoyan_gloss": "宏",
+    "tag": "core"
+  },
+  {
+    "word": "volatility",
+    "phonetic": "/ˌvɒləˈtɪləti/",
+    "pos": "n.",
+    "translation": "波动性",
+    "kaoyan_gloss": "波动性",
+    "tag": "core"
+  },
+  {
+    "word": "identification",
+    "phonetic": "/aɪˌdentɪfɪˈkeɪʃn/",
+    "pos": "n.",
+    "translation": "识别",
+    "kaoyan_gloss": "识别",
+    "tag": "core"
+  }
+]

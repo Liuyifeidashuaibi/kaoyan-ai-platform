@@ -1,3 +1,7 @@
+# 已迁移至 docker/Dockerfile.backend
+# 请使用: docker compose up --build
+# 或: docker build -f docker/Dockerfile.backend -t kaoyan-backend .
+
 FROM python:3.11-slim
 
 WORKDIR /app

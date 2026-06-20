@@ -52,7 +52,7 @@ class ChatMessage(Base):
     __tablename__ = "chat_messages"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
-    session_id = Column(String(36), ForeignKey("chat_sessions.id"), nullable=False)
+    session_id = Column(String(36), ForeignKey("chat_sessions.id"), nullable=False, index=True)
     role = Column(String(20), nullable=False)  # user / assistant / system
     content = Column(Text, nullable=False)
     image_path = Column(String(500), nullable=True)  # 用户上传的图片相对路径
@@ -174,11 +174,24 @@ def _migrate_wq_user_scoping() -> None:
         conn.commit()
 
 
+def _migrate_chat_message_indexes() -> None:
+    """为已有 SQLite 库补充 chat_messages.session_id 索引。"""
+    with engine.connect() as conn:
+        rows = conn.exec_driver_sql("PRAGMA index_list(chat_messages)").fetchall()
+        names = {row[1] for row in rows}
+        if "ix_chat_messages_session_id" not in names:
+            conn.exec_driver_sql(
+                "CREATE INDEX ix_chat_messages_session_id ON chat_messages(session_id)"
+            )
+        conn.commit()
+
+
 def init_db() -> None:
     """创建所有表（若不存在）并执行轻量迁移。"""
     Base.metadata.create_all(bind=engine)
     _migrate_wrong_questions_columns()
     _migrate_wq_user_scoping()
+    _migrate_chat_message_indexes()
 
 
 def get_db():

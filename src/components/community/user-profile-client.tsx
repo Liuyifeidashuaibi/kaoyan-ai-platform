@@ -2,15 +2,12 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
-import { BookOpen, FileText, Loader2, UserPlus, UserMinus } from "lucide-react";
+import { FileText, Loader2, UserPlus, UserMinus } from "lucide-react";
 
 import { PostCard } from "@/components/community/post-card";
-import { MaterialTimelineItem } from "@/components/wrong-questions/question-card";
-import { QuestionDetailDialog } from "@/components/wrong-questions/question-detail-dialog";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   followUser,
   getUserProfile,
@@ -20,8 +17,7 @@ import {
   updateMyProfile,
   updatePost,
 } from "@/lib/api/community";
-import { listPublicMaterials } from "@/lib/api/wrong-questions";
-import type { CommunityPost, CommunityUser, WrongQuestion } from "@/lib/api/types";
+import type { CommunityPost, CommunityUser } from "@/lib/api/types";
 import { POST_TYPES, SUBJECT_CATEGORIES, type PostType } from "@/lib/community/constants";
 import { createClient, isSupabaseConfigured } from "@/lib/supabase/client";
 
@@ -32,12 +28,10 @@ type UserProfileClientProps = {
 export function UserProfileClient({ userId }: UserProfileClientProps) {
   const [profile, setProfile] = useState<CommunityUser | null>(null);
   const [posts, setPosts] = useState<CommunityPost[]>([]);
-  const [publicMaterials, setPublicMaterials] = useState<WrongQuestion[]>([]);
   const [postType, setPostType] = useState<PostType | "">("");
   const [loading, setLoading] = useState(true);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [editCategory, setEditCategory] = useState("");
-  const [selectedMaterial, setSelectedMaterial] = useState<WrongQuestion | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -45,19 +39,14 @@ export function UserProfileClient({ userId }: UserProfileClientProps) {
       const p = await getUserProfile(userId);
       setProfile(p);
       setEditCategory(p.subject_category ?? "");
-      const [postData, materialData] = await Promise.all([
-        listPosts({
-          author_id: p.id,
-          post_type: postType || undefined,
-        }),
-        listPublicMaterials(p.id),
-      ]);
+      const postData = await listPosts({
+        author_id: p.id,
+        post_type: postType || undefined,
+      });
       setPosts(postData.items);
-      setPublicMaterials(materialData);
     } catch {
       setProfile(null);
       setPosts([]);
-      setPublicMaterials([]);
     } finally {
       setLoading(false);
     }
@@ -130,10 +119,10 @@ export function UserProfileClient({ userId }: UserProfileClientProps) {
   }
 
   if (!profile) {
-    return <p className="p-8 text-center text-muted-foreground">用户不存在</p>;
+    return <p className="p-8 text-center text-muted-foreground">User not found</p>;
   }
 
-  const displayName = profile.display_id || profile.nickname || "用户";
+  const displayName = profile.display_id || profile.nickname || "User";
   const isSelf = profile.is_self;
 
   return (
@@ -150,10 +139,10 @@ export function UserProfileClient({ userId }: UserProfileClientProps) {
           )}
           <div className="flex gap-4 text-sm text-muted-foreground">
             <Link href={`/following?user=${profile.id}`} className="hover:underline">
-              关注 {profile.following_count ?? 0}
+              Following {profile.following_count ?? 0}
             </Link>
             <Link href={`/followers?user=${profile.id}`} className="hover:underline">
-              粉丝 {profile.follower_count ?? 0}
+              Followers {profile.follower_count ?? 0}
             </Link>
           </div>
         </div>
@@ -165,7 +154,7 @@ export function UserProfileClient({ userId }: UserProfileClientProps) {
                 value={editCategory}
                 onChange={(e) => setEditCategory(e.target.value)}
               >
-                <option value="">未设置专业</option>
+                <option value="">No subject set</option>
                 {SUBJECT_CATEGORIES.map((c) => (
                   <option key={c} value={c}>
                     {c}
@@ -173,7 +162,7 @@ export function UserProfileClient({ userId }: UserProfileClientProps) {
                 ))}
               </select>
               <Button size="sm" variant="outline" onClick={handleSaveCategory}>
-                保存专业
+                Save Subject
               </Button>
             </div>
           ) : currentUserId ? (
@@ -181,12 +170,12 @@ export function UserProfileClient({ userId }: UserProfileClientProps) {
               {profile.is_following ? (
                 <>
                   <UserMinus />
-                  取消关注
+                  Unfollow
                 </>
               ) : (
                 <>
                   <UserPlus />
-                  关注
+                  Follow
                 </>
               )}
             </Button>
@@ -194,101 +183,52 @@ export function UserProfileClient({ userId }: UserProfileClientProps) {
         </div>
       </div>
 
-      <Tabs defaultValue="posts">
-        <TabsList>
-          <TabsTrigger value="posts" className="gap-1.5">
-            <FileText className="size-4" />
-            帖子 ({posts.length})
-          </TabsTrigger>
-          <TabsTrigger value="materials" className="gap-1.5">
-            <BookOpen className="size-4" />
-            公开资料 ({publicMaterials.length})
-          </TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="posts" className="mt-4 space-y-4">
-          <div className="flex flex-wrap gap-2">
+      <section className="space-y-4">
+        <h2 className="flex items-center gap-1.5 text-sm font-medium">
+          <FileText className="size-4" />
+          Posts ({posts.length})
+        </h2>
+        <div className="flex flex-wrap gap-2">
+          <Button
+            size="sm"
+            variant={postType === "" ? "default" : "outline"}
+            onClick={() => setPostType("")}
+          >
+            All
+          </Button>
+          {POST_TYPES.map((t) => (
             <Button
+              key={t.value}
               size="sm"
-              variant={postType === "" ? "default" : "outline"}
-              onClick={() => setPostType("")}
+              variant={postType === t.value ? "default" : "outline"}
+              onClick={() => setPostType(t.value)}
             >
-              全部
+              {t.label}
             </Button>
-            {POST_TYPES.map((t) => (
-              <Button
-                key={t.value}
-                size="sm"
-                variant={postType === t.value ? "default" : "outline"}
-                onClick={() => setPostType(t.value)}
-              >
-                {t.label}
-              </Button>
-            ))}
-          </div>
-          {isSelf && (
-            <p className="text-sm text-muted-foreground">
-              帖子默认公开；隐藏后他人无法在主页看到，你仍可在下方管理。
-            </p>
+          ))}
+        </div>
+        {isSelf && (
+          <p className="text-sm text-muted-foreground">
+            Posts are public by default. Hidden posts won&apos;t appear on your profile, but you can still manage them below.
+          </p>
+        )}
+        <div className="space-y-3">
+          {posts.length === 0 ? (
+            <p className="py-12 text-center text-muted-foreground">No posts yet</p>
+          ) : (
+            posts.map((post) => (
+              <PostCard
+                key={post.id}
+                post={post}
+                canFavorite={!!currentUserId}
+                onFavoriteToggle={handleFavoriteToggle}
+                showHiddenControls={isSelf}
+                onToggleHidden={isSelf ? handleToggleHidden : undefined}
+              />
+            ))
           )}
-          <div className="space-y-3">
-            {posts.length === 0 ? (
-              <p className="py-12 text-center text-muted-foreground">暂无帖子</p>
-            ) : (
-              posts.map((post) => (
-                <PostCard
-                  key={post.id}
-                  post={post}
-                  canFavorite={!!currentUserId}
-                  onFavoriteToggle={handleFavoriteToggle}
-                  showHiddenControls={isSelf}
-                  onToggleHidden={isSelf ? handleToggleHidden : undefined}
-                />
-              ))
-            )}
-          </div>
-        </TabsContent>
-
-        <TabsContent value="materials" className="mt-4 space-y-4">
-          {isSelf && (
-            <p className="text-sm text-muted-foreground">
-              在
-              <Link href="/wrong-questions" className="mx-1 underline">
-                错题本
-              </Link>
-              中将资料设为「公开」后，会展示在这里供他人查看。
-            </p>
-          )}
-          <div className="space-y-1">
-            {publicMaterials.length === 0 ? (
-              <p className="py-12 text-center text-muted-foreground">
-                {isSelf ? "还没有公开的资料" : "该用户暂无公开资料"}
-              </p>
-            ) : (
-              publicMaterials.map((item, index) => (
-                <MaterialTimelineItem
-                  key={item.id}
-                  question={item}
-                  isLast={index === publicMaterials.length - 1}
-                  onClick={() => setSelectedMaterial(item)}
-                />
-              ))
-            )}
-          </div>
-        </TabsContent>
-      </Tabs>
-
-      <QuestionDetailDialog
-        question={selectedMaterial}
-        open={!!selectedMaterial}
-        onOpenChange={(open) => {
-          if (!open) setSelectedMaterial(null);
-        }}
-        onAnalyze={async () => {}}
-        onStartChat={async () => ""}
-        onUpdateNotes={async () => {}}
-        readOnly
-      />
+        </div>
+      </section>
     </div>
   );
 }

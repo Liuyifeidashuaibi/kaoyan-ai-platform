@@ -54,13 +54,6 @@ export type WrongQuestion = {
   created_at: string;
 };
 
-export type StartChatFromQuestionResult = {
-  session_id: string;
-  title: string;
-  image_path: string;
-  initial_message: string;
-};
-
 export type CommunityUser = {
   id: string;
   display_id: string | null;
@@ -125,3 +118,63 @@ export type CommunitySearchResult =
   | { kind: "user"; user_id: string; display_id: string | null }
   | { kind: "subject"; subject_category: string }
   | { kind: "posts"; posts: CommunityPost[] };
+
+export type TranslationMode = "full" | "bilingual";
+export type TranslationDomain = "textbook" | "paper" | "technical";
+export type SubtitleOutputMode = "original" | "translated" | "bilingual";
+
+export type SentencePair = {
+  source: string;
+  target: string;
+};
+
+export type TranslationResult = {
+  mode: TranslationMode;
+  full_text: string | null;
+  pairs: SentencePair[];
+  source_name: string;
+  kind: "text" | "image" | "document" | "video";
+  ocr_text?: string | null;
+  exported_content?: string | null;
+  export_format?: string | null;
+  notebook?: {
+    question_id: number;
+    title: string;
+    file_type: string;
+  };
+};
+
+export type SubtitleCue = {
+  index: number;
+  start: number;
+  end: number;
+  text: string;
+  translation: string | null;
+};
+
+export type VideoTranslationResult = {
+  source_name: string;
+  detected_language: string | null;
+  mode: SubtitleOutputMode;
+  cues: SubtitleCue[];
+  exported_content?: string | null;
+  export_format?: string | null;
+  notebook?: {
+    question_id: number;
+    title: string;
+    file_type: string;
+  };
+};
+
+export type TranslatorHealth = {
+  available: boolean;
+  configured: boolean;
+  status?: string;
+  model?: string;
+  main_model?: string;
+  draft_model?: string;
+  qwen_model?: string;
+  ollama_base_url?: string;
+  whisper_model?: string;
+  whisper_compute?: string;
+};

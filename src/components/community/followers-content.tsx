@@ -41,16 +41,16 @@ export function FollowersContent() {
         <Link href="/community" className={buttonVariants({ variant: "ghost", size: "icon-sm" })}>
           <ArrowLeft />
         </Link>
-        <h1 className="text-2xl font-semibold">粉丝列表</h1>
+        <h1 className="text-2xl font-semibold">Followers</h1>
       </div>
       {loading ? (
         <Loader2 className="mx-auto size-6 animate-spin text-muted-foreground" />
       ) : users.length === 0 ? (
-        <p className="py-12 text-center text-muted-foreground">暂无粉丝</p>
+        <p className="py-12 text-center text-muted-foreground">No followers yet</p>
       ) : (
         <ul className="divide-y rounded-lg border">
           {users.map((u) => {
-            const name = u.display_id || u.nickname || "用户";
+            const name = u.display_id || u.nickname || "User";
             return (
               <li key={u.id}>
                 <Link

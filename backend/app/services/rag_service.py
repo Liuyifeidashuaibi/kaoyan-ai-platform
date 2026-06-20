@@ -7,6 +7,7 @@ RAG 知识库服务 — 基于 LlamaIndex + Chroma 向量数据库。
 """
 
 import logging
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 from typing import Any
 
@@ -203,43 +204,58 @@ class RAGService:
 
     def retrieve(self, query: str, top_k: int | None = None) -> str:
         """
-        混合检索：错题私有库 → 院校招生库 → 公共资料库。
+        混合检索：错题私有库 → 院校招生库 → 公共资料库（三路并行）。
         Top3~4，召回文本经短句压缩后拼接。
         """
         k = top_k or self.settings.rag_top_k
         max_snip = self.settings.rag_snippet_max_chars
         contexts: list[str] = []
 
-        def _add(label: str, nodes: list) -> None:
-            for node in nodes:
-                snippet = compress_rag_snippet(node.get_content(), max_snip)
-                if snippet:
-                    contexts.append(f"[{label}] {snippet}")
+        def _retrieve_private() -> list[str]:
+            out: list[str] = []
+            try:
+                nodes = self.private_index.as_retriever(similarity_top_k=k).retrieve(query)
+                for node in nodes:
+                    snippet = compress_rag_snippet(node.get_content(), max_snip)
+                    if snippet:
+                        out.append(f"[用户错题] {snippet}")
+            except Exception as exc:
+                logger.warning("私有库检索失败: %s", exc)
+            return out
 
-        # 1. 用户错题
-        try:
-            nodes = self.private_index.as_retriever(similarity_top_k=k).retrieve(query)
-            _add("用户错题", nodes)
-        except Exception as exc:
-            logger.warning("私有库检索失败: %s", exc)
+        def _retrieve_school() -> list[str]:
+            out: list[str] = []
+            try:
+                nodes = self.school_index.as_retriever(similarity_top_k=k).retrieve(query)
+                for node in nodes:
+                    snippet = compress_rag_snippet(node.get_content(), max_snip)
+                    if snippet:
+                        out.append(f"[院校数据] {snippet}")
+            except Exception as exc:
+                logger.warning("院校库检索失败: %s", exc)
+            return out
 
-        # 2. Supabase 同步的院校招生知识
-        try:
-            nodes = self.school_index.as_retriever(similarity_top_k=k).retrieve(query)
-            _add("院校数据", nodes)
-        except Exception as exc:
-            logger.warning("院校库检索失败: %s", exc)
+        def _retrieve_public() -> list[str]:
+            out: list[str] = []
+            try:
+                nodes = self.public_index.as_retriever(similarity_top_k=k).retrieve(query)
+                for node in nodes:
+                    source = node.metadata.get("source", "未知")
+                    snippet = compress_rag_snippet(node.get_content(), max_snip)
+                    if snippet:
+                        out.append(f"[公共资料-{source}] {snippet}")
+            except Exception as exc:
+                logger.warning("公共库检索失败: %s", exc)
+            return out
 
-        # 3. 公共考研资料
-        try:
-            nodes = self.public_index.as_retriever(similarity_top_k=k).retrieve(query)
-            for node in nodes:
-                source = node.metadata.get("source", "未知")
-                snippet = compress_rag_snippet(node.get_content(), max_snip)
-                if snippet:
-                    contexts.append(f"[公共资料-{source}] {snippet}")
-        except Exception as exc:
-            logger.warning("公共库检索失败: %s", exc)
+        with ThreadPoolExecutor(max_workers=3) as pool:
+            futures = [
+                pool.submit(_retrieve_private),
+                pool.submit(_retrieve_school),
+                pool.submit(_retrieve_public),
+            ]
+            for future in as_completed(futures):
+                contexts.extend(future.result())
 
         if not contexts:
             return ""

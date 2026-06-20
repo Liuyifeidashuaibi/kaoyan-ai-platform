@@ -2,7 +2,6 @@
 
 import { Suspense, useCallback, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { RefreshCw, Search } from "lucide-react";
 import { TabNav } from "@/components/schools/tab-nav";
 import { LoadingProgressBar, SkeletonList } from "@/components/schools/skeleton-list";
 import { SchoolListView } from "./school-list-view";
@@ -42,7 +41,7 @@ function SchoolsPageContent({ basePath = "/schools" }: { basePath?: string }) {
   const [schoolLoading, setSchoolLoading] = useState(true);
   const [majorLoading, setMajorLoading] = useState(false);
   const [searchLoading, setSearchLoading] = useState(false);
-  const { syncing, refresh } = useSchoolsSync();
+  const { syncing } = useSchoolsSync();
   const debouncedSearch = useDebouncedValue(search.trim(), 300);
   const isSearching = debouncedSearch.length > 0;
   const showMajorList = viewMode === "major" || majorTabVisited;
@@ -126,30 +125,6 @@ function SchoolsPageContent({ basePath = "/schools" }: { basePath?: string }) {
       />
 
       <div className="mx-auto max-w-7xl px-4 py-6 lg:px-8">
-        <div className="mb-4 flex items-center justify-end gap-2">
-          <button
-            type="button"
-            onClick={() => setSearchOpen(true)}
-            className={cn(
-              "flex size-9 items-center justify-center rounded-xl border border-border bg-white shadow-sm transition-colors hover:bg-muted/50",
-              isSearching && "bg-[#007AFF]/10 text-[#007AFF] ring-1 ring-[#007AFF]/30"
-            )}
-            aria-label="快捷搜索"
-          >
-            <Search className="size-4" />
-          </button>
-          <button
-            type="button"
-            onClick={() => void refresh()}
-            disabled={syncing}
-            className="flex items-center gap-1.5 rounded-xl border border-border bg-white px-3 py-2 text-xs font-medium text-muted-foreground shadow-sm hover:bg-muted/50 disabled:opacity-50"
-            aria-label="刷新择校数据"
-          >
-            <RefreshCw className={cn("size-3.5", syncing && "animate-spin")} />
-            刷新
-          </button>
-        </div>
-
         <div className="mb-4 rounded-2xl bg-white shadow-sm ring-1 ring-black/5">
           <TabNav
             tabs={VIEW_TABS}

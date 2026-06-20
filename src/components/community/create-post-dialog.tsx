@@ -80,7 +80,7 @@ export function CreatePostDialog({
       const item = await uploadCommunityAttachment(file);
       setAttachments((prev) => [...prev, item]);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "上传失败");
+      setError(e instanceof Error ? e.message : "Upload failed");
     } finally {
       setUploading(false);
     }
@@ -88,15 +88,15 @@ export function CreatePostDialog({
 
   async function handleSubmit() {
     if (!title.trim()) {
-      setError("请填写标题");
+      setError("Title is required");
       return;
     }
     if (!grade) {
-      setError("请选择年级");
+      setError("Please select a cohort");
       return;
     }
     if (!subjectCategory) {
-      setError("请选择专业");
+      setError("Please select a subject area");
       return;
     }
     setSubmitting(true);
@@ -120,7 +120,7 @@ export function CreatePostDialog({
       onOpenChange(false);
       onCreated?.();
     } catch (e) {
-      setError(e instanceof Error ? e.message : "发布失败");
+      setError(e instanceof Error ? e.message : "Failed to publish");
     } finally {
       setSubmitting(false);
     }
@@ -130,12 +130,12 @@ export function CreatePostDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-lg">
         <DialogHeader>
-          <DialogTitle>发布帖子</DialogTitle>
+          <DialogTitle>New Post</DialogTitle>
         </DialogHeader>
 
         <div className="space-y-4">
           <div className="space-y-2">
-            <Label>帖子类型</Label>
+            <Label>Post type</Label>
             <div className="flex gap-2">
               {POST_TYPES.map((t) => (
                 <Button
@@ -154,7 +154,7 @@ export function CreatePostDialog({
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">
               <Label htmlFor="subject">
-                专业 <span className="text-destructive">*</span>
+                Subject area <span className="text-destructive">*</span>
               </Label>
               <select
                 id="subject"
@@ -173,7 +173,7 @@ export function CreatePostDialog({
 
             <div className="space-y-2">
               <Label htmlFor="grade">
-                年级 <span className="text-destructive">*</span>
+                Cohort <span className="text-destructive">*</span>
               </Label>
               <select
                 id="grade"
@@ -192,7 +192,7 @@ export function CreatePostDialog({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="school">学校（可选）</Label>
+            <Label htmlFor="school">School (optional)</Label>
             <select
               id="school"
               className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 text-sm"
@@ -200,7 +200,7 @@ export function CreatePostDialog({
               onChange={(e) => setUniversityId(e.target.value)}
               disabled={schoolsLoading}
             >
-              <option value="">不选择学校</option>
+              <option value="">No school selected</option>
               {schools.map((s) => (
                 <option key={s.id} value={s.id}>
                   {s.name}
@@ -211,34 +211,34 @@ export function CreatePostDialog({
 
           <div className="space-y-2">
             <Label htmlFor="title">
-              标题 <span className="text-destructive">*</span>
+              Title <span className="text-destructive">*</span>
             </Label>
             <Input
               id="title"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder="输入标题"
+              placeholder="Enter title"
               maxLength={200}
             />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="content">正文</Label>
+            <Label htmlFor="content">Content</Label>
             <Textarea
               id="content"
               value={content}
               onChange={(e) => setContent(e.target.value)}
-              placeholder="分享你的经验或资料说明…"
+              placeholder="Share your experience or describe your resources…"
               rows={6}
             />
           </div>
 
           <div className="space-y-2">
-            <Label>附件</Label>
+            <Label>Attachments</Label>
             <div className="flex flex-wrap gap-2">
               <label className="inline-flex cursor-pointer items-center gap-1 rounded-md border px-3 py-1.5 text-sm hover:bg-muted">
                 {uploading ? <Loader2 className="size-4 animate-spin" /> : <Paperclip className="size-4" />}
-                添加附件
+                Add attachment
                 <input
                   type="file"
                   className="hidden"
@@ -263,7 +263,7 @@ export function CreatePostDialog({
         <DialogFooter>
           <Button onClick={handleSubmit} disabled={submitting || uploading}>
             {submitting ? <Loader2 className="animate-spin" /> : <Plus />}
-            发布
+            Publish
           </Button>
         </DialogFooter>
       </DialogContent>

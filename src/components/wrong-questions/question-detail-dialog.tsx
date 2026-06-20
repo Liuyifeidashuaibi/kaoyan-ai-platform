@@ -1,14 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import {
   Download,
   ExternalLink,
-  Globe,
   Loader2,
-  Lock,
-  MessageSquare,
   Sparkles,
   ZoomIn,
 } from "lucide-react";
@@ -40,12 +36,8 @@ type QuestionDetailDialogProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onAnalyze: (id: number) => Promise<void>;
-  onStartChat: (id: number) => Promise<string>;
   onUpdateNotes: (id: number, notes: string) => Promise<void>;
-  onTogglePublic?: (id: number, isPublic: boolean) => Promise<void>;
-  readOnly?: boolean;
   analyzing?: boolean;
-  startingChat?: boolean;
 };
 
 function MaterialPreview({ question }: { question: WrongQuestion }) {
@@ -100,13 +92,13 @@ function MaterialPreview({ question }: { question: WrongQuestion }) {
       <Button asChild variant="outline" size="sm">
         <a href={path} target="_blank" rel="noopener noreferrer">
           <ExternalLink className="size-4" />
-          在新窗口打开
+          Open in new tab
         </a>
       </Button>
       <Button asChild variant="secondary" size="sm">
         <a href={path} download={question.original_filename || undefined}>
           <Download className="size-4" />
-          下载文件
+          Download
         </a>
       </Button>
     </div>
@@ -118,31 +110,15 @@ export function QuestionDetailDialog({
   open,
   onOpenChange,
   onAnalyze,
-  onStartChat,
   onUpdateNotes,
-  onTogglePublic,
-  readOnly = false,
   analyzing,
-  startingChat,
 }: QuestionDetailDialogProps) {
-  const router = useRouter();
   const [viewerOpen, setViewerOpen] = useState(false);
-  const [togglingPublic, setTogglingPublic] = useState(false);
 
   if (!question) return null;
 
   const isImage = question.file_type === "image";
   const filePath = getMaterialPath(question);
-
-  async function handleTogglePublic() {
-    if (!onTogglePublic) return;
-    setTogglingPublic(true);
-    try {
-      await onTogglePublic(question!.id, !question!.is_public);
-    } finally {
-      setTogglingPublic(false);
-    }
-  }
 
   return (
     <>
@@ -155,11 +131,6 @@ export function QuestionDetailDialog({
               <Badge variant="outline">
                 {MATERIAL_TYPE_LABELS[question.file_type]}
               </Badge>
-              {!readOnly && (
-                <Badge variant={question.is_public ? "default" : "secondary"}>
-                  {question.is_public ? "公开" : "隐私"}
-                </Badge>
-              )}
             </DialogTitle>
           </DialogHeader>
 
@@ -169,12 +140,12 @@ export function QuestionDetailDialog({
                 type="button"
                 onClick={() => setViewerOpen(true)}
                 className="group relative block w-full overflow-hidden rounded-lg border"
-                aria-label="点击放大查看（滚轮缩放）"
+                aria-label="Click to zoom (scroll to scale)"
               >
                 <MaterialPreview question={question} />
                 <span className="absolute right-2 top-2 flex items-center gap-1 rounded-full bg-black/55 px-2 py-1 text-xs text-white opacity-0 transition-opacity group-hover:opacity-100">
                   <ZoomIn className="size-3.5" />
-                  点击放大
+                  Click to zoom
                 </span>
               </button>
             ) : (
@@ -182,29 +153,24 @@ export function QuestionDetailDialog({
             )}
 
             <div className="space-y-2">
-              <p className="text-sm font-medium">介绍 / 笔记</p>
-              {readOnly ? (
-                <p className="whitespace-pre-wrap text-sm text-muted-foreground">
-                  {question.notes || "暂无笔记"}
-                </p>
-              ) : (
-                <Textarea
-                  defaultValue={question.notes}
-                  rows={4}
-                  onBlur={(e) => {
-                    if (e.target.value !== question.notes) {
-                      onUpdateNotes(question.id, e.target.value);
-                    }
-                  }}
-                />
-              )}
+              <p className="text-sm font-medium">Notes</p>
+              <Textarea
+                defaultValue={question.notes}
+                rows={4}
+                placeholder="Add notes for this material…"
+                onBlur={(e) => {
+                  if (e.target.value !== question.notes) {
+                    onUpdateNotes(question.id, e.target.value);
+                  }
+                }}
+              />
             </div>
 
             {question.ai_analysis && (
               <div className="space-y-2 rounded-lg bg-muted p-3">
                 <p className="flex items-center gap-1 text-sm font-medium">
                   <Sparkles className="size-3.5" />
-                  AI 解析
+                  AI Analysis
                 </p>
                 <p className="whitespace-pre-wrap text-sm leading-relaxed">
                   {question.ai_analysis}
@@ -213,24 +179,8 @@ export function QuestionDetailDialog({
             )}
           </div>
 
-          <DialogFooter className="flex-col gap-2 sm:flex-row">
-            {!readOnly && onTogglePublic ? (
-              <Button
-                variant="outline"
-                onClick={handleTogglePublic}
-                disabled={togglingPublic}
-              >
-                {togglingPublic ? (
-                  <Loader2 className="size-4 animate-spin" />
-                ) : question.is_public ? (
-                  <Lock className="size-4" />
-                ) : (
-                  <Globe className="size-4" />
-                )}
-                {question.is_public ? "设为隐私" : "设为公开"}
-              </Button>
-            ) : null}
-            {!readOnly && isImage ? (
+          {isImage ? (
+            <DialogFooter>
               <Button
                 variant="outline"
                 onClick={() => onAnalyze(question.id)}
@@ -241,27 +191,10 @@ export function QuestionDetailDialog({
                 ) : (
                   <Sparkles className="size-4" />
                 )}
-                {question.ai_analysis ? "重新解析" : "AI 解析"}
+                {question.ai_analysis ? "Re-analyze" : "AI Analyze"}
               </Button>
-            ) : null}
-            {!readOnly ? (
-            <Button
-              onClick={async () => {
-                const sessionId = await onStartChat(question.id);
-                onOpenChange(false);
-                router.push(`/chat?session=${sessionId}&autoReply=1`);
-              }}
-              disabled={startingChat}
-            >
-              {startingChat ? (
-                <Loader2 className="size-4 animate-spin" />
-              ) : (
-                <MessageSquare className="size-4" />
-              )}
-              一键发起新聊天
-            </Button>
-            ) : null}
-          </DialogFooter>
+            </DialogFooter>
+          ) : null}
         </DialogContent>
       </Dialog>
 

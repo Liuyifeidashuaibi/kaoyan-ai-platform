@@ -1,5 +1,11 @@
 import Link from "next/link";
-import { BookOpen, MessageSquare, Timer } from "lucide-react";
+import {
+  BookOpen,
+  GraduationCap,
+  MessageSquare,
+  User,
+  Users,
+} from "lucide-react";
 
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -14,33 +20,40 @@ import {
 const features = [
   {
     href: "/chat",
-    label: "AI 聊天",
-    description: "多轮答疑、流式回复，支持上传数学题图片",
+    label: "Chat",
+    description: "AI Q&A with streaming replies and image upload",
     icon: MessageSquare,
   },
   {
     href: "/wrong-questions",
-    label: "错题本",
-    description: "分类整理错题，AI 解析，一键追问",
+    label: "Notebook",
+    description: "Private study materials library",
     icon: BookOpen,
   },
   {
-    href: "/study/tomato",
-    label: "番茄钟",
-    description: "专注计时与本地学习统计",
-    icon: Timer,
+    href: "/choose-school",
+    label: "School",
+    description: "Search universities and majors",
+    icon: GraduationCap,
+  },
+  {
+    href: "/community",
+    label: "Community",
+    description: "Share experiences and connect with peers",
+    icon: Users,
+  },
+  {
+    href: "/profile",
+    label: "Profile",
+    description: "Account, favorites, and notebook",
+    icon: User,
   },
 ] as const;
 
 export default function HomePage() {
   return (
     <div className="flex flex-col gap-8 p-6 md:p-8">
-      <div className="max-w-2xl space-y-2">
-        <h1 className="text-2xl font-semibold tracking-tight">考研 AI 平台</h1>
-        <p className="text-muted-foreground">
-          智能备考助手：AI 答疑、错题整理与专注学习，从这里开始。
-        </p>
-      </div>
+      <h1 className="text-2xl font-semibold tracking-tight">PNIXPG</h1>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {features.map((item) => {
@@ -59,7 +72,7 @@ export default function HomePage() {
                   href={item.href}
                   className={cn(buttonVariants({ variant: "outline" }), "w-full")}
                 >
-                  进入 {item.label}
+                  Open {item.label}
                 </Link>
               </CardContent>
             </Card>

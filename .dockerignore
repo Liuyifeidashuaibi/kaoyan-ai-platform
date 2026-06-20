@@ -1,0 +1,30 @@
+# Docker build context exclusions
+node_modules
+.next
+.git
+.gitignore
+*.md
+.env
+.env.local
+.env.*.local
+
+# Large local data (mounted as volumes at runtime)
+chroma_db
+uploads
+kaoyan.db
+data/admin
+
+# Dev / IDE
+.cursor
+.vscode
+terminals
+**/__pycache__
+**/.pytest_cache
+backend/.venv
+
+# Crawler (not needed in images)
+crawler
+
+# Docs and examples
+docs
+examples

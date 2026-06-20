@@ -11,7 +11,7 @@ const PostDetailPage = dynamic(
   {
     ssr: false,
     loading: () => (
-      <div className="flex justify-center p-16 text-muted-foreground">加载帖子…</div>
+      <div className="flex justify-center p-16 text-muted-foreground">Loading post…</div>
     ),
   }
 );

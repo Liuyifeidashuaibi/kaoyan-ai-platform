@@ -1,8 +1,6 @@
 "use client";
 
-import Link from "next/link";
 import {
-  BookOpen,
   MessageSquarePlus,
   Search,
   Trash2,
@@ -11,6 +9,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { ChatSidebarOpenHeader } from "@/components/chat/chat-sidebar-chrome";
 import type { ChatSession } from "@/lib/api/types";
 import { cn } from "@/lib/utils";
 
@@ -23,6 +22,7 @@ type ChatSidebarProps = {
   onSelectSession: (id: string) => void;
   onDeleteSession: (id: string) => void;
   loading?: boolean;
+  onCloseSidebar?: () => void;
 };
 
 export function ChatSidebar({
@@ -34,26 +34,24 @@ export function ChatSidebar({
   onSelectSession,
   onDeleteSession,
   loading,
+  onCloseSidebar,
 }: ChatSidebarProps) {
   return (
-    <aside className="flex h-full w-full flex-col border-r border-border bg-sidebar md:w-64 lg:w-72">
-      <div className="flex flex-col gap-2 border-b border-border p-3">
+    <aside className="flex h-full w-full min-w-0 flex-col border-r border-border bg-sidebar">
+      {onCloseSidebar && (
+        <ChatSidebarOpenHeader onCloseSidebar={onCloseSidebar} />
+      )}
+
+      <div className="space-y-2 border-b border-border p-2.5 pt-1">
         <Button onClick={onNewChat} className="w-full justify-start gap-2">
           <MessageSquarePlus className="size-4" />
-          新建聊天
+          New Chat
         </Button>
-
-        <Link href="/wrong-questions">
-          <Button variant="outline" className="w-full justify-start gap-2">
-            <BookOpen className="size-4" />
-            错题本
-          </Button>
-        </Link>
 
         <div className="relative">
           <Search className="absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2 text-muted-foreground" />
           <Input
-            placeholder="搜索历史..."
+            placeholder="Search history..."
             value={searchKeyword}
             onChange={(e) => onSearchChange(e.target.value)}
             className="pl-8"
@@ -65,12 +63,12 @@ export function ChatSidebar({
         <div className="space-y-0.5 p-2">
           {loading && (
             <p className="px-2 py-4 text-center text-xs text-muted-foreground">
-              加载中...
+              Loading...
             </p>
           )}
           {!loading && sessions.length === 0 && (
             <p className="px-2 py-4 text-center text-xs text-muted-foreground">
-              暂无聊天记录
+              No chat history yet
             </p>
           )}
           {sessions.map((session) => (
@@ -99,7 +97,7 @@ export function ChatSidebar({
                 size="icon-xs"
                 className="opacity-0 group-hover:opacity-100"
                 onClick={() => onDeleteSession(session.id)}
-                aria-label="删除会话"
+                aria-label="Delete session"
               >
                 <Trash2 className="size-3" />
               </Button>

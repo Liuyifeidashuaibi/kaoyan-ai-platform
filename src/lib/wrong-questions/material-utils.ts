@@ -1,22 +1,22 @@
 import type { MaterialFileType } from "@/lib/api/types";
 
 export const MATERIAL_TYPE_LABELS: Record<MaterialFileType, string> = {
-  image: "图片",
-  video: "视频",
-  document: "文档",
-  audio: "音频",
-  other: "其他",
+  image: "Image",
+  video: "Video",
+  document: "Document",
+  audio: "Audio",
+  other: "Other",
 };
 
 export const MATERIAL_TYPE_FILTERS: Array<{
   value: MaterialFileType | "all";
   label: string;
 }> = [
-  { value: "all", label: "全部" },
-  { value: "image", label: "图片" },
-  { value: "video", label: "视频" },
-  { value: "document", label: "文档" },
-  { value: "audio", label: "音频" },
+  { value: "all", label: "All" },
+  { value: "image", label: "Image" },
+  { value: "video", label: "Video" },
+  { value: "document", label: "Document" },
+  { value: "audio", label: "Audio" },
 ];
 
 export const UPLOAD_ACCEPT =

@@ -10,6 +10,7 @@ from typing import Annotated
 from fastapi import Header, HTTPException
 
 from app.config import get_settings
+from app.utils.jwt_verify import jwt_sub as verified_jwt_sub
 
 logger = logging.getLogger(__name__)
 
@@ -26,22 +27,8 @@ def _extract_bearer(authorization: str | None) -> str | None:
 
 
 def _decode_jwt_sub(token: str) -> str | None:
-    """从 Supabase access token 解析 user id（本地解码，避免 auth API 往返）。"""
-    try:
-        import jwt
-
-        payload = jwt.decode(
-            token,
-            options={
-                "verify_signature": False,
-                "verify_aud": False,
-                "verify_exp": False,
-            },
-        )
-        sub = payload.get("sub")
-        return str(sub) if sub else None
-    except Exception:
-        return None
+    """从 Supabase access token 解析 user id。"""
+    return verified_jwt_sub(token)
 
 
 def resolve_user_id(authorization: str | None) -> str | None:

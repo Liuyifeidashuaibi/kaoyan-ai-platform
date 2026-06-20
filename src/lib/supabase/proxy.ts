@@ -2,7 +2,8 @@ import { createServerClient } from "@supabase/ssr";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { NextResponse, type NextRequest } from "next/server";
 
-import { isAuthRoute, isProtectedRoute } from "@/config/auth";
+import { isAuthRoute, isAdminRoute, isProtectedRoute } from "@/config/auth";
+import { getEmailFromClaims, isAdminEmail } from "@/lib/admin/auth";
 import { shouldSkipAuthInDev } from "@/lib/auth/dev-auth";
 import { getSupabaseEnv } from "@/lib/supabase/env";
 
@@ -109,6 +110,27 @@ export async function updateSession(request: NextRequest) {
         ),
         supabaseResponse
       );
+    }
+
+    if (isAdminRoute(pathname) && pathname !== "/admin/forbidden") {
+      if (!user) {
+        return redirectWithCookies(
+          new URL(
+            `/login?next=${encodeURIComponent(pathname)}`,
+            request.url
+          ),
+          supabaseResponse
+        );
+      }
+      const email = getEmailFromClaims(
+        user as unknown as Record<string, unknown>
+      );
+      if (!isAdminEmail(email)) {
+        const forbidden = request.nextUrl.clone();
+        forbidden.pathname = "/admin/forbidden";
+        forbidden.search = "";
+        return redirectWithCookies(forbidden, supabaseResponse);
+      }
     }
 
     if (user && isAuthRoute(pathname)) {

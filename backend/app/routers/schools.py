@@ -13,7 +13,7 @@ from app.schemas.schools import (
     SchoolDetail,
     ScoreLineItem,
 )
-from app.services.schools_service import get_schools_service
+from app.infrastructure.cache.schools_cache import get_cached_schools_facade
 from app.utils.response import error_response, success_response
 
 router = APIRouter(prefix="/api", tags=["择校数据中心"])
@@ -28,7 +28,7 @@ async def list_schools(
 ):
     """获取学校列表。"""
     try:
-        data: PaginatedSchools = get_schools_service().list_schools(
+        data: PaginatedSchools = get_cached_schools_facade().list_schools(
             page=page, keyword=keyword, tag=tag, page_size=page_size
         )
         return success_response(data.model_dump())
@@ -40,7 +40,7 @@ async def list_schools(
 async def get_school_detail(school_id: str):
     """获取学校详情（学院、专业、分数线）。"""
     try:
-        detail: SchoolDetail | None = get_schools_service().get_school_detail(school_id)
+        detail: SchoolDetail | None = get_cached_schools_facade().get_school_detail(school_id)
     except RuntimeError as exc:
         return error_response(str(exc))
     if not detail:
@@ -52,7 +52,7 @@ async def get_school_detail(school_id: str):
 async def get_major_detail(major_id: str):
     """获取专业详情及历年分数线。"""
     try:
-        detail: MajorDetail | None = get_schools_service().get_major_detail(major_id)
+        detail: MajorDetail | None = get_cached_schools_facade().get_major_detail(major_id)
     except RuntimeError as exc:
         return error_response(str(exc))
     if not detail:
@@ -70,7 +70,7 @@ async def list_majors(
 ):
     """获取专业列表，支持学校/学院/关键词筛选。"""
     try:
-        data: PaginatedMajors = get_schools_service().list_majors(
+        data: PaginatedMajors = get_cached_schools_facade().list_majors(
             page=page,
             keyword=keyword,
             school_id=school,
@@ -92,7 +92,7 @@ async def list_statistics(
 ):
     """获取专业录取统计（最低/平均/最高录取分）。"""
     try:
-        items: list[MajorStatisticsItem] = get_schools_service().list_statistics(
+        items: list[MajorStatisticsItem] = get_cached_schools_facade().list_statistics(
             school_id=school,
             college_id=college,
             major_id=major,
@@ -114,7 +114,7 @@ async def list_admissions(
 ):
     """获取拟录取名单逐考生记录。"""
     try:
-        items: list[AdmissionRecordItem] = get_schools_service().list_admissions(
+        items: list[AdmissionRecordItem] = get_cached_schools_facade().list_admissions(
             school_id=school,
             college_id=college,
             major_id=major,
@@ -136,7 +136,7 @@ async def list_score_lines(
 ):
     """获取复试分数线，支持多维度筛选。"""
     try:
-        items: list[ScoreLineItem] = get_schools_service().list_score_lines(
+        items: list[ScoreLineItem] = get_cached_schools_facade().list_score_lines(
             school_id=school,
             college_id=college,
             major_id=major,

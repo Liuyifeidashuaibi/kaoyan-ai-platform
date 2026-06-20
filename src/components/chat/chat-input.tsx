@@ -62,7 +62,7 @@ export function ChatInput({
   onStop,
   disabled,
   isStreaming,
-  placeholder = "有什么问题尽管问…",
+  placeholder = "Ask anything…",
 }: ChatInputProps) {
   const [content, setContent] = useState("");
   const [imageFile, setImageFile] = useState<File | null>(null);
@@ -116,7 +116,7 @@ export function ChatInput({
 
   const transcribeAndAppend = useCallback(async (wav: Blob) => {
     setIsTranscribing(true);
-    setImageHint("正在识别语音…");
+    setImageHint("Transcribing audio…");
     try {
       const text = await transcribeAudio(wav);
       setContent((prev) => appendTranscript(prev, text));
@@ -129,7 +129,7 @@ export function ChatInput({
         }
       });
     } catch (e) {
-      setImageHint(e instanceof Error ? e.message : "语音识别失败，请重试");
+      setImageHint(e instanceof Error ? e.message : "Speech recognition failed. Try again.");
     } finally {
       setIsTranscribing(false);
       setRecordSeconds(0);
@@ -151,7 +151,7 @@ export function ChatInput({
     if (wav.size > 0) {
       await transcribeAndAppend(wav);
     } else {
-      setImageHint("录音过短，请重试");
+      setImageHint("Recording too short. Try again.");
       setRecordSeconds(0);
     }
   }, [transcribeAndAppend]);
@@ -175,7 +175,7 @@ export function ChatInput({
         });
       }, 1000);
     } catch {
-      setImageHint("无法访问麦克风，请检查浏览器权限");
+      setImageHint("Microphone access denied. Check browser permissions.");
     }
   }, [disabled, isRecording, isStreaming, isTranscribing, stopRecording]);
 
@@ -190,7 +190,7 @@ export function ChatInput({
         clearImage();
         setImageState("error");
         setImageHint(
-          "iPhone 的 HEIC 格式暂不支持。请在相册选「最兼容」/ JPEG"
+          "HEIC format is not supported. Export as JPEG from your photo library."
         );
         return;
       }
@@ -198,21 +198,21 @@ export function ChatInput({
       if (!isAllowedImageFile(file)) {
         clearImage();
         setImageState("error");
-        setImageHint("仅支持 jpg、jpeg、png、gif、webp 格式图片");
+        setImageHint("Only jpg, jpeg, png, gif, and webp images are supported");
         return;
       }
 
       if (file.size > MAX_IMAGE_BYTES) {
         clearImage();
         setImageState("error");
-        setImageHint("图片过大（超过 5MB），请压缩后重试");
+        setImageHint("Image too large (over 5MB). Compress and try again.");
         return;
       }
 
       revokePreview();
       setImageFile(null);
       setImageState("loading");
-      setImageHint("请等待图片加载完成");
+      setImageHint("Waiting for image to load…");
 
       const objectUrl = URL.createObjectURL(file);
       previewUrlRef.current = objectUrl;
@@ -228,7 +228,7 @@ export function ChatInput({
         revokePreview();
         setImageFile(null);
         setImageState("error");
-        setImageHint("图片读取失败，请重新选择");
+        setImageHint("Failed to read image. Please select again.");
       }
     },
     [clearImage, revokePreview]
@@ -253,7 +253,7 @@ export function ChatInput({
     if (hasImageSelection && !imageReady) return;
     if (!canSend) return;
 
-    const text = trimmed || (imageReady ? "请分析这道题目" : "");
+    const text = trimmed || (imageReady ? "Please analyze this problem" : "");
     const fileToSend = imageReady ? imageFile : null;
     const previewToSend = imageReady ? previewUrlRef.current : null;
 
@@ -312,13 +312,13 @@ export function ChatInput({
 
   const footerHint = (() => {
     if (isRecording) {
-      return `录音中 ${formatSeconds(recordSeconds)} / 最长 ${MAX_AUDIO_SECONDS}s，再次点击麦克风结束`;
+      return `Recording ${formatSeconds(recordSeconds)} / max ${MAX_AUDIO_SECONDS}s — tap mic to stop`;
     }
-    if (isTranscribing) return "正在将语音转为文字…";
-    if (imagePending) return "请等待图片加载完成";
+    if (isTranscribing) return "Converting speech to text…";
+    if (imagePending) return "Waiting for image to load…";
     if (hasImageSelection && imageState === "error") return imageHint;
     if (imageHint) return imageHint;
-    return "麦克风录音后自动转文字到输入框，可编辑、可继续录音追加 · Enter 发送";
+    return "Tap mic to dictate, edit, and send · Enter to send";
   })();
 
   const footerHintWarning =
@@ -337,7 +337,7 @@ export function ChatInput({
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={previewUrl}
-                alt="已选图片预览"
+                alt="Selected image preview"
                 className="max-h-28 max-w-full rounded-xl border border-border object-contain bg-muted/30"
               />
               {imagePending && (
@@ -350,7 +350,7 @@ export function ChatInput({
                   type="button"
                   onClick={clearImage}
                   className="absolute -top-1.5 -right-1.5 flex size-5 items-center justify-center rounded-full bg-foreground/80 text-background hover:bg-foreground"
-                  aria-label="移除图片"
+                  aria-label="Remove image"
                 >
                   <X className="size-3" />
                 </button>
@@ -377,7 +377,7 @@ export function ChatInput({
                 ? "cursor-not-allowed text-muted-foreground/40"
                 : "text-muted-foreground hover:bg-muted hover:text-foreground"
             )}
-            aria-label="上传图片"
+            aria-label="Upload image"
           >
             <ImagePlus className="size-4.5" />
           </button>
@@ -399,7 +399,7 @@ export function ChatInput({
                     ? "cursor-not-allowed text-muted-foreground/40"
                     : "text-muted-foreground hover:bg-muted hover:text-foreground"
             )}
-            aria-label={isRecording ? "停止录音并转文字" : "语音输入"}
+            aria-label={isRecording ? "Stop recording and transcribe" : "Voice input"}
           >
             {isTranscribing ? (
               <Loader2 className="size-4.5 animate-spin" />
@@ -412,7 +412,7 @@ export function ChatInput({
             type="button"
             onClick={() => setEnableTts((v) => !v)}
             disabled={disabled || isStreaming}
-            title="回答完成后朗读（可选）"
+            title="Read answer aloud when complete (optional)"
             className={cn(
               "mb-0.5 flex size-8 shrink-0 items-center justify-center rounded-lg transition-colors",
               enableTts
@@ -420,7 +420,7 @@ export function ChatInput({
                 : "text-muted-foreground hover:bg-muted hover:text-foreground",
               (disabled || isStreaming) && "cursor-not-allowed opacity-40"
             )}
-            aria-label="语音播放开关"
+            aria-label="Text-to-speech toggle"
             aria-pressed={enableTts}
           >
             <Volume2 className="size-4.5" />
@@ -433,11 +433,11 @@ export function ChatInput({
             onKeyDown={handleKeyDown}
             placeholder={
               isStreaming
-                ? "AI 正在回答中…"
+                ? "AI is responding…"
                 : isTranscribing
-                  ? "语音识别中…"
+                  ? "Transcribing…"
                   : imageReady
-                    ? "可补充文字说明，或直接发送图片…"
+                    ? "Add a note or send the image…"
                     : placeholder
             }
             disabled={(disabled && !isStreaming) || isRecording || isTranscribing}
@@ -458,7 +458,7 @@ export function ChatInput({
                   ? "bg-primary text-primary-foreground hover:bg-primary/90"
                   : "cursor-not-allowed bg-muted text-muted-foreground/40"
             )}
-            aria-label={showStop ? "停止生成" : "发送"}
+            aria-label={showStop ? "Stop generating" : "Send"}
           >
             {showStop ? (
               <Square className="size-3.5 fill-current" />

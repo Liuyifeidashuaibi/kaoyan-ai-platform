@@ -1,11 +1,9 @@
 ﻿"use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { ChevronDown, SlidersHorizontal } from "lucide-react";
 import { UniversityCard } from "@/components/schools/university-card";
 import { SkeletonList } from "@/components/schools/skeleton-list";
 import { EmptyState } from "@/components/schools/empty-state";
-import { BottomFilterSheet } from "@/components/schools/bottom-filter-sheet";
 import {
   filterUniversitiesClient,
   prefetchUniversitiesList,
@@ -13,8 +11,9 @@ import {
   type UniversityWithMajorCount,
 } from "@/lib/api/schools";
 import { useSchoolsFilter } from "../_context/schools-filter-context";
+import type { SchoolsGlobalFilter } from "../_context/schools-filter-context";
 import { useSchoolsSync } from "../_context/schools-sync-context";
-import { GlobalFilterDrawer } from "./global-filter-drawer";
+import { useIncrementalList } from "@/hooks/use-incremental-list";
 import { cn } from "@/lib/utils";
 
 interface SchoolListViewProps {
@@ -23,6 +22,7 @@ interface SchoolListViewProps {
 }
 
 const REGION_OPTIONS = [
+  { value: "", label: "全国" },
   { value: "华北", label: "华北" },
   { value: "华东", label: "华东" },
   { value: "华南", label: "华南" },
@@ -32,16 +32,16 @@ const REGION_OPTIONS = [
   { value: "东北", label: "东北" },
 ];
 
-const SCHOOL_TYPE_OPTIONS = SCHOOL_TYPES.map((t) => ({ value: t, label: t }));
-
-type FilterKey = "type" | "level" | "region" | null;
+const LEVEL_OPTIONS = [
+  { key: "level985" as const, label: "985" },
+  { key: "level211" as const, label: "211" },
+  { key: "doubleFirstClass" as const, label: "双一流" },
+];
 
 export function SchoolListView({ search, onLoadingChange }: SchoolListViewProps) {
-  const { filter } = useSchoolsFilter();
+  const { filter, setFilter } = useSchoolsFilter();
   const [schoolType, setSchoolType] = useState("");
   const [region, setRegion] = useState("");
-  const [activeSheet, setActiveSheet] = useState<FilterKey>(null);
-  const [levelDrawerOpen, setLevelDrawerOpen] = useState(false);
   const { version } = useSchoolsSync();
   const [allUniversities, setAllUniversities] = useState<UniversityWithMajorCount[]>([]);
   const [loading, setLoading] = useState(true);
@@ -87,22 +87,13 @@ export function SchoolListView({ search, onLoadingChange }: SchoolListViewProps)
     return [...list].sort((a, b) => a.name.localeCompare(b.name, "zh-CN"));
   }, [allUniversities, filter, schoolType, region, search]);
 
+  const { visibleItems, hasMore, loadMore, total } = useIncrementalList(filtered, 24);
+
   const levelActiveCount = [
     filter.level985,
     filter.level211,
     filter.doubleFirstClass,
   ].filter(Boolean).length;
-
-  const levelLabel =
-    levelActiveCount === 3
-      ? "全部层次"
-      : [
-          filter.level985 && "985",
-          filter.level211 && "211",
-          filter.doubleFirstClass && "双一流",
-        ]
-          .filter(Boolean)
-          .join("、");
 
   const hasActiveFilters =
     !!schoolType ||
@@ -110,58 +101,58 @@ export function SchoolListView({ search, onLoadingChange }: SchoolListViewProps)
     levelActiveCount < 3 ||
     !!search;
 
+  const toggleLevel = (key: keyof SchoolsGlobalFilter) => {
+    const next = { ...filter, [key]: !filter[key] };
+    if (!next.level985 && !next.level211 && !next.doubleFirstClass) return;
+    setFilter(next);
+  };
+
   return (
     <div>
-      <div className="mb-4 rounded-2xl bg-white px-3 py-2 shadow-sm">
-        <div className="flex flex-wrap items-center gap-2">
-          <FilterChip
-            label="院校类型"
-            value={schoolType || "全部"}
-            active={!!schoolType}
-            onClick={() => setActiveSheet("type")}
+      <div className="mb-4 space-y-3 rounded-2xl bg-white px-3 py-3 shadow-sm">
+        <FilterRow label="院校类型">
+          <InlineChip
+            label="全部"
+            active={!schoolType}
+            onClick={() => setSchoolType("")}
           />
-          <FilterChip
-            label="院校层次"
-            value={levelLabel}
-            active={levelActiveCount < 3}
-            onClick={() => setLevelDrawerOpen(true)}
-            icon={<SlidersHorizontal className="size-3.5" />}
-          />
-          <FilterChip
-            label="所在地区"
-            value={region || "全国"}
-            active={!!region}
-            onClick={() => setActiveSheet("region")}
-          />
-        </div>
-      </div>
+          {SCHOOL_TYPES.map((type) => (
+            <InlineChip
+              key={type}
+              label={type}
+              active={schoolType === type}
+              onClick={() => setSchoolType(schoolType === type ? "" : type)}
+            />
+          ))}
+        </FilterRow>
 
-      <BottomFilterSheet
-        open={activeSheet === "type"}
-        onClose={() => setActiveSheet(null)}
-        title="院校类型"
-        options={SCHOOL_TYPE_OPTIONS}
-        selected={schoolType}
-        onSelect={setSchoolType}
-        allLabel="全部类型"
-      />
-      <BottomFilterSheet
-        open={activeSheet === "region"}
-        onClose={() => setActiveSheet(null)}
-        title="所在地区"
-        options={REGION_OPTIONS}
-        selected={region}
-        onSelect={setRegion}
-        allLabel="全国"
-      />
-      <GlobalFilterDrawer
-        open={levelDrawerOpen}
-        onClose={() => setLevelDrawerOpen(false)}
-      />
+        <FilterRow label="院校层次">
+          {LEVEL_OPTIONS.map(({ key, label }) => (
+            <InlineChip
+              key={key}
+              label={label}
+              active={filter[key]}
+              onClick={() => toggleLevel(key)}
+            />
+          ))}
+        </FilterRow>
+
+        <FilterRow label="所在地区">
+          {REGION_OPTIONS.map(({ value, label }) => (
+            <InlineChip
+              key={value || "all"}
+              label={label}
+              active={region === value}
+              onClick={() => setRegion(value)}
+            />
+          ))}
+        </FilterRow>
+      </div>
 
       {!loading && (
         <p className="mb-3 text-sm text-muted-foreground">
-          共 <span className="font-semibold text-[#007AFF]">{filtered.length}</span> 所院校
+          共 <span className="font-semibold text-[#007AFF]">{total}</span> 所院校
+          {hasMore ? `，已显示 ${visibleItems.length} 所` : null}
         </p>
       )}
 
@@ -186,43 +177,67 @@ export function SchoolListView({ search, onLoadingChange }: SchoolListViewProps)
           icon="school"
         />
       ) : (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
-          {filtered.map((uni) => (
-            <UniversityCard key={uni.id} university={uni} />
-          ))}
-        </div>
+        <>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+            {visibleItems.map((uni) => (
+              <UniversityCard key={uni.id} university={uni} />
+            ))}
+          </div>
+          {hasMore && (
+            <div className="mt-6 flex justify-center">
+              <button
+                type="button"
+                onClick={loadMore}
+                className="rounded-xl border border-border bg-white px-6 py-2.5 text-sm font-medium hover:bg-muted/50"
+              >
+                加载更多（还剩 {total - visibleItems.length} 所）
+              </button>
+            </div>
+          )}
+        </>
       )}
     </div>
   );
 }
 
-function FilterChip({
+function FilterRow({
   label,
-  value,
-  active,
-  onClick,
-  icon,
+  children,
 }: {
   label: string;
-  value: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="flex flex-col gap-1.5 sm:flex-row sm:items-start sm:gap-3">
+      <span className="shrink-0 pt-1.5 text-xs font-medium text-muted-foreground sm:w-16">
+        {label}
+      </span>
+      <div className="flex flex-1 flex-wrap gap-1.5">{children}</div>
+    </div>
+  );
+}
+
+function InlineChip({
+  label,
+  active,
+  onClick,
+}: {
+  label: string;
   active: boolean;
   onClick: () => void;
-  icon?: React.ReactNode;
 }) {
   return (
     <button
       type="button"
       onClick={onClick}
       className={cn(
-        "inline-flex items-center gap-1.5 rounded-xl border px-3 py-2 text-sm transition-colors",
+        "rounded-lg border px-2.5 py-1 text-xs transition-colors",
         active
-          ? "border-[#007AFF]/20 bg-[#007AFF]/10 font-medium text-[#007AFF]"
-          : "border-border bg-background text-foreground hover:bg-muted/40"
+          ? "border-[#007AFF]/30 bg-[#007AFF]/10 font-medium text-[#007AFF]"
+          : "border-border bg-background text-foreground hover:bg-muted/50"
       )}
     >
-      <span className="text-muted-foreground">{label}</span>
-      <span className="max-w-[8rem] truncate">{value}</span>
-      {icon ?? <ChevronDown className="size-3.5 text-muted-foreground" />}
+      {label}
     </button>
   );
 }

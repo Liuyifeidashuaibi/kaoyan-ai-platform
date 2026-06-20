@@ -12,23 +12,35 @@ export type CohortGrade = (typeof COHORT_GRADES)[number];
 export type SubjectCategory = (typeof SUBJECT_CATEGORIES)[number];
 
 export const POST_TYPES = [
-  { value: "experience" as const, label: "经验帖" },
-  { value: "material" as const, label: "资料帖" },
+  { value: "experience" as const, label: "Experience" },
+  { value: "material" as const, label: "Resources" },
 ];
 
 export type PostType = (typeof POST_TYPES)[number]["value"];
 
 export const POST_TYPE_LABELS: Record<PostType, string> = {
-  experience: "经验帖",
-  material: "资料帖",
+  experience: "Experience",
+  material: "Resources",
 };
 
 export const COMMUNITY_SORT_TABS = [
-  { value: "latest" as const, label: "最新" },
-  { value: "hot" as const, label: "最热" },
+  { value: "latest" as const, label: "Latest" },
+  { value: "hot" as const, label: "Hot" },
 ];
 
-/** 社区收藏列表页 */
+/** Community post favorites — not Notebook uploads */
+export const COMMUNITY_FAVORITES_LABEL = "Favorites";
+export const COMMUNITY_FAVORITES_DESCRIPTION =
+  "Community posts you saved for later";
+
 export function communityFavoritesHref() {
   return "/favorites";
+}
+
+export const NOTEBOOK_LABEL = "Notebook";
+export const NOTEBOOK_DESCRIPTION =
+  "Private study materials — for your personal use only";
+
+export function notebookHref() {
+  return "/wrong-questions";
 }

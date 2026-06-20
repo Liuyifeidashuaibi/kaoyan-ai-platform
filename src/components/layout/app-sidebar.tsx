@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -21,8 +22,8 @@ export function AppSidebar() {
   }, []);
 
   return (
-    <aside className="hidden w-60 shrink-0 border-r border-border bg-sidebar md:flex md:flex-col">
-      <nav className="flex flex-1 flex-col gap-1 p-4">
+    <aside className="hidden w-48 shrink-0 border-r border-border bg-sidebar md:flex md:flex-col">
+      <nav className="flex flex-1 flex-col gap-0.5 overflow-y-auto p-2.5">
         {navItems.map((item) => {
           const isActive = mounted && isNavActive(pathname, item.href);
           const Icon = item.icon;
@@ -32,7 +33,7 @@ export function AppSidebar() {
               key={item.href}
               href={item.href}
               className={cn(
-                "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
+                "flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm font-medium transition-colors",
                 isActive
                   ? "bg-sidebar-accent text-sidebar-accent-foreground"
                   : "text-sidebar-foreground hover:bg-sidebar-accent/60 hover:text-sidebar-accent-foreground"
@@ -44,6 +45,22 @@ export function AppSidebar() {
           );
         })}
       </nav>
+
+      <div className="shrink-0 border-t border-border p-2.5">
+        <Link
+          href="/"
+          className="flex items-center gap-2 rounded-lg px-2.5 py-2 text-sm font-semibold text-sidebar-foreground transition-colors hover:bg-sidebar-accent/60"
+        >
+          <Image
+            src="/logo.png"
+            alt="PNIXPG"
+            width={28}
+            height={28}
+            className="size-7 rounded-md object-cover"
+          />
+          <span>PNIXPG</span>
+        </Link>
+      </div>
     </aside>
   );
 }

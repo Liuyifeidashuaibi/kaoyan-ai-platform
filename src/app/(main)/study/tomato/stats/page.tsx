@@ -1,9 +1,5 @@
-import { TomatoStatsPage } from "@/components/TomatoClock/TomatoStatsPage";
+import { redirect } from "next/navigation";
 
-export default function StudyTomatoStatsPage() {
-  return (
-    <div className="p-4 sm:p-6 md:p-8">
-      <TomatoStatsPage />
-    </div>
-  );
+export default function StudyTomatoStatsRedirect() {
+  redirect("/study/tomato/statistics");
 }

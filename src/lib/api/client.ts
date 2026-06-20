@@ -19,6 +19,22 @@ function readErrorMessage(
   if (typeof message === "string" && message.trim()) return message;
   const detail = json.detail;
   if (typeof detail === "string" && detail.trim()) return detail;
+  if (detail && typeof detail === "object" && !Array.isArray(detail)) {
+    const nested = detail as Record<string, unknown>;
+    if (typeof nested.message === "string" && nested.message.trim()) {
+      return nested.message;
+    }
+  }
+  if (Array.isArray(detail)) {
+    const parts = detail
+      .map((item) =>
+        item && typeof item === "object" && "msg" in item
+          ? String((item as { msg: unknown }).msg)
+          : ""
+      )
+      .filter(Boolean);
+    if (parts.length > 0) return parts.join("；");
+  }
   return `请求失败 (${status})`;
 }
 

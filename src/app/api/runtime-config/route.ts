@@ -6,7 +6,12 @@ import { NextResponse } from "next/server";
  * BACKEND_URL 仅供 Next.js 服务端代理，不要下发给浏览器。
  */
 export async function GET() {
-  const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL?.trim() || "";
+  const publicUrl = process.env.NEXT_PUBLIC_API_URL?.trim() || "";
+  const devBackend =
+    process.env.NODE_ENV === "development"
+      ? process.env.BACKEND_URL?.trim() || ""
+      : "";
+  const apiBaseUrl = publicUrl || devBackend;
 
   return NextResponse.json({
     apiBaseUrl: apiBaseUrl.replace(/\/$/, ""),

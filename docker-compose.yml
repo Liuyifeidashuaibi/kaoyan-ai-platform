@@ -1,0 +1,155 @@
+# 考研 AI 平台 — 本地单机 Docker Compose
+# 一条命令启动（含翻译，无需额外终端）:
+#   .\scripts\start-all.ps1
+# 关闭:
+#   .\scripts\stop-all.ps1
+#
+# 或: docker compose up -d --build
+
+services:
+  redis:
+    image: redis:7-alpine
+    container_name: kaoyan-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - ./docker/redis.conf:/usr/local/etc/redis/redis.conf:ro
+    command: ["redis-server", "/usr/local/etc/redis/redis.conf"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    restart: unless-stopped
+
+  backend:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.backend
+    container_name: kaoyan-backend
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    environment:
+      REDIS_URL: redis://redis:6379/0
+      CELERY_BROKER_URL: redis://redis:6379/1
+      CELERY_RESULT_BACKEND: redis://redis:6379/2
+      TRANSLATOR_SERVICE_URL: http://host.docker.internal:8100
+      OLLAMA_BASE_URL: http://host.docker.internal:11434
+      WORD_LIB_DB_PATH: data/word_lib.db
+      QWEN3_TTS_ENABLED: "true"
+      QWEN3_TTS_MODEL: data/tts/qwen/Qwen3-TTS-12Hz-0.6B-CustomVoice
+      QWEN3_TTS_HOST_URL: http://host.docker.internal:8200
+      TTS_PREFER_PIPER: "true"
+      CORS_ORIGINS: http://localhost:3000,http://127.0.0.1:3000
+    volumes:
+      - ./kaoyan.db:/app/kaoyan.db
+      - ./data/word_lib.db:/app/data/word_lib.db
+      - ./chroma_db:/app/chroma_db
+      - ./uploads:/app/uploads
+      - ./data:/app/data
+      # 开发机：backend 代码热更新，免反复 rebuild
+      - ./backend/app:/app/backend/app:ro
+    depends_on:
+      redis:
+        condition: service_healthy
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: unless-stopped
+
+  # Translator runs on HOST (4090 + Ollama). Use: .\scripts\start-translator.ps1
+  # Optional Docker translator (heavy, video deps): docker compose --profile translator-docker up -d translator
+  translator:
+    profiles: ["translator-docker"]
+    build:
+      context: ${TRANSLATOR_ROOT:-E:/Tanslator/translatorai}
+      dockerfile: E:/Kaoyan/kaoyan-ai-platform/docker/Dockerfile.translator
+    container_name: kaoyan-translator
+    ports:
+      - "8100:8100"
+    env_file:
+      - .env
+    environment:
+      TRANSLATOR_HOST: 0.0.0.0
+      TRANSLATOR_PORT: "8100"
+      TRANSLATOR_OLLAMA_BASE_URL: http://host.docker.internal:11434
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: unless-stopped
+
+  celery-worker:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.celery
+    container_name: kaoyan-celery-worker
+    env_file:
+      - .env
+    environment:
+      REDIS_URL: redis://redis:6379/0
+      CELERY_BROKER_URL: redis://redis:6379/1
+      CELERY_RESULT_BACKEND: redis://redis:6379/2
+    volumes:
+      - ./kaoyan.db:/app/kaoyan.db
+      - ./chroma_db:/app/chroma_db
+      - ./uploads:/app/uploads
+      - ./data:/app/data
+    depends_on:
+      redis:
+        condition: service_healthy
+      backend:
+        condition: service_started
+    restart: unless-stopped
+
+  celery-beat:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.celery
+    container_name: kaoyan-celery-beat
+    env_file:
+      - .env
+    environment:
+      REDIS_URL: redis://redis:6379/0
+      CELERY_BROKER_URL: redis://redis:6379/1
+      CELERY_RESULT_BACKEND: redis://redis:6379/2
+      CELERY_BEAT_ENABLED: "true"
+    command:
+      [
+        "celery",
+        "-A",
+        "app.infrastructure.tasks.celery_app",
+        "beat",
+        "--loglevel=info",
+      ]
+    depends_on:
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.frontend
+      args:
+        BACKEND_URL: http://backend:8000
+        NEXT_PUBLIC_SUPABASE_URL: ${NEXT_PUBLIC_SUPABASE_URL}
+        NEXT_PUBLIC_SUPABASE_ANON_KEY: ${NEXT_PUBLIC_SUPABASE_ANON_KEY}
+    container_name: kaoyan-frontend
+    ports:
+      - "3000:3000"
+    environment:
+      BACKEND_URL: http://backend:8000
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+# 可选：4090 本机 GPU 直通 Celery Worker（需 nvidia-container-toolkit）
+# 取消注释后 rebuild celery-worker
+#  celery-worker:
+#    deploy:
+#      resources:
+#        reservations:
+#          devices:
+#            - driver: nvidia
+#              count: 1
+#              capabilities: [gpu]

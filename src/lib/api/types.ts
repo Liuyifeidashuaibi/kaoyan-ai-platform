@@ -178,3 +178,64 @@ export type TranslatorHealth = {
   whisper_model?: string;
   whisper_compute?: string;
 };
+
+// ---------------------------------------------------------------------------
+// 试卷解析 (Exam)
+// ---------------------------------------------------------------------------
+
+export type ExamSubject = "english" | "math";
+
+export type ExamQuestion = {
+  id: string;
+  type: string;
+  section_title?: string;
+  stem: string;
+  stem_translated?: string;
+  options: string[];
+  options_translated?: string[];
+  answer?: string;
+  analysis?: string;
+  key_points?: string;
+  common_mistakes?: string;
+  pairs?: Array<{ source: string; target: string }>;
+  error?: string;
+};
+
+export type ExamSection = {
+  type: string;
+  title: string;
+  questions: ExamQuestion[];
+};
+
+export type ExamPaper = {
+  id: number;
+  session_id: string | null;
+  subject: ExamSubject;
+  title: string;
+  status: "pending" | "processing" | "done" | "failed";
+  ocr_text: string | null;
+  parsed_structure: { sections: ExamSection[] } | null;
+  analysis_result: {
+    questions: ExamQuestion[];
+    output: string;
+    vocabulary?: ExamVocabulary[];
+    total_questions: number;
+    errors?: string[];
+  } | null;
+  created_at: string;
+  expires_at: string | null;
+};
+
+export type ExamUploadResponse = {
+  paper_id: number;
+  task_id: string | null;
+  status: string;
+  message: string;
+};
+
+export type ExamVocabulary = {
+  word: string;
+  phonetic?: string;
+  definition?: string;
+  context?: string;
+};

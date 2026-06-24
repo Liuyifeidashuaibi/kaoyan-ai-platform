@@ -28,7 +28,7 @@ if (-not (Test-Path (Join-Path $Root ".env"))) {
 }
 
 Import-ProjectDotEnv
-if ($env:TRANSLATOR_ROOT) { $env:TRANSLATOR_ROOT = $env:TRANSLATOR_ROOT }
+
 
 # word_lib: auto-import ECDICT stardict.db / ecdict.csv when present
 Write-Host "Checking word_lib.db ..." -ForegroundColor Cyan
@@ -36,8 +36,6 @@ python (Join-Path $Root "scripts\ensure_word_lib.py")
 if ($LASTEXITCODE -ne 0) { exit 1 }
 
 Start-OllamaIfNeeded | Out-Null
-Start-TranslatorBackground | Out-Null
-Start-TtsHostBackground | Out-Null
 
 Write-Host ""
 Write-Host "Starting Docker containers..." -ForegroundColor Cyan

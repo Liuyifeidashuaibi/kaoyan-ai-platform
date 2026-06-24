@@ -1,0 +1,43 @@
+# Qwen3-TTS GPU 推理服务 (:8200)
+# 模型文件通过 volume 挂载（data/tts），不打进镜像。
+# 构建: docker build -f docker/Dockerfile.tts -t kaoyan-tts .
+#
+# GPU: 在 docker-compose.yml 中取消 deploy.resources 注释即可
+#      （需 nvidia-container-toolkit / Docker Desktop WSL2 GPU 支持）
+# CPU fallback: model 加载时自动降为 float32，合成速度较慢
+
+FROM python:3.11-slim
+
+WORKDIR /app
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    libsndfile1 \
+    && rm -rf /var/lib/apt/lists/*
+
+# torch + torchaudio 必须同一命令安装，版本对齐才能加载原生库
+RUN pip install --upgrade pip && \
+    pip install --no-cache-dir torch torchaudio \
+        --index-url https://download.pytorch.org/whl/cpu
+
+# qwen-tts 会复用已安装的 torch/torchaudio，不会重新拉取
+RUN pip install --no-cache-dir \
+    fastapi "uvicorn[standard]" pydantic \
+    soundfile numpy qwen-tts \
+    -i https://pypi.tuna.tsinghua.edu.cn/simple
+
+COPY scripts/__init__.py        scripts/__init__.py
+COPY scripts/qwen3_tts_lib.py   scripts/qwen3_tts_lib.py
+COPY scripts/tts_host_server.py scripts/tts_host_server.py
+
+# 占位目录，model 文件由 volume 提供
+RUN mkdir -p data/tts/qwen data/tts/piper
+
+ENV PYTHONPATH=/app
+ENV PROJECT_ROOT=/app
+ENV QWEN3_TTS_MODEL=data/tts/qwen/Qwen3-TTS-12Hz-0.6B-CustomVoice
+
+EXPOSE 8200
+
+CMD ["python", "-m", "uvicorn", "scripts.tts_host_server:app", \
+     "--host", "0.0.0.0", "--port", "8200"]

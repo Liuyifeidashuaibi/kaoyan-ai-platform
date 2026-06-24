@@ -29,6 +29,12 @@ langchain-core>=0.3.0
 pypdf>=5.1.0
 aiofiles>=24.1.0
 
+# Translator 引擎依赖（已内嵌到 backend/translator/）
+pyyaml>=6.0
+pymupdf>=1.24          # PDF / 图文文档解析
+faster-whisper>=1.0.0  # 视频字幕语音识别
+soundfile>=0.12        # 音频读写
+
 # Redis 缓存 + Celery 异步任务（本地单机）
 redis>=5.0.0
 celery[redis]>=5.4.0

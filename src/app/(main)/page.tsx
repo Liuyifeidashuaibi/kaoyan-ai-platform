@@ -2,7 +2,9 @@ import Link from "next/link";
 import {
   BookOpen,
   GraduationCap,
+  Languages,
   MessageSquare,
+  Timer,
   User,
   Users,
 } from "lucide-react";
@@ -31,10 +33,22 @@ const features = [
     icon: BookOpen,
   },
   {
+    href: "/translator",
+    label: "Translator",
+    description: "AI translation tools",
+    icon: Languages,
+  },
+  {
     href: "/choose-school",
     label: "School",
     description: "Search universities and majors",
     icon: GraduationCap,
+  },
+  {
+    href: "/study/tomato",
+    label: "Timer",
+    description: "Focus timer for productive study sessions",
+    icon: Timer,
   },
   {
     href: "/community",

@@ -42,8 +42,12 @@ _LEARN_LINE = re.compile(
     r"^(?:n\.|v\.|vt\.|vi\.|a\.|adj\.|adv\.|prep\.|conj\.|pron\.|art\.|int\.|num\.|aux\.|pl\.|sing\.)",
     re.I,
 )
-# 领域标签行：[计] [医] [俚] 等 — 考研阅读一般不需要
+# 领域标签行：[计] [医] [俚] 等
 _DOMAIN_TAG_LINE = re.compile(r"^\[[^\]]+\]")
+_POS_PREFIX = re.compile(
+    r"^(?:n\.|v\.|vt\.|vi\.|a\.|adj\.|adv\.|prep\.|conj\.|pron\.|art\.|int\.|num\.|aux\.|pl\.|sing\.)\s*",
+    re.I,
+)
 
 
 def _normalize_word(word: str) -> str:
@@ -72,36 +76,50 @@ def _parse_pos_labels(pos_raw: str | None) -> str | None:
     return " / ".join(labels) if labels else None
 
 
+def _has_cjk(text: str | None) -> bool:
+    return bool(text and re.search(r"[\u4e00-\u9fff]", text))
+
+
+def _gloss_from_line(line: str) -> str:
+    """去掉 [计] 标签与 n./v. 前缀，保留中文释义。"""
+    text = re.sub(r"^\[[^\]]+\]\s*", "", line.strip())
+    text = _POS_PREFIX.sub("", text).strip()
+    return text or line.strip()
+
+
 def _learning_translation_lines(translation: str | None) -> list[str]:
-    """只保留标准词性释义行，过滤 [计] 等领域标签行。"""
+    """提取中文释义行（含仅存在于 [计] 等领域标签行中的释义）。"""
     if not translation:
         return []
     kept: list[str] = []
     for ln in translation.splitlines():
         line = ln.strip()
-        if not line or _DOMAIN_TAG_LINE.match(line):
+        if not line:
             continue
         if _LEARN_LINE.match(line):
             kept.append(line)
-    if kept:
-        return kept
-    # 兜底：去掉 [标签] 行后取首行
-    for ln in translation.splitlines():
-        line = ln.strip()
-        if line and not _DOMAIN_TAG_LINE.match(line):
-            return [line]
-    return []
+            continue
+        if _DOMAIN_TAG_LINE.match(line):
+            chinese = _gloss_from_line(line)
+            if _has_cjk(chinese):
+                kept.append(chinese)
+            continue
+        if _has_cjk(line):
+            kept.append(line)
+    return kept
 
 
 def _pick_kaoyan_gloss(entry: WordLibEntry) -> str:
     if entry.kaoyan_gloss:
         gloss = _first_line(entry.kaoyan_gloss, 160)
-        if gloss and not _DOMAIN_TAG_LINE.match(gloss):
-            return gloss
+        if gloss and _has_cjk(gloss):
+            return _first_line(_gloss_from_line(gloss), 160)
     lines = _learning_translation_lines(entry.translation)
     if lines:
-        return _first_line(lines[0], 160)
-    return _first_line(entry.definition, 160)
+        return _first_line(_gloss_from_line(lines[0]), 160)
+    if entry.definition and _has_cjk(entry.definition):
+        return _first_line(entry.definition, 160)
+    return ""
 
 
 def _parse_pos(entry: WordLibEntry) -> str | None:
@@ -112,8 +130,8 @@ def _format_translation_for_detail(entry: WordLibEntry) -> str | None:
     lines = _learning_translation_lines(entry.translation)
     if not lines:
         return None
-    gloss = _pick_kaoyan_gloss(entry)
-    extra = [ln for ln in lines if ln != gloss and not ln.startswith(gloss[:8])]
+    primary = _pick_kaoyan_gloss(entry)
+    extra = [ln for ln in lines if _gloss_from_line(ln) != primary]
     if not extra:
         return None
     return "\n".join(extra[:6])
@@ -146,16 +164,27 @@ class WordDictService:
 
         entry = _lookup_local(db, norm)
         if entry:
+            gloss = _pick_kaoyan_gloss(entry)
             source = "ai_cache" if entry.ai_generated else "local"
             if mode == "hover":
+                if not gloss.strip():
+                    return WordBrief(
+                        word=entry.word,
+                        phonetic=entry.phonetic,
+                        pos=_parse_pos(entry),
+                        gloss="",
+                        source="missing",
+                    )
                 return WordBrief(
                     word=entry.word,
                     phonetic=entry.phonetic,
                     pos=_parse_pos(entry),
-                    gloss=_pick_kaoyan_gloss(entry),
+                    gloss=gloss,
                     source=source,
                 )
-            return self._to_detail(entry, source)
+            if gloss.strip() or not entry.ai_generated:
+                return self._to_detail(entry, source)
+            # ai_cache 无中文释义时，detail 模式重新 AI 补全
 
         # hover 仅本地库，避免 Ollama 阻塞导致长时间「查询中」
         if mode == "hover":

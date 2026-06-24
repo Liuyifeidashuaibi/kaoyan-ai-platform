@@ -47,7 +47,7 @@ export function useTtsPlayback({
 }: UseTtsPlaybackOptions = {}): TtsPlaybackState {
   const [options, setOptions] = useState<TtsOptions>({
     accent: "us",
-    speed: 0.7,
+    speed: 1,
     voice: "female",
   });
   const [busy, setBusy] = useState(false);

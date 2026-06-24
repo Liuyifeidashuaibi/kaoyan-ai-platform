@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 def _normalize_query(text: str) -> str:
     s = text.strip().lower()
     s = re.sub(r"\s+", "", s)
-    s = re.sub(r"[，。！？、；：""''（）()【】\[\]]", "", s)
+    s = re.sub(r"[，。！？、；：\"\"''（）()\[\]【】]", "", s)
     return s
 
 

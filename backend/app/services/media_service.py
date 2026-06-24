@@ -29,6 +29,19 @@ OCR_PROMPT = (
     "按从上到下、从左到右顺序输出。保留公式、选项、图表旁文字，不要省略、不要总结、不要解释。"
 )
 
+# 试卷专用 OCR Prompt：明确忽略手写内容
+EXAM_OCR_PROMPT = (
+    "你是一个试卷还原助手。请只提取试卷上的原始印刷内容，完全忽略所有手写内容。\n\n"
+    "规则：\n"
+    "1. 只输出印刷体文字（题目、选项、分值、Directions、说明文字等）\n"
+    "2. 完全忽略以下手写内容：手写答案、解题过程、红笔批注、改错标记、圈画、下划线、手写笔记\n"
+    "3. 保留所有题号（第一题、第二题、1.、2.、(1)、(2)）\n"
+    "4. 保留数学公式（LaTeX 格式）\n"
+    "5. 按从上到下、从左到右顺序输出\n"
+    "6. 不要省略、不要总结、不要解释、不要添加内容\n"
+    "7. 如果某个区域只有手写内容没有印刷内容，则跳过该区域"
+)
+
 
 class MediaService:
     def __init__(self) -> None:
@@ -156,8 +169,18 @@ class MediaService:
         self,
         image: ResolvedImage,
         raw_bytes: bytes | None = None,
+        *,
+        prompt: str | None = None,
     ) -> str:
+        """
+        从图片中提取文字。
+
+        :param image: 解析后的图片引用
+        :param raw_bytes: 原始图片字节
+        :param prompt: 自定义 OCR prompt（默认使用通用 OCR prompt）
+        """
         url = self._image_to_data_url(image, raw_bytes)
+        ocr_prompt = prompt or OCR_PROMPT
         resp = await self.client.chat.completions.create(
             model=self.settings.vl_model,
             messages=[
@@ -165,7 +188,7 @@ class MediaService:
                     "role": "user",
                     "content": [
                         {"type": "image_url", "image_url": {"url": url}},
-                        {"type": "text", "text": OCR_PROMPT},
+                        {"type": "text", "text": ocr_prompt},
                     ],
                 }
             ],

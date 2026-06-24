@@ -39,7 +39,7 @@ function LogoImage({ size }: { size: number }) {
       alt=""
       width={size}
       height={size}
-      className="object-contain select-none"
+      className="object-contain select-none mix-blend-darken"
       priority
       draggable={false}
       aria-hidden

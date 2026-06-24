@@ -66,6 +66,11 @@ import {
   enLearnTranslateText,
   type EnLearnTranslateResult,
 } from "@/lib/api/en-learn";
+import { ExamUploadEntry } from "@/components/exam/exam-upload-entry";
+import { PaperRendererEnglish } from "@/components/exam/paper-renderer-english";
+import { uploadExam, fetchExamPaper } from "@/lib/api/exam";
+import { fetchTaskStatus } from "@/lib/api/tasks";
+import type { ExamPaper } from "@/lib/api/types";
 
 type SourceTab = "text" | "upload" | "notebook";
 type TranslateMode = TranslateDisplayMode;
@@ -139,7 +144,16 @@ function formatEnLearnResult(
   if (mode === "bilingual" && result.pairs?.length) {
     return result.pairs.map((p) => `${p.source}\n${p.target}`).join("\n\n");
   }
-  return result.chinese_text ?? result.full_text ?? "";
+  if (result.chinese_text?.trim()) {
+    return result.chinese_text.trim();
+  }
+  if (result.full_text?.trim()) {
+    return result.full_text.trim();
+  }
+  const targets = (result.pairs ?? [])
+    .map((p) => p.target?.trim())
+    .filter(Boolean);
+  return targets.length > 0 ? targets.join("\n\n") : "";
 }
 
 function formatVideoCue(
@@ -253,6 +267,12 @@ export function TranslatorApp() {
   const [exportFormat, setExportFormat] = useState<ExportFormat>("docx");
   const [exportEmail, setExportEmail] = useState<string | null>(null);
   const [exporting, setExporting] = useState(false);
+
+  // ── Exam mode state ──
+  const [examMode, setExamMode] = useState(false);
+  const [examPaper, setExamPaper] = useState<ExamPaper | null>(null);
+  const [examPolling, setExamPolling] = useState(false);
+  const [examProgress, setExamProgress] = useState(0);
 
   useEffect(() => {
     void getUserSettings()
@@ -458,6 +478,47 @@ export function TranslatorApp() {
     }
   }
 
+  // ── Exam upload handler with polling ──
+  async function handleExamUpload(file: File, title: string) {
+    setError(null);
+    setExamPaper(null);
+    setExamPolling(true);
+    setExamProgress(0);
+    try {
+      const uploadRes = await uploadExam(file, "english", { title });
+      const paperId = uploadRes.paper_id;
+      const taskId = uploadRes.task_id;
+
+      // Poll task status
+      if (taskId) {
+        const maxAttempts = 120; // 2 min at 1s intervals
+        for (let i = 0; i < maxAttempts; i++) {
+          await new Promise((r) => setTimeout(r, 1000));
+          try {
+            const task = await fetchTaskStatus(taskId);
+            setExamProgress(task.progress);
+            if (task.status === "done" || task.status === "failed") {
+              break;
+            }
+          } catch {
+            // continue polling
+          }
+        }
+      }
+
+      // Fetch final paper result
+      const paper = await fetchExamPaper(paperId);
+      setExamPaper(paper);
+      if (paper.status === "failed") {
+        setError("试卷解析失败，请重试");
+      }
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "试卷上传失败");
+    } finally {
+      setExamPolling(false);
+    }
+  }
+
   return (
     <div className="flex h-full min-h-0 flex-col gap-4 p-4 md:p-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -519,8 +580,33 @@ export function TranslatorApp() {
             />
           )}
 
-          {sourceTab === "upload" && (
+          {sourceTab === "upload" && !examMode && (
             <>
+              {/* Exam mode toggle */}
+              <div className="flex items-center justify-between border-b px-3 py-2">
+                <span className="text-xs font-medium">Exam Mode</span>
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={examMode}
+                  className={cn(
+                    "relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors",
+                    examMode ? "bg-primary" : "bg-muted-foreground/25"
+                  )}
+                  onClick={() => {
+                    setExamMode((v) => !v);
+                    setExamPaper(null);
+                    setError(null);
+                  }}
+                >
+                  <span
+                    className={cn(
+                      "pointer-events-none inline-block size-4 rounded-full bg-white shadow transition-transform",
+                      examMode ? "translate-x-4" : "translate-x-0"
+                    )}
+                  />
+                </button>
+              </div>
               <label className="relative flex flex-1 cursor-pointer flex-col overflow-hidden">
                 <div className="flex flex-1 items-center justify-center overflow-auto bg-muted/10 p-3">
                   <MediaPreview
@@ -549,6 +635,64 @@ export function TranslatorApp() {
                 </div>
               )}
             </>
+          )}
+
+          {sourceTab === "upload" && examMode && (
+            <div className="flex flex-1 flex-col overflow-auto">
+              {/* Exam mode toggle */}
+              <div className="flex items-center justify-between border-b px-3 py-2">
+                <span className="text-xs font-medium">Exam Mode</span>
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={examMode}
+                  className={cn(
+                    "relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors",
+                    examMode ? "bg-primary" : "bg-muted-foreground/25"
+                  )}
+                  onClick={() => {
+                    setExamMode(false);
+                    setExamPaper(null);
+                    setError(null);
+                  }}
+                >
+                  <span
+                    className={cn(
+                      "pointer-events-none inline-block size-4 rounded-full bg-white shadow transition-transform",
+                      examMode ? "translate-x-4" : "translate-x-0"
+                    )}
+                  />
+                </button>
+              </div>
+              <div className="flex flex-1 flex-col overflow-auto p-3">
+              {examPaper && examPaper.status === "done" ? (
+                <div className="min-h-0 flex-1">
+                  <PaperRendererEnglish
+                    paper={examPaper}
+                    onAskQuestion={() => {}}
+                  />
+                </div>
+              ) : examPolling ? (
+                <div className="flex flex-1 flex-col items-center justify-center gap-3">
+                  <Loader2 className="text-muted-foreground size-8 animate-spin" />
+                  <p className="text-sm font-medium">解析中...</p>
+                  <div className="h-1.5 w-48 overflow-hidden rounded-full bg-muted">
+                    <div
+                      className="h-full bg-primary transition-all duration-500"
+                      style={{ width: `${examProgress}%` }}
+                    />
+                  </div>
+                  <p className="text-muted-foreground text-xs">{examProgress}%</p>
+                </div>
+              ) : (
+                <ExamUploadEntry
+                  subject="english"
+                  onUpload={handleExamUpload}
+                  disabled={examPolling}
+                />
+              )}
+              </div>
+            </div>
           )}
 
           {sourceTab === "notebook" && (
@@ -661,17 +805,21 @@ export function TranslatorApp() {
             </div>
           ) : null}
           {enLearnResult ? (
-            <WordLearningProvider enabled={learningMode && enLearnUnlocked}>
-              <CorrectedBilingualPanel
-                correctedText={enLearnResult.corrected_text}
-                errors={enLearnResult.error_list}
-                chineseText={enLearnResult.chinese_text ?? ""}
-                pairs={enLearnResult.pairs}
-                learningMode={learningMode}
-                highlightSentenceIndex={highlightIndex}
-                playback={ttsPlayback}
-              />
-            </WordLearningProvider>
+            mode === "full" ? (
+              <ResultPanel value={resultText} placeholder="Translation" />
+            ) : (
+              <WordLearningProvider enabled={learningMode && enLearnUnlocked}>
+                <CorrectedBilingualPanel
+                  correctedText={enLearnResult.corrected_text}
+                  errors={enLearnResult.error_list}
+                  chineseText={enLearnResult.chinese_text ?? ""}
+                  pairs={enLearnResult.pairs}
+                  learningMode={learningMode}
+                  highlightSentenceIndex={highlightIndex}
+                  playback={ttsPlayback}
+                />
+              </WordLearningProvider>
+            )
           ) : (
             <>
               {isVideoResult &&

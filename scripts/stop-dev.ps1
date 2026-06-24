@@ -14,7 +14,7 @@ if (Get-Command docker -ErrorAction SilentlyContinue) {
 
 Stop-PortProcess -Port 3000 -Label "frontend :3000"
 Stop-PortProcess -Port 8000 -Label "backend :8000"
-Stop-PortProcess -Port 8100 -Label "translator :8100"
+Stop-PortProcess -Port 8200 -Label "TTS host :8200"
 Stop-PortProcess -Port 6379 -Label "redis :6379"
 
 Write-Host ""

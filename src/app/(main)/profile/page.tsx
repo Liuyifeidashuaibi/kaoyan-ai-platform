@@ -1,5 +1,19 @@
-import { ProfilePanel } from "@/components/profile/profile-panel";
+import dynamic from "next/dynamic";
 import { requireAuth } from "@/lib/auth/require-auth";
+
+const ProfilePanel = dynamic(
+  () =>
+    import("@/components/profile/profile-panel").then(
+      (mod) => mod.ProfilePanel
+    ),
+  {
+    loading: () => (
+      <div className="flex h-32 items-center justify-center text-sm text-muted-foreground">
+        Loading profile…
+      </div>
+    ),
+  }
+);
 
 export default async function ProfilePage() {
   const user = await requireAuth("/profile");

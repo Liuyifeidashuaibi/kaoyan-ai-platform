@@ -1,5 +1,13 @@
 # 本地开发脚本公共函数（被 start-*.ps1 / stop-dev.ps1 引用）
 
+function Set-DevConsoleUtf8 {
+    try {
+        chcp 65001 | Out-Null
+        [Console]::OutputEncoding = [System.Text.UTF8Encoding]::new($false)
+        $script:OutputEncoding = [System.Text.UTF8Encoding]::new($false)
+    } catch {}
+}
+
 function Get-ProjectRoot {
     return Split-Path -Parent $PSScriptRoot
 }
@@ -30,6 +38,82 @@ function Test-PortListen {
     return $null -ne $conn
 }
 
+function Wait-PortListen {
+    param(
+        [int]$Port,
+        [int]$WaitSec = 30,
+        [string]$Label = "port $Port"
+    )
+    $deadline = (Get-Date).AddSeconds($WaitSec)
+    while ((Get-Date) -lt $deadline) {
+        if (Test-PortListen $Port) {
+            Write-Host "[OK] $Label" -ForegroundColor Green
+            return $true
+        }
+        Start-Sleep -Seconds 1
+    }
+    Write-Host "[WARN] $Label not ready after ${WaitSec}s" -ForegroundColor Yellow
+    return $false
+}
+
+function Start-RedisDev {
+    param(
+        [int]$WaitSec = 30,
+        [switch]$Foreground
+    )
+
+    if (Test-PortListen 6379) {
+        Write-Host "[OK] Redis :6379" -ForegroundColor Green
+        return $true
+    }
+
+    $Root = Get-ProjectRoot
+    $conf = Join-Path $Root "docker\redis.conf"
+    if (-not (Test-Path $conf)) {
+        Write-Host "[FAIL] Missing redis config: $conf" -ForegroundColor Red
+        return $false
+    }
+
+    if (Get-Command docker -ErrorAction SilentlyContinue) {
+        docker rm -f kaoyan-redis-dev 2>$null | Out-Null
+
+        if ($Foreground) {
+            Write-Host "Starting Redis :6379 (foreground — close window to stop)..." -ForegroundColor Green
+            docker run --rm --name kaoyan-redis-dev `
+                -p 6379:6379 `
+                -v "${conf}:/usr/local/etc/redis/redis.conf:ro" `
+                redis:7-alpine redis-server /usr/local/etc/redis/redis.conf
+            return $LASTEXITCODE -eq 0
+        }
+
+        Write-Host "Starting Redis :6379 (background Docker)..." -ForegroundColor Cyan
+        docker run -d --name kaoyan-redis-dev `
+            -p 6379:6379 `
+            -v "${conf}:/usr/local/etc/redis/redis.conf:ro" `
+            redis:7-alpine redis-server /usr/local/etc/redis/redis.conf | Out-Null
+        if ($LASTEXITCODE -ne 0) {
+            Write-Host "[FAIL] Could not start Redis container" -ForegroundColor Red
+            return $false
+        }
+        return Wait-PortListen -Port 6379 -WaitSec $WaitSec -Label "Redis :6379"
+    }
+
+    if ($Foreground -and (Get-Command wsl -ErrorAction SilentlyContinue)) {
+        Write-Host "Starting Redis :6379 via WSL..." -ForegroundColor Green
+        wsl redis-server --port 6379 --maxmemory 512mb --maxmemory-policy allkeys-lru
+        return $LASTEXITCODE -eq 0
+    }
+
+    if ($Foreground -and (Get-Command redis-server -ErrorAction SilentlyContinue)) {
+        Write-Host "Starting Redis :6379 via local redis-server..." -ForegroundColor Green
+        redis-server --port 6379 --maxmemory 512mb --maxmemory-policy allkeys-lru
+        return $LASTEXITCODE -eq 0
+    }
+
+    Write-Host "[FAIL] Docker not available — install Docker Desktop or run start-redis.ps1" -ForegroundColor Red
+    return $false
+}
+
 function Get-BackendVenvPython {
     $Root = Get-ProjectRoot
     $Backend = Join-Path $Root "backend"
@@ -41,14 +125,6 @@ function Get-BackendVenvPython {
         & ".\.venv\Scripts\pip.exe" install -r requirements.txt
     }
     return $VenvPython
-}
-
-function Get-TranslatorRoot {
-    Import-ProjectDotEnv | Out-Null
-    if ($env:TRANSLATOR_ROOT -and (Test-Path $env:TRANSLATOR_ROOT)) {
-        return $env:TRANSLATOR_ROOT
-    }
-    return "E:\Tanslator\translatorai"
 }
 
 function Stop-PortProcess {
@@ -136,36 +212,4 @@ function Start-TtsHostBackground {
     if (-not (Test-Path $script)) { return $false }
     & $script
     return $LASTEXITCODE -eq 0
-}
-
-function Start-TranslatorBackground {
-    param([int]$WaitSec = 45)
-    if (Test-PortListen 8100) {
-        Write-Host "[OK] Translator :8100" -ForegroundColor Green
-        return $true
-    }
-    Import-ProjectDotEnv | Out-Null
-    $root = Get-TranslatorRoot
-    $main = Join-Path $root "src\translator\server\main.py"
-    if (-not (Test-Path $main)) {
-        Write-Host "[WARN] Translator project not found: $root" -ForegroundColor Yellow
-        return $false
-    }
-    Write-Host "Starting Translator :8100 (background)..." -ForegroundColor Cyan
-    $python = (Get-Command python -ErrorAction SilentlyContinue).Source
-    if (-not $python) {
-        Write-Host "[WARN] python not found for Translator" -ForegroundColor Yellow
-        return $false
-    }
-    Start-Process -FilePath $python -ArgumentList "-m", "translator.server.main" -WorkingDirectory $root -WindowStyle Hidden
-    $deadline = (Get-Date).AddSeconds($WaitSec)
-    while ((Get-Date) -lt $deadline) {
-        Start-Sleep -Seconds 2
-        if (Test-PortListen 8100) {
-            Write-Host "[OK] Translator :8100" -ForegroundColor Green
-            return $true
-        }
-    }
-    Write-Host "[WARN] Translator :8100 not ready yet (may still be loading models)" -ForegroundColor Yellow
-    return $false
 }

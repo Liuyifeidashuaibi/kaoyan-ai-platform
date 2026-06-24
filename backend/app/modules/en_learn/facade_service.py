@@ -56,9 +56,38 @@ class EnLearnFacade:
             file_bytes, filename, mode=mode, content_type=content_type
         )
         ocr_text = (data.get("ocr_text") or "").strip()
+        image_full_text = (data.get("full_text") or "").strip()
+        # Full single-pass image translation returns Chinese in full_text but no ocr_text.
+        single_pass_full = mode == "full" and not ocr_text and bool(image_full_text)
+
         if not ocr_text:
-            raise TranslatorServiceError("未能识别图片英文内容")
-        enhanced = await self.translate_text(ocr_text, mode=mode)
+            if single_pass_full:
+                ocr_data = await self._translator.translate_image(
+                    file_bytes,
+                    filename,
+                    mode="bilingual",
+                    content_type=content_type,
+                )
+                ocr_text = (ocr_data.get("ocr_text") or "").strip()
+            if not ocr_text:
+                raise TranslatorServiceError("未能识别图片英文内容")
+
+        if single_pass_full:
+            original = ocr_text
+            corrected, errors = await correct_english(original)
+            errors = align_errors_to_original(original, corrected, errors)
+            enhanced = EnLearnTranslateResult(
+                original_text=original,
+                corrected_text=corrected,
+                error_list=errors,
+                mode=mode,
+                pairs=[],
+                full_text=image_full_text,
+                chinese_text=image_full_text,
+            )
+        else:
+            enhanced = await self.translate_text(ocr_text, mode=mode)
+
         payload = enhanced.model_dump()
         payload["ocr_text"] = ocr_text
         payload["kind"] = "image"

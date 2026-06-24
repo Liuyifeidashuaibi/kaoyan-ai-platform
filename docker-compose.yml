@@ -35,12 +35,12 @@ services:
       REDIS_URL: redis://redis:6379/0
       CELERY_BROKER_URL: redis://redis:6379/1
       CELERY_RESULT_BACKEND: redis://redis:6379/2
-      TRANSLATOR_SERVICE_URL: http://host.docker.internal:8100
       OLLAMA_BASE_URL: http://host.docker.internal:11434
+      TRANSLATOR_OLLAMA_BASE_URL: http://host.docker.internal:11434
       WORD_LIB_DB_PATH: data/word_lib.db
       QWEN3_TTS_ENABLED: "true"
       QWEN3_TTS_MODEL: data/tts/qwen/Qwen3-TTS-12Hz-0.6B-CustomVoice
-      QWEN3_TTS_HOST_URL: http://host.docker.internal:8200
+      QWEN3_TTS_HOST_URL: http://tts-host:8200
       TTS_PREFER_PIPER: "true"
       CORS_ORIGINS: http://localhost:3000,http://127.0.0.1:3000
     volumes:
@@ -51,31 +51,52 @@ services:
       - ./data:/app/data
       # 开发机：backend 代码热更新，免反复 rebuild
       - ./backend/app:/app/backend/app:ro
+      - ./backend/translator:/app/backend/translator:ro
     depends_on:
       redis:
         condition: service_healthy
     extra_hosts:
       - "host.docker.internal:host-gateway"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
     restart: unless-stopped
 
-  # Translator runs on HOST (4090 + Ollama). Use: .\scripts\start-translator.ps1
-  # Optional Docker translator (heavy, video deps): docker compose --profile translator-docker up -d translator
-  translator:
-    profiles: ["translator-docker"]
+  tts-host:
     build:
-      context: ${TRANSLATOR_ROOT:-E:/Tanslator/translatorai}
-      dockerfile: E:/Kaoyan/kaoyan-ai-platform/docker/Dockerfile.translator
-    container_name: kaoyan-translator
+      context: .
+      dockerfile: docker/Dockerfile.tts
+    container_name: kaoyan-tts-host
     ports:
-      - "8100:8100"
-    env_file:
-      - .env
+      - "8200:8200"
     environment:
-      TRANSLATOR_HOST: 0.0.0.0
-      TRANSLATOR_PORT: "8100"
-      TRANSLATOR_OLLAMA_BASE_URL: http://host.docker.internal:11434
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
+      QWEN3_TTS_MODEL: data/tts/qwen/Qwen3-TTS-12Hz-0.6B-CustomVoice
+      PROJECT_ROOT: /app
+    volumes:
+      - ./data/tts:/app/data/tts:ro
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://localhost:8200/health', timeout=5)",
+        ]
+      interval: 30s
+      timeout: 15s
+      retries: 3
+      start_period: 120s
+    # GPU 直通（需 nvidia-container-toolkit）——取消注释后 rebuild:
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: 1
+    #           capabilities: [gpu]
     restart: unless-stopped
 
   celery-worker:
@@ -98,7 +119,7 @@ services:
       redis:
         condition: service_healthy
       backend:
-        condition: service_started
+        condition: service_healthy
     restart: unless-stopped
 
   celery-beat:
@@ -140,7 +161,8 @@ services:
     environment:
       BACKEND_URL: http://backend:8000
     depends_on:
-      - backend
+      backend:
+        condition: service_healthy
     restart: unless-stopped
 
 # 可选：4090 本机 GPU 直通 Celery Worker（需 nvidia-container-toolkit）

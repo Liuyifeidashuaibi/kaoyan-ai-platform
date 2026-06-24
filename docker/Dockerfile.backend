@@ -5,15 +5,21 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
+# 系统依赖：build-essential(编译 C 扩展) + ffmpeg(音频) + libsndfile1(TTS)
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
+    ffmpeg \
+    libsndfile1 \
+    curl \
     && rm -rf /var/lib/apt/lists/*
 
+# pip 依赖层（利用 Docker cache，仅 requirements.txt 变更时重新安装）
 COPY backend/requirements.txt backend/requirements.txt
 RUN pip install --upgrade pip && \
     pip install --no-cache-dir -r backend/requirements.txt \
     -i https://pypi.tuna.tsinghua.edu.cn/simple
 
+# 应用代码层
 COPY backend/ backend/
 COPY data/ data/
 COPY scripts/sql/ scripts/sql/
@@ -29,6 +35,11 @@ ENV REDIS_URL=redis://redis:6379/0
 ENV CELERY_BROKER_URL=redis://redis:6379/1
 ENV CELERY_RESULT_BACKEND=redis://redis:6379/2
 
+# 健康检查：每 30s 探测 /api/health，失败 3 次重启
+HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
+  CMD curl -f http://localhost:8000/api/health || exit 1
+
 EXPOSE 8000
 
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+# 2 workers 平衡内存与并发（4090 16GB 显存充裕时可加到 4）
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "2"]

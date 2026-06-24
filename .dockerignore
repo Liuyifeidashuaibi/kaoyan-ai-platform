@@ -13,6 +13,11 @@ chroma_db
 uploads
 kaoyan.db
 data/admin
+data/ecdict
+data/tts
+data/word_lib.db*
+data/fonts
+data/public
 
 # Dev / IDE
 .cursor
@@ -28,3 +33,33 @@ crawler
 # Docs and examples
 docs
 examples
+
+# Root-level temp files
+screenshot_*.png
+test_modification.txt
+setup_encoding_and_start.bat
+
+# Scripts not needed in Docker (only dev helper scripts)
+scripts/publish-schools.bat
+scripts/start-*.ps1
+scripts/stop-*.ps1
+scripts/check-dev.ps1
+scripts/_dev-common.ps1
+scripts/hide-docker-ui.ps1
+scripts/configure-docker-background.ps1
+scripts/setup-cloudflare-once.ps1
+scripts/sync-vercel-tunnel.ps1
+scripts/start-tunnel*.ps1
+
+# Test files
+scripts/test_*.py
+scripts/test_*.js
+scripts/comprehensive_limit_test.py
+scripts/find_concurrency_limit.py
+
+# Vercel / Cloudflare
+.vercel
+cloudflare-tunnel
+
+# CI
+.github

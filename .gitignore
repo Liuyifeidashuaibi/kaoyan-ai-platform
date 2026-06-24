@@ -135,4 +135,7 @@ Thumbs.db
 .vscode/*
 !.vscode/extensions.json
 
-.vercel
+# ========== 根目录临时/测试文件 ==========
+screenshot_*.png
+test_modification.txt
+setup_encoding_and_start.bat

@@ -82,6 +82,15 @@ export function TtsReadAloudBar({
         </Button>
       )}
       <SegmentedToggle
+        value={String(options.speed)}
+        options={[
+          { value: "0.8", label: "0.8x" },
+          { value: "1", label: "1x" },
+          { value: "1.2", label: "1.2x" },
+        ]}
+        onChange={(v) => setOptions((o) => ({ ...o, speed: Number(v) }))}
+      />
+      <SegmentedToggle
         value={options.accent}
         options={[
           { value: "us", label: "US" },

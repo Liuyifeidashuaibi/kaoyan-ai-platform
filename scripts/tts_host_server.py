@@ -1,8 +1,11 @@
 #!/usr/bin/env python3
 """
-Qwen3-TTS 宿主机 GPU 服务 — Docker backend 通过 host.docker.internal:8200 调用。
+Qwen3-TTS GPU 推理服务，监听 :8200。
 
-启动: .\\scripts\\start-tts-host.ps1
+- Docker Compose 模式：作为 tts-host 容器运行，backend 通过 http://tts-host:8200 调用。
+- 本机开发模式：直接在宿主机运行，backend 通过 http://127.0.0.1:8200 调用。
+
+启动（开发模式）: .\\scripts\\start-tts-host.ps1
 """
 
 from __future__ import annotations

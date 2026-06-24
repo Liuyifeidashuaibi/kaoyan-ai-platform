@@ -1,4 +1,4 @@
-import { apiFetch } from "@/lib/api/client";
+import { rateLimitedApiFetch, rateLimitedApiUpload } from "@/lib/api/rate_limited_client";
 
 import { ensureApiBaseUrl } from "@/lib/config/api";
 
@@ -7,55 +7,36 @@ import type { ChatMessage, ChatSession } from "@/lib/api/types";
 
 
 export async function createChatSession(title = "新对话"): Promise<ChatSession> {
-
-  return apiFetch<ChatSession>("/api/chat/sessions", {
-
+  return rateLimitedApiFetch<ChatSession>("/api/chat/sessions", {
     method: "POST",
-
     headers: { "Content-Type": "application/json" },
-
     body: JSON.stringify({ title }),
-
   });
-
 }
 
 
 
 export async function listChatSessions(
-
   keyword = ""
-
 ): Promise<ChatSession[]> {
-
   const q = keyword ? `?keyword=${encodeURIComponent(keyword)}` : "";
-
-  return apiFetch<ChatSession[]>(`/api/chat/sessions${q}`);
-
+  return rateLimitedApiFetch<ChatSession[]>(`/api/chat/sessions${q}`);
 }
 
 
 
 export async function deleteChatSession(sessionId: string): Promise<void> {
-
-  await apiFetch<null>(`/api/chat/sessions/${sessionId}`, {
-
+  await rateLimitedApiFetch<null>(`/api/chat/sessions/${sessionId}`, {
     method: "DELETE",
-
   });
-
 }
 
 
 
 export async function getChatMessages(
-
   sessionId: string
-
 ): Promise<ChatMessage[]> {
-
-  return apiFetch<ChatMessage[]>(`/api/chat/sessions/${sessionId}/messages`);
-
+  return rateLimitedApiFetch<ChatMessage[]>(`/api/chat/sessions/${sessionId}/messages`);
 }
 
 
@@ -92,7 +73,6 @@ export async function transcribeAudio(audio: Blob | File): Promise<string> {
 export type StreamChatDonePayload = {
   ttsAudioBase64?: string;
 };
-
 export type StreamChatOptions = {
   sessionId: string;
   content: string;
@@ -110,9 +90,7 @@ export type StreamChatOptions = {
 
 
 /**
-
  * SSE 流式发送消息，逐 token 回调 onToken。
-
  */
 
 export async function streamChatMessage({
@@ -149,13 +127,9 @@ export async function streamChatMessage({
 
   const base = await ensureApiBaseUrl();
   const res = await fetch(`${base}/api/chat/send/stream`, {
-
     method: "POST",
-
     body: form,
-
     signal,
-
   });
 
 
@@ -217,6 +191,7 @@ export async function streamChatMessage({
 
 
 
+
     for (const line of lines) {
 
       if (!line.startsWith("data: ")) continue;
@@ -224,6 +199,8 @@ export async function streamChatMessage({
       const payload = line.slice(6).trim();
 
       if (!payload) continue;
+
+
 
 
 
@@ -257,5 +234,3 @@ export async function streamChatMessage({
   }
 
 }
-
-

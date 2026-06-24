@@ -95,6 +95,27 @@ class WrongQuestion(Base):
     category = relationship("WrongQuestionCategory", back_populates="questions")
 
 
+class ExamPaper(Base):
+    """试卷解析记录 — 英语/数学试卷 OCR + 结构化 + 分析结果。"""
+
+    __tablename__ = "exam_papers"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    session_id = Column(String(36), ForeignKey("chat_sessions.id"), nullable=True, index=True)
+    user_id = Column(String(36), nullable=True, index=True)
+    subject = Column(String(20), nullable=False)          # "english" | "math"
+    title = Column(String(200), default="未命名试卷")
+    original_image_path = Column(String(500), nullable=True)
+    ocr_text = Column(Text, nullable=True)
+    parsed_structure = Column(Text, nullable=True)        # JSON string
+    analysis_result = Column(Text, nullable=True)         # JSON string
+    status = Column(String(20), default="pending")        # pending/processing/done/failed
+    created_at = Column(DateTime, default=datetime.utcnow)
+    expires_at = Column(DateTime, nullable=True)          # 7天TTL
+
+    session = relationship("ChatSession", backref="exam_papers")
+
+
 def _migrate_wrong_questions_columns() -> None:
     """为已有 SQLite 库补充多类型资料字段。"""
     with engine.connect() as conn:
@@ -186,12 +207,19 @@ def _migrate_chat_message_indexes() -> None:
         conn.commit()
 
 
+_db_initialized = False
+
+
 def init_db() -> None:
-    """创建所有表（若不存在）并执行轻量迁移。"""
+    """创建所有表（若不存在）并执行轻量迁移（仅首次调用时执行）。"""
+    global _db_initialized
+    if _db_initialized:
+        return
     Base.metadata.create_all(bind=engine)
     _migrate_wrong_questions_columns()
     _migrate_wq_user_scoping()
     _migrate_chat_message_indexes()
+    _db_initialized = True
 
 
 def get_db():

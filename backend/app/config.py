@@ -2,8 +2,8 @@
 全局配置模块 — 从项目根目录 .env 加载环境变量。
 """
 
-from functools import lru_cache
 import os
+from functools import lru_cache
 from pathlib import Path
 
 from pydantic import Field
@@ -90,38 +90,55 @@ class Settings(BaseSettings):
     chat_image_context_turns: int = 8
     chat_image_ocr_max_chars: int = 6000
 
-    # Translator 独立服务（HTTP 代理，不含翻译逻辑）
-    translator_service_url: str = Field(
-        default="http://127.0.0.1:8100",
-        validation_alias="TRANSLATOR_SERVICE_URL",
-    )
-    translator_api_key: str = Field(default="", validation_alias="TRANSLATOR_API_KEY")
-    translator_timeout_seconds: int = Field(
-        default=600,
-        validation_alias="TRANSLATOR_TIMEOUT_SECONDS",
-    )
-
     # Redis 缓存（本地单机，Docker Compose 中 redis://redis:6379/0）
     redis_url: str = Field(default="", validation_alias="REDIS_URL")
-    cache_ttl_schools_list: int = Field(default=1800, validation_alias="CACHE_TTL_SCHOOLS_LIST")
-    cache_ttl_schools_detail: int = Field(default=3600, validation_alias="CACHE_TTL_SCHOOLS_DETAIL")
-    cache_ttl_score_lines: int = Field(default=1800, validation_alias="CACHE_TTL_SCORE_LINES")
-    cache_ttl_translator: int = Field(default=86400, validation_alias="CACHE_TTL_TRANSLATOR")
-    cache_ttl_membership_quota: int = Field(default=86400, validation_alias="CACHE_TTL_MEMBERSHIP")
+    cache_ttl_schools_list: int = Field(
+        default=1800, validation_alias="CACHE_TTL_SCHOOLS_LIST"
+    )
+    cache_ttl_schools_detail: int = Field(
+        default=3600, validation_alias="CACHE_TTL_SCHOOLS_DETAIL"
+    )
+    cache_ttl_score_lines: int = Field(
+        default=1800, validation_alias="CACHE_TTL_SCORE_LINES"
+    )
+    cache_ttl_translator: int = Field(
+        default=86400, validation_alias="CACHE_TTL_TRANSLATOR"
+    )
+    cache_ttl_membership_quota: int = Field(
+        default=86400, validation_alias="CACHE_TTL_MEMBERSHIP"
+    )
 
     # 用户会员额度（本地测试默认值，Redis 缓存当日用量）
-    membership_daily_translate_limit: int = Field(default=50, validation_alias="MEMBERSHIP_DAILY_TRANSLATE_LIMIT")
-    membership_daily_chat_limit: int = Field(default=200, validation_alias="MEMBERSHIP_DAILY_CHAT_LIMIT")
+    membership_daily_translate_limit: int = Field(
+        default=50, validation_alias="MEMBERSHIP_DAILY_TRANSLATE_LIMIT"
+    )
+    membership_daily_chat_limit: int = Field(
+        default=200, validation_alias="MEMBERSHIP_DAILY_CHAT_LIMIT"
+    )
 
     # Celery 异步任务（Broker/Backend 默认复用 REDIS_URL）
     celery_broker_url: str = Field(default="", validation_alias="CELERY_BROKER_URL")
-    celery_result_backend: str = Field(default="", validation_alias="CELERY_RESULT_BACKEND")
-    celery_task_time_limit: int = Field(default=3600, validation_alias="CELERY_TASK_TIME_LIMIT")
-    celery_task_soft_time_limit: int = Field(default=3300, validation_alias="CELERY_TASK_SOFT_TIME_LIMIT")
-    celery_result_expires: int = Field(default=86400, validation_alias="CELERY_RESULT_EXPIRES")
-    celery_beat_enabled: bool = Field(default=True, validation_alias="CELERY_BEAT_ENABLED")
-    celery_beat_crawler_hour: int = Field(default=3, validation_alias="CELERY_BEAT_CRAWLER_HOUR")
-    celery_beat_crawler_minute: int = Field(default=0, validation_alias="CELERY_BEAT_CRAWLER_MINUTE")
+    celery_result_backend: str = Field(
+        default="", validation_alias="CELERY_RESULT_BACKEND"
+    )
+    celery_task_time_limit: int = Field(
+        default=3600, validation_alias="CELERY_TASK_TIME_LIMIT"
+    )
+    celery_task_soft_time_limit: int = Field(
+        default=3300, validation_alias="CELERY_TASK_SOFT_TIME_LIMIT"
+    )
+    celery_result_expires: int = Field(
+        default=86400, validation_alias="CELERY_RESULT_EXPIRES"
+    )
+    celery_beat_enabled: bool = Field(
+        default=True, validation_alias="CELERY_BEAT_ENABLED"
+    )
+    celery_beat_crawler_hour: int = Field(
+        default=3, validation_alias="CELERY_BEAT_CRAWLER_HOUR"
+    )
+    celery_beat_crawler_minute: int = Field(
+        default=0, validation_alias="CELERY_BEAT_CRAWLER_MINUTE"
+    )
 
     # 本地 Ollama（英文纠错 / 生词 AI 补全，不上传外网）
     ollama_base_url: str = Field(
@@ -134,7 +151,9 @@ class Settings(BaseSettings):
     )
 
     # ECDICT 离线词库（独立 SQLite）
-    word_lib_db: str = Field(default="data/word_lib.db", validation_alias="WORD_LIB_DB_PATH")
+    word_lib_db: str = Field(
+        default="data/word_lib.db", validation_alias="WORD_LIB_DB_PATH"
+    )
 
     # 本地 Qwen3-TTS + Piper 兜底
     qwen3_tts_enabled: bool = Field(default=False, validation_alias="QWEN3_TTS_ENABLED")
@@ -164,6 +183,12 @@ class Settings(BaseSettings):
         default="data/tts/piper/en_GB-northern_english_male-medium.onnx",
         validation_alias="PIPER_MODEL_UK_MALE",
     )
+
+    # 试卷解析
+    exam_shard_threshold_tokens: int = 12000
+    exam_shard_questions_per_chunk: int = 10
+    exam_temp_ttl_days: int = 7
+    exam_max_image_size_bytes: int = 10 * 1024 * 1024
 
     # Translator export email (SMTP)
     smtp_host: str = Field(default="", validation_alias="SMTP_HOST")
@@ -202,7 +227,9 @@ class Settings(BaseSettings):
 
     @property
     def effective_supabase_url(self) -> str:
-        return self.supabase_url or os.environ.get("NEXT_PUBLIC_SUPABASE_URL", "").strip()
+        return (
+            self.supabase_url or os.environ.get("NEXT_PUBLIC_SUPABASE_URL", "").strip()
+        )
 
     @property
     def effective_supabase_service_key(self) -> str:
@@ -210,9 +237,10 @@ class Settings(BaseSettings):
 
     @property
     def effective_supabase_jwt_secret(self) -> str:
-        return self.supabase_jwt_secret.strip() or os.environ.get(
-            "SUPABASE_JWT_SECRET", ""
-        ).strip()
+        return (
+            self.supabase_jwt_secret.strip()
+            or os.environ.get("SUPABASE_JWT_SECRET", "").strip()
+        )
 
     @property
     def cors_origin_list(self) -> list[str]:

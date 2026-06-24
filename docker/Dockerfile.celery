@@ -10,9 +10,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     && rm -rf /var/lib/apt/lists/*
 
+# pip 依赖层（与 backend 共享 requirements.txt）
 COPY backend/requirements.txt backend/requirements.txt
-RUN pip install --no-cache-dir -r backend/requirements.txt
+RUN pip install --upgrade pip && \
+    pip install --no-cache-dir -r backend/requirements.txt \
+    -i https://pypi.tuna.tsinghua.edu.cn/simple
 
+# 应用代码层
 COPY backend/ backend/
 COPY data/ data/
 

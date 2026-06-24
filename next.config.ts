@@ -7,8 +7,8 @@ const nextConfig: NextConfig = {
   // Docker 生产镜像使用 standalone 输出
   output: process.env.DOCKER_BUILD === "1" ? "standalone" : undefined,
   webpack(config) {
-    // Reduce parallel workers so compilation doesn't exhaust system memory.
-    config.parallelism = 1;
+    // 默认使用系统 CPU 核心数，仅内存紧张时降低
+    // config.parallelism 不设置则使用 Node.js 默认值 (os.availableParallelism)
     return config;
   },
   experimental: {

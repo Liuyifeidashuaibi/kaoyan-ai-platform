@@ -1,13 +1,25 @@
 # Check local dev / Docker service health
 $ErrorActionPreference = "Continue"
 . "$PSScriptRoot\_dev-common.ps1"
+Set-DevConsoleUtf8
 
 function Test-Http($url) {
     try {
         $r = Invoke-WebRequest -Uri $url -UseBasicParsing -TimeoutSec 8
-        return @{ ok = $true; status = $r.StatusCode; body = $r.Content.Substring(0, [Math]::Min(120, $r.Content.Length)) }
+        $text = if ($null -ne $r.Content -and $r.Content.Length -gt 0) {
+            $r.Content.Substring(0, [Math]::Min(120, $r.Content.Length))
+        } else {
+            ""
+        }
+        return @{ ok = $true; status = $r.StatusCode; body = $text }
     } catch {
-        return @{ ok = $false; status = $_.Exception.Response.StatusCode.value__; body = $_.Exception.Message }
+        $status = $null
+        if ($null -ne $_.Exception.Response) {
+            try { $status = [int]$_.Exception.Response.StatusCode.value__ } catch {}
+        }
+        $msg = $_.Exception.Message
+        if ([string]::IsNullOrWhiteSpace($msg)) { $msg = "Request failed" }
+        return @{ ok = $false; status = $status; body = $msg }
     }
 }
 

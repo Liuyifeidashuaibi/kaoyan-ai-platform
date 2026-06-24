@@ -1,112 +1,165 @@
-"""HTTP client for the independent Translator service."""
+"""Local translator service — TranslatorAPI embedded directly, no HTTP call."""
 
 from __future__ import annotations
 
+import asyncio
 import logging
+import tempfile
+from pathlib import Path
 from typing import Any
-
-import httpx
 
 from app.config import get_settings
 
 logger = logging.getLogger(__name__)
 
+# One GPU job at a time (mirrors the original translator server's run_exclusive)
+_translate_sem = asyncio.Semaphore(1)
 
-def _guess_mime(filename: str) -> str:
-    import mimetypes
+# Singleton — created on first request, never recreated
+_api_instance: Any = None
+_api_lock = asyncio.Lock()
 
-    guessed, _ = mimetypes.guess_type(filename)
-    return guessed or "application/octet-stream"
+
+# ---------------------------------------------------------------------------
+# Serialisers (same output format as translator/server/serializers.py)
+# ---------------------------------------------------------------------------
+
+
+def _serialize_text_result(result: Any) -> dict:
+    from translator.core.types import ImageTranslationResult
+
+    payload: dict = {
+        "mode": result.mode.value,
+        "full_text": result.full_text,
+        "pairs": [{"source": p.source, "target": p.target} for p in result.pairs],
+        "source_name": result.source_name,
+        "kind": result.kind.value,
+    }
+    if isinstance(result, ImageTranslationResult):
+        payload["ocr_text"] = result.ocr_text
+    return payload
+
+
+def _serialize_video_result(result: Any) -> dict:
+    return {
+        "source_name": result.source_name,
+        "detected_language": result.detected_language,
+        "mode": result.mode.value,
+        "cues": [
+            {
+                "index": cue.index,
+                "start": cue.start,
+                "end": cue.end,
+                "text": cue.text,
+                "translation": cue.translation,
+            }
+            for cue in result.cues
+        ],
+    }
+
+
+# ---------------------------------------------------------------------------
+# Helpers
+# ---------------------------------------------------------------------------
+
+
+def _parse_mode(mode: str) -> Any:
+    from translator.core.types import TranslationMode
+
+    try:
+        return TranslationMode(mode.lower())
+    except ValueError:
+        return TranslationMode.FULL
+
+
+def _parse_domain(domain: str | None) -> Any:
+    if not domain:
+        return None
+    from translator.core.types import TranslationDomain
+
+    try:
+        return TranslationDomain(domain.lower())
+    except ValueError:
+        return None
+
+
+# ---------------------------------------------------------------------------
+# Exception
+# ---------------------------------------------------------------------------
 
 
 class TranslatorServiceError(Exception):
-    """Translator upstream returned an error or is unreachable."""
+    """Raised when local translation fails."""
+
+
+# ---------------------------------------------------------------------------
+# Lazy singleton
+# ---------------------------------------------------------------------------
+
+
+async def _get_api() -> Any:
+    """Return the cached TranslatorAPI, initialising on first call."""
+    global _api_instance
+    if _api_instance is not None:
+        return _api_instance
+    async with _api_lock:
+        if _api_instance is None:
+            try:
+                from translator.api import TranslatorAPI
+
+                _api_instance = await asyncio.to_thread(TranslatorAPI.create)
+                logger.info("TranslatorAPI initialised successfully")
+            except Exception as exc:
+                raise TranslatorServiceError(
+                    f"翻译引擎初始化失败（Ollama 未运行或模型未拉取？）: {exc}"
+                ) from exc
+    return _api_instance
+
+
+# ---------------------------------------------------------------------------
+# Service — same public interface as the old HTTP proxy
+# ---------------------------------------------------------------------------
 
 
 class TranslatorService:
-    """Proxy client — no translation logic, only HTTP forwarding."""
-
-    def __init__(self) -> None:
-        settings = get_settings()
-        self.base_url = settings.translator_service_url.rstrip("/")
-        self.api_key = settings.translator_api_key.strip()
-        self.timeout = httpx.Timeout(settings.translator_timeout_seconds)
+    """Embedded translation service — runs TranslatorEngine in a thread pool."""
 
     @property
     def is_configured(self) -> bool:
-        return bool(self.base_url and self.api_key)
-
-    def _headers(self) -> dict[str, str]:
-        return {"X-API-Key": self.api_key}
+        # Always "configured"; actual availability depends on Ollama.
+        return True
 
     async def health_check(self) -> dict[str, Any]:
-        if not self.base_url:
-            raise TranslatorServiceError("未配置 Translator 服务地址")
         try:
-            async with httpx.AsyncClient(timeout=httpx.Timeout(10.0)) as client:
-                res = await client.get(f"{self.base_url}/health")
-                payload = res.json()
-                if res.status_code >= 400 or not payload.get("success"):
-                    message = payload.get("message") or f"健康检查失败 ({res.status_code})"
-                    raise TranslatorServiceError(message)
-                return payload.get("data") or {}
-        except httpx.TimeoutException as exc:
-            raise TranslatorServiceError("Translator 服务响应超时") from exc
-        except httpx.RequestError as exc:
-            raise TranslatorServiceError(f"无法连接 Translator 服务: {exc}") from exc
+            api = await _get_api()
+            return await asyncio.to_thread(api.health_check)
+        except TranslatorServiceError:
+            raise
+        except Exception as exc:
+            raise TranslatorServiceError(str(exc)) from exc
 
-    async def _request_json(
-        self,
-        method: str,
-        path: str,
-        *,
-        json: dict | None = None,
-        files: dict | None = None,
-        data: dict | None = None,
-    ) -> dict[str, Any]:
-        if not self.is_configured:
-            raise TranslatorServiceError("Translator 服务未配置（TRANSLATOR_SERVICE_URL / TRANSLATOR_API_KEY）")
-
-        url = f"{self.base_url}{path}"
-        try:
-            async with httpx.AsyncClient(timeout=self.timeout) as client:
-                res = await client.request(
-                    method,
-                    url,
-                    headers=self._headers(),
-                    json=json,
-                    files=files,
-                    data=data,
-                )
-        except httpx.TimeoutException as exc:
-            raise TranslatorServiceError("翻译服务处理超时，请稍后重试") from exc
-        except httpx.RequestError as exc:
-            logger.warning("Translator service unreachable: %s", exc)
-            raise TranslatorServiceError("翻译服务暂时不可用") from exc
-
-        try:
-            payload = res.json()
-        except ValueError as exc:
-            raise TranslatorServiceError(f"翻译服务返回无效响应 ({res.status_code})") from exc
-
-        if res.status_code >= 400 or not payload.get("success"):
-            raise TranslatorServiceError(self._extract_error_message(payload, res.status_code))
-
-        return payload.get("data") or {}
-
-    @staticmethod
-    def _extract_error_message(payload: dict[str, Any], status: int) -> str:
-        message = payload.get("message")
-        if isinstance(message, str) and message.strip():
-            return message
-        detail = payload.get("detail")
-        if isinstance(detail, dict):
-            nested = detail.get("message")
-            if isinstance(nested, str) and nested.strip():
-                return nested
-        if isinstance(detail, str) and detail.strip():
-            return detail
-        return f"翻译服务错误 ({status})"
+    async def get_config(self) -> dict[str, Any]:
+        api = await _get_api()
+        cfg = api.engine.config
+        return {
+            "model": {
+                "name": cfg.model.name,
+                "main_model": cfg.model.main_model,
+                "draft_model": cfg.model.draft_model,
+                "base_url": cfg.model.base_url,
+            },
+            "whisper": {
+                "model_size": cfg.whisper.model_size,
+                "compute_type": cfg.whisper.compute_type,
+                "device": cfg.whisper.device,
+            },
+            "translation": {
+                "target_language": cfg.translation.target_language,
+                "single_pass_word_limit": cfg.translation.single_pass_word_limit,
+                "max_chunk_words": cfg.translation.max_chunk_words,
+                "image_max_dimension": cfg.translation.image_max_dimension,
+            },
+        }
 
     async def translate_text(
         self,
@@ -116,12 +169,23 @@ class TranslatorService:
         domain: str | None = None,
         export_format: str | None = None,
     ) -> dict[str, Any]:
-        body: dict[str, Any] = {"text": text, "mode": mode}
-        if domain:
-            body["domain"] = domain
+        from translator.exporters import normalize_format
+
+        t_mode = _parse_mode(mode)
+        t_domain = _parse_domain(domain)
+
+        api = await _get_api()
+        async with _translate_sem:
+            result = await asyncio.to_thread(api.translate_text, text, t_mode, t_domain)
+
+        data = _serialize_text_result(result)
         if export_format:
-            body["export_format"] = export_format
-        return await self._request_json("POST", "/translate/text", json=body)
+            fmt = normalize_format(export_format)
+            data["exported_content"] = await asyncio.to_thread(
+                api.export_text, result, fmt
+            )
+            data["export_format"] = fmt.value
+        return data
 
     async def translate_image(
         self,
@@ -133,16 +197,32 @@ class TranslatorService:
         export_format: str | None = None,
         content_type: str | None = None,
     ) -> dict[str, Any]:
-        data: dict[str, str] = {"mode": mode}
-        if domain:
-            data["domain"] = domain
+        from translator.exporters import normalize_format
+
+        t_mode = _parse_mode(mode)
+        t_domain = _parse_domain(domain)
+        suffix = Path(filename).suffix or ".png"
+
+        api = await _get_api()
+        with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp:
+            tmp.write(file_bytes)
+            tmp_path = Path(tmp.name)
+        try:
+            async with _translate_sem:
+                result = await asyncio.to_thread(
+                    api.translate_image, tmp_path, t_mode, t_domain
+                )
+        finally:
+            tmp_path.unlink(missing_ok=True)
+
+        data = _serialize_text_result(result)
         if export_format:
-            data["export_format"] = export_format
-        mime = content_type or _guess_mime(filename)
-        files = {"file": (filename, file_bytes, mime)}
-        return await self._request_json(
-            "POST", "/translate/image", files=files, data=data
-        )
+            fmt = normalize_format(export_format)
+            data["exported_content"] = await asyncio.to_thread(
+                api.export_text, result, fmt
+            )
+            data["export_format"] = fmt.value
+        return data
 
     async def translate_document(
         self,
@@ -154,16 +234,32 @@ class TranslatorService:
         export_format: str | None = None,
         content_type: str | None = None,
     ) -> dict[str, Any]:
-        data: dict[str, str] = {"mode": mode}
-        if domain:
-            data["domain"] = domain
+        from translator.exporters import normalize_format
+
+        t_mode = _parse_mode(mode)
+        t_domain = _parse_domain(domain)
+        suffix = Path(filename).suffix or ".pdf"
+
+        api = await _get_api()
+        with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp:
+            tmp.write(file_bytes)
+            tmp_path = Path(tmp.name)
+        try:
+            async with _translate_sem:
+                result = await asyncio.to_thread(
+                    api.translate_document, tmp_path, t_mode, t_domain
+                )
+        finally:
+            tmp_path.unlink(missing_ok=True)
+
+        data = _serialize_text_result(result)
         if export_format:
-            data["export_format"] = export_format
-        mime = content_type or _guess_mime(filename)
-        files = {"file": (filename, file_bytes, mime)}
-        return await self._request_json(
-            "POST", "/translate/document", files=files, data=data
-        )
+            fmt = normalize_format(export_format)
+            data["exported_content"] = await asyncio.to_thread(
+                api.export_text, result, fmt
+            )
+            data["export_format"] = fmt.value
+        return data
 
     async def translate_video(
         self,
@@ -175,19 +271,40 @@ class TranslatorService:
         export_format: str | None = None,
         content_type: str | None = None,
     ) -> dict[str, Any]:
-        data: dict[str, str] = {"subtitle_mode": subtitle_mode}
-        if domain:
-            data["domain"] = domain
-        if export_format:
-            data["export_format"] = export_format
-        mime = content_type or _guess_mime(filename)
-        files = {"file": (filename, file_bytes, mime)}
-        return await self._request_json(
-            "POST", "/translate/video", files=files, data=data
-        )
+        from translator.core.types import SubtitleFormat, SubtitleOutputMode
 
-    async def get_config(self) -> dict[str, Any]:
-        return await self._request_json("GET", "/config")
+        t_domain = _parse_domain(domain)
+        try:
+            output_mode = SubtitleOutputMode(subtitle_mode.lower())
+        except ValueError:
+            output_mode = SubtitleOutputMode.BILINGUAL
+
+        suffix = Path(filename).suffix or ".mp4"
+
+        api = await _get_api()
+        with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp:
+            tmp.write(file_bytes)
+            tmp_path = Path(tmp.name)
+        try:
+            async with _translate_sem:
+                result = await asyncio.to_thread(
+                    api.translate_video, tmp_path, t_domain, output_mode
+                )
+        finally:
+            tmp_path.unlink(missing_ok=True)
+
+        data = _serialize_video_result(result)
+        if export_format:
+            try:
+                subtitle_fmt = SubtitleFormat(export_format.lower().strip())
+            except ValueError:
+                subtitle_fmt = SubtitleFormat.SRT
+            exported = await asyncio.to_thread(
+                api.export_subtitles, result, subtitle_fmt, None, output_mode
+            )
+            data["exported_content"] = exported
+            data["export_format"] = subtitle_fmt.value
+        return data
 
     def read_local_file(self, relative_path: str) -> tuple[bytes, str]:
         settings = get_settings()

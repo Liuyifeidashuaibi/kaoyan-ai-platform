@@ -2,7 +2,7 @@
  * 异步任务 API — 与 chat/translator 等原有模块独立。
  */
 
-import { apiFetch } from "@/lib/api/client";
+import { rateLimitedApiFetch } from "@/lib/api/rate_limited_client";
 import { getAuthHeaders } from "@/lib/api/auth-fetch";
 
 export type TaskStatus = "pending" | "running" | "done" | "failed";
@@ -31,7 +31,7 @@ export interface MembershipQuota {
 
 async function tasksFetch<T>(path: string, init?: RequestInit): Promise<T> {
   const headers = await getAuthHeaders();
-  return apiFetch<T>(path, {
+  return rateLimitedApiFetch<T>(path, {
     ...init,
     headers: { ...headers, ...(init?.headers as Record<string, string>) },
   });
@@ -42,7 +42,7 @@ async function tasksUpload<T>(
   formData: FormData
 ): Promise<T> {
   const headers = await getAuthHeaders();
-  return apiFetch<T>(path, {
+  return rateLimitedApiFetch<T>(path, {
     method: "POST",
     body: formData,
     headers,
@@ -50,7 +50,7 @@ async function tasksUpload<T>(
 }
 
 export async function fetchTasksHealth() {
-  return apiFetch<{
+  return rateLimitedApiFetch<{
     redis_enabled: boolean;
     redis_url_configured: boolean;
     celery_broker: string;

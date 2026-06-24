@@ -21,8 +21,5 @@ if ($LASTEXITCODE -ne 0) {
     exit $LASTEXITCODE
 }
 
-. "$PSScriptRoot\_dev-common.ps1"
-Stop-PortProcess -Port 8200 -Label "TTS host :8200"
-
 Write-Host "Docker services stopped." -ForegroundColor Green
 Write-Host "Close Ollama manually from system tray if it is running." -ForegroundColor DarkGray

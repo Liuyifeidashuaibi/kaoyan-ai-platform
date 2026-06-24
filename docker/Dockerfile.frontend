@@ -1,11 +1,13 @@
 # Next.js 前端 — 本地单机 Docker 测试
 # 构建: docker build -f docker/Dockerfile.frontend -t kaoyan-frontend .
 
+# ── deps 层：仅依赖变更时重新 npm ci ──
 FROM node:20-alpine AS deps
 WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci
 
+# ── builder 层：完整依赖 + 构建 ──
 FROM node:20-alpine AS builder
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
@@ -21,6 +23,7 @@ ENV NEXT_PUBLIC_SUPABASE_URL=$NEXT_PUBLIC_SUPABASE_URL
 ENV NEXT_PUBLIC_SUPABASE_ANON_KEY=$NEXT_PUBLIC_SUPABASE_ANON_KEY
 RUN npm run build
 
+# ── runner 层：最小运行时镜像 ──
 FROM node:20-alpine AS runner
 WORKDIR /app
 ENV NODE_ENV=production
@@ -36,5 +39,9 @@ EXPOSE 3000
 ENV PORT=3000
 ENV HOSTNAME=0.0.0.0
 ENV BACKEND_URL=http://backend:8000
+
+# 健康检查
+HEALTHCHECK --interval=30s --timeout=5s --start-period=15s --retries=3 \
+  CMD wget -qO- http://localhost:3000/ || exit 1
 
 CMD ["node", "server.js"]

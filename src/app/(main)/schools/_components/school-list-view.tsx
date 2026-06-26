@@ -151,7 +151,7 @@ export function SchoolListView({ search, onLoadingChange }: SchoolListViewProps)
 
       {!loading && (
         <p className="mb-3 text-sm text-muted-foreground">
-          共 <span className="font-semibold text-[#007AFF]">{total}</span> 所院校
+          共 <span className="font-semibold text-[#111827]">{total}</span> 所院校
           {hasMore ? `，已显示 ${visibleItems.length} 所` : null}
         </p>
       )}
@@ -233,7 +233,7 @@ function InlineChip({
       className={cn(
         "rounded-lg border px-2.5 py-1 text-xs transition-colors",
         active
-          ? "border-[#007AFF]/30 bg-[#007AFF]/10 font-medium text-[#007AFF]"
+          ? "border-black/20 bg-black/5 font-medium text-[#111827]"
           : "border-border bg-background text-foreground hover:bg-muted/50"
       )}
     >

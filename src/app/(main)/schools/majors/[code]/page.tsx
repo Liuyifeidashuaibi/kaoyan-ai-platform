@@ -149,7 +149,7 @@ function MajorDetailContent({ code }: { code: string }) {
                   className={cn(
                     "rounded-full px-3 py-1 text-xs font-medium",
                     !degreeType
-                      ? "bg-[#007AFF] text-white"
+                      ? "bg-[#111827] text-white"
                       : "bg-muted text-muted-foreground hover:bg-muted/80"
                   )}
                 >
@@ -163,7 +163,7 @@ function MajorDetailContent({ code }: { code: string }) {
                     className={cn(
                       "rounded-full px-3 py-1 text-xs font-medium",
                       degreeType === deg
-                        ? "bg-[#007AFF] text-white"
+                        ? "bg-[#111827] text-white"
                         : "bg-muted text-muted-foreground hover:bg-muted/80"
                     )}
                   >
@@ -187,7 +187,7 @@ function MajorDetailContent({ code }: { code: string }) {
               <button
                 type="button"
                 onClick={() => load()}
-                className="rounded-lg bg-[#007AFF] px-4 py-2 text-sm font-medium text-white hover:bg-[#007AFF]/90"
+                className="rounded-lg border border-border bg-white px-4 py-2 text-sm font-medium text-foreground hover:bg-muted/50"
               >
                 重试
               </button>
@@ -267,7 +267,7 @@ function SchoolOfferingCard({
         </Link>
         <Link
           href={`/schools/${group.university_id}?tab=scores&major=${majorCode}`}
-          className="shrink-0 text-xs text-[#007AFF] hover:underline"
+          className="shrink-0 text-xs text-[#111827] hover:underline"
         >
           分数
         </Link>
@@ -305,7 +305,7 @@ function SchoolOfferingCard({
                   {uniqueScores.map((s) => (
                     <tr key={s.id} className="hover:bg-muted/20">
                       <td className="py-2 pl-2 font-medium">{s.year}</td>
-                      <td className="py-2 text-center text-base font-semibold text-[#007AFF]">
+                      <td className="py-2 text-center text-base font-semibold text-[#111827]">
                         {s.total_score}
                       </td>
                       <td className="py-2 text-center">{s.politics_score}</td>

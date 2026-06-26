@@ -85,13 +85,13 @@ export function BottomFilterSheet({
                 "w-full flex items-center justify-between px-4 py-3 text-sm",
                 "hover:bg-muted/50 transition-colors",
                 selected === opt.value &&
-                  "text-[#007AFF] font-medium"
+                  "text-[#111827] font-medium"
               )}
             >
               <span>{opt.label}</span>
               {selected === opt.value && (
                 <svg
-                  className="size-4 text-[#007AFF]"
+                  className="size-4 text-[#111827]"
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"

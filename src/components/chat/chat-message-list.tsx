@@ -9,7 +9,7 @@ import React, {
   useState,
 } from "react";
 import dynamic from "next/dynamic";
-import { Bot, Check, ChevronDown, Copy, RefreshCw, ThumbsDown, ThumbsUp, User } from "lucide-react";
+import { Check, ChevronDown, Copy, RefreshCw, ThumbsDown, ThumbsUp } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import type { ChatMessage } from "@/lib/api/types";
@@ -172,54 +172,55 @@ const MessageBubble = memo(function MessageBubble({
   }, [imageSrc]);
 
   return (
-    <div className={cn("group flex gap-3", isUser ? "flex-row-reverse" : "flex-row")}>
-      {/* Avatar */}
+    <div className={cn("group flex w-full", isUser ? "justify-end" : "justify-start")}>
       <div
         className={cn(
-          "mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-lg text-sm",
-          isUser
-            ? "bg-primary text-primary-foreground"
-            : "bg-gradient-to-br from-violet-500 to-indigo-600 text-white"
+          "flex flex-col",
+          isUser ? "max-w-[82%] items-end" : "w-full items-start"
         )}
       >
-        {isUser ? <User className="size-4" /> : <Bot className="size-4" />}
-      </div>
-
-      {/* Content */}
-      <div className={cn("flex max-w-[82%] flex-col", isUser ? "items-end" : "items-start")}>
-        <div
-          className={cn(
-            "rounded-2xl px-4 py-3 text-sm leading-relaxed",
-            isUser
-              ? "rounded-tr-sm bg-primary text-primary-foreground"
-              : "rounded-tl-sm border border-border/40 bg-background text-foreground shadow-sm"
-          )}
-        >
-          {imageSrc && !imageBroken && (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={imageSrc}
-              alt="Uploaded image"
-              className="mb-2 max-h-52 max-w-full rounded-lg border border-black/10 bg-white object-contain"
-              onError={() => setImageBroken(true)}
-            />
-          )}
-          {imageSrc && imageBroken && (
-            <div className="mb-2 rounded-lg border border-dashed border-black/20 bg-white/90 px-3 py-2 text-xs text-muted-foreground">
-              Failed to load image. Refresh or upload again.
-            </div>
-          )}
-          {isUser ? (
-            userText ? (
+        {isUser ? (
+          <div className="rounded-3xl bg-[#f4f4f4] px-4 py-2.5 text-sm leading-relaxed text-[#1a1a1a]">
+            {imageSrc && !imageBroken && (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={imageSrc}
+                alt="Uploaded image"
+                className="mb-2 max-h-52 max-w-full rounded-2xl border border-black/10 bg-white object-contain"
+                onError={() => setImageBroken(true)}
+              />
+            )}
+            {imageSrc && imageBroken && (
+              <div className="mb-2 rounded-lg border border-dashed border-black/20 bg-white/90 px-3 py-2 text-xs text-muted-foreground">
+                Failed to load image. Refresh or upload again.
+              </div>
+            )}
+            {userText ? (
               <div className="whitespace-pre-wrap break-words">{userText}</div>
-            ) : null
-          ) : (
-            <div className="prose-sm max-w-none break-words">
+            ) : null}
+          </div>
+        ) : (
+          <div className="w-full max-w-[82%]">
+            {imageSrc && !imageBroken && (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={imageSrc}
+                alt="Uploaded image"
+                className="mb-2 max-h-52 max-w-full rounded-2xl border border-black/10 bg-white object-contain"
+                onError={() => setImageBroken(true)}
+              />
+            )}
+            {imageSrc && imageBroken && (
+              <div className="mb-2 rounded-lg border border-dashed border-black/20 bg-white/90 px-3 py-2 text-xs text-muted-foreground">
+                Failed to load image. Refresh or upload again.
+              </div>
+            )}
+            <div className="prose-sm max-w-none break-words text-foreground">
               <ChatMarkdownContent content={content} />
               {isStreaming && <TypingCursor />}
             </div>
-          )}
-        </div>
+          </div>
+        )}
 
         {/* Actions — only for assistant messages, not while streaming */}
         {!isUser && !isStreaming && content && (
@@ -298,20 +299,6 @@ export function ChatMessageList({
         className="h-full overflow-y-auto scroll-smooth"
       >
         <div className="mx-auto max-w-3xl space-y-6 px-4 py-6 md:px-6">
-          {messages.length === 0 && !isStreaming && (
-            <div className="flex flex-col items-center justify-center py-24 text-center">
-              <div className="mb-4 flex size-16 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-500 to-indigo-600 text-white shadow-lg">
-                <Bot className="size-8" />
-              </div>
-              <h2 className="text-xl font-semibold">PNIXPG Assistant</h2>
-              <p className="mt-3 max-w-sm text-sm text-muted-foreground leading-relaxed">
-                Your study assistant for math, English, politics, and more.
-                <br />
-                Upload problem images for step-by-step solutions.
-              </p>
-            </div>
-          )}
-
           {messages.map((msg, i) => (
             <MessageBubble
               key={msg.id}

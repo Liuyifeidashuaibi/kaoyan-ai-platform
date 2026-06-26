@@ -14,7 +14,6 @@ import { cn } from "@/lib/utils";
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -79,7 +78,6 @@ export default function HomePage() {
                   <Icon className="size-5" />
                 </div>
                 <CardTitle>{item.label}</CardTitle>
-                <CardDescription>{item.description}</CardDescription>
               </CardHeader>
               <CardContent className="mt-auto">
                 <Link

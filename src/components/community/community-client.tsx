@@ -140,7 +140,6 @@ export function CommunityClient() {
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">Community</h1>
-          <p className="text-muted-foreground">Share study tips and learning resources</p>
         </div>
         <div className="flex flex-wrap gap-2">
           <Link href="/following" className={buttonVariants({ variant: "outline", size: "sm" })}>

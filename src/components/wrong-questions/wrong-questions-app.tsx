@@ -1,10 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
-  ArrowLeft,
   ChevronLeft,
   FolderPlus,
   Plus,
@@ -215,27 +213,14 @@ export function WrongQuestionsApp({ initialFolder }: WrongQuestionsAppProps = {}
       <div className="border-b border-border px-4 py-4 md:px-6">
         <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-3">
-            {inFolder ? (
+            {inFolder && (
               <Button variant="ghost" size="icon-sm" onClick={backToFolders}>
                 <ChevronLeft className="size-4" />
               </Button>
-            ) : (
-              <Link href="/">
-                <Button variant="ghost" size="icon-sm">
-                  <ArrowLeft className="size-4" />
-                </Button>
-              </Link>
             )}
-            <div>
-              <h1 className="text-lg font-semibold">
-                {inFolder ? activeCategory.name : "Notebook"}
-              </h1>
-              <p className="text-sm text-muted-foreground">
-                {inFolder
-                  ? `${questions.length} items · sorted by time`
-                  : "Your private library for images, videos, documents, and audio"}
-              </p>
-            </div>
+            <h1 className="text-lg font-semibold">
+              {inFolder ? activeCategory.name : "Notebook"}
+            </h1>
           </div>
           <div className="flex gap-2">
             {inFolder ? (
@@ -289,14 +274,12 @@ export function WrongQuestionsApp({ initialFolder }: WrongQuestionsAppProps = {}
           ) : !inFolder ? (
             categories.length === 0 ? (
               <div className="flex flex-col items-center py-20 text-center">
-                <div className="mb-4 flex size-20 items-center justify-center rounded-2xl bg-amber-500/10 text-amber-600">
-                  <FolderPlus className="size-10" />
+                <div className="mb-4 flex size-12 items-center justify-center rounded-full border border-border">
+                  <Plus className="size-5 text-muted-foreground" />
                 </div>
-                <p className="text-muted-foreground">No subject folders yet</p>
-                <p className="mt-1 text-sm text-muted-foreground">
-                  Create subjects like Math or English, then add your study materials
-                </p>
+                <p className="text-sm text-muted-foreground">No subject folders yet</p>
                 <Button
+                  variant="outline"
                   className="mt-6"
                   onClick={() => setFolderDialogOpen(true)}
                 >
@@ -304,7 +287,7 @@ export function WrongQuestionsApp({ initialFolder }: WrongQuestionsAppProps = {}
                 </Button>
               </div>
             ) : (
-              <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+              <div className="overflow-hidden rounded-xl border border-border/50">
                 {categories.map((cat) => (
                   <CategoryFolderCard
                     key={cat.id}

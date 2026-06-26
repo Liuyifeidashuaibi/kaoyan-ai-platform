@@ -115,7 +115,7 @@ export function GlobalFilterDrawer({ open, onClose }: GlobalFilterDrawerProps) {
                 <div
                   className={`size-5 rounded flex items-center justify-center border-2 transition-colors ${
                     draft[key]
-                      ? "bg-[#007AFF]/100 border-[#007AFF]"
+                      ? "bg-[#111827] border-[#111827]"
                       : "border-border"
                   }`}
                 >
@@ -143,7 +143,7 @@ export function GlobalFilterDrawer({ open, onClose }: GlobalFilterDrawerProps) {
           <button
             onClick={handleConfirm}
             disabled={!hasAny}
-            className="w-full rounded-xl bg-[#007AFF]/100 py-3 text-sm font-semibold text-white disabled:opacity-50 active:bg-[#007AFF] transition-colors"
+            className="w-full rounded-xl bg-[#111827] py-3 text-sm font-semibold text-white disabled:opacity-50 active:bg-[#111827] transition-colors"
           >
             确认筛选
           </button>

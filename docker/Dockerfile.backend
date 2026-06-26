@@ -6,12 +6,15 @@ FROM python:3.11-slim
 WORKDIR /app
 
 # 系统依赖：build-essential(编译 C 扩展) + ffmpeg(音频) + libsndfile1(TTS)
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    build-essential \
-    ffmpeg \
-    libsndfile1 \
-    curl \
-    && rm -rf /var/lib/apt/lists/*
+# 加入重试机制应对 Debian 镜像源不稳定
+RUN apt-get update && \
+    for i in 1 2 3; do \
+      apt-get install -y --no-install-recommends --fix-missing \
+        build-essential ffmpeg libsndfile1 curl && break || sleep 15; \
+    done && \
+    apt-get install -y --no-install-recommends \
+      build-essential ffmpeg libsndfile1 curl && \
+    rm -rf /var/lib/apt/lists/*
 
 # pip 依赖层（利用 Docker cache，仅 requirements.txt 变更时重新安装）
 COPY backend/requirements.txt backend/requirements.txt

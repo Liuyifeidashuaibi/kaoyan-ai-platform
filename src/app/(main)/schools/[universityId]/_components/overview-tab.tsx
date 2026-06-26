@@ -79,8 +79,8 @@ export function OverviewTab({
   return (
     <div className="space-y-3 p-4">
       {highlightDigits && (onGoMajors || onGoScores) && (
-        <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-[#007AFF]/15 bg-[#007AFF]/10 px-4 py-2.5 text-xs">
-          <span className="text-[#007AFF]">
+        <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-black/10 bg-black/5 px-4 py-2.5 text-xs">
+          <span className="text-[#111827]">
             已关联专业
             {highlightedMajor ? `：${highlightedMajor.name}` : ` ${highlightDigits}`}
           </span>
@@ -89,7 +89,7 @@ export function OverviewTab({
               <button
                 type="button"
                 onClick={onGoMajors}
-                className="font-medium text-[#007AFF] hover:underline"
+                className="font-medium text-[#111827] hover:underline"
               >
                 查看专业
               </button>
@@ -98,7 +98,7 @@ export function OverviewTab({
               <button
                 type="button"
                 onClick={onGoScores}
-                className="font-medium text-[#007AFF] hover:underline"
+                className="font-medium text-[#111827] hover:underline"
               >
                 查看分数
               </button>
@@ -145,10 +145,10 @@ export function OverviewTab({
             disabled={!item.onClick}
             className={cn(
               "flex flex-col items-center rounded-xl border border-border bg-card py-3",
-              item.onClick && "cursor-pointer hover:border-[#007AFF]/20 hover:bg-[#007AFF]/10"
+              item.onClick && "cursor-pointer hover:border-black/20 hover:bg-black/5"
             )}
           >
-            <p className="text-xl font-bold text-[#007AFF] leading-none">
+            <p className="text-xl font-bold text-[#111827] leading-none">
               {item.value}
               <span className="text-xs font-normal text-muted-foreground">{item.unit}</span>
             </p>
@@ -175,7 +175,7 @@ export function OverviewTab({
             <button
               type="button"
               onClick={onGoMajors}
-              className="rounded-lg bg-[#007AFF] px-4 py-2 text-xs font-medium text-white hover:bg-[#007AFF]/90"
+              className="rounded-lg border border-border bg-white px-4 py-2 text-xs font-medium text-foreground hover:bg-muted/50"
             >
               查看全部专业
             </button>
@@ -206,7 +206,7 @@ export function OverviewTab({
           <InfoRow label="院校层次">
             <span className="flex flex-wrap gap-1">
               {tags.map((t) => (
-                <span key={t} className="rounded bg-[#007AFF]/10 border border-[#007AFF]/15 px-1.5 py-px text-xs text-[#007AFF] font-medium">
+                <span key={t} className="rounded bg-black/5 border border-black/10 px-1.5 py-px text-xs text-[#111827] font-medium">
                   {t}
                 </span>
               ))}
@@ -228,7 +228,7 @@ export function OverviewTab({
           </p>
           <button
             onClick={() => setIntroExpanded((v) => !v)}
-            className="mt-1.5 flex items-center gap-0.5 text-xs font-medium text-[#007AFF]"
+            className="mt-1.5 flex items-center gap-0.5 text-xs font-medium text-[#111827]"
           >
             {introExpanded ? <><ChevronUp className="size-3" />收起</> : <><ChevronDown className="size-3" />展开全文</>}
           </button>

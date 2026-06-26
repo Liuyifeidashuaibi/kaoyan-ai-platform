@@ -13,7 +13,7 @@ interface TabNavProps {
   active: string;
   onChange: (value: string) => void;
   className?: string;
-  /** 选中态颜色：brand=#007AFF */
+  /** 选中态颜色：brand=黑 */
   activeColor?: "orange" | "primary" | "brand";
 }
 
@@ -46,14 +46,14 @@ export function TabNav({
 
   const activeTextClass =
     activeColor === "brand"
-      ? "text-[#007AFF]"
+      ? "text-[#111827]"
       : activeColor === "orange"
         ? "text-orange-500"
         : "text-primary";
 
   const activeBarClass =
     activeColor === "brand"
-      ? "bg-[#007AFF]"
+      ? "bg-[#111827]"
       : activeColor === "orange"
         ? "bg-orange-500"
         : "bg-primary";

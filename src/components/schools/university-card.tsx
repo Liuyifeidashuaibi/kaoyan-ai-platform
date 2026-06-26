@@ -1,12 +1,10 @@
 ﻿"use client";
 
 import Link from "next/link";
-import { Flame } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
   type UniversityWithMajorCount,
   getUniversityInitial,
-  isHotUniversity,
 } from "@/lib/api/schools";
 import { LevelTags } from "./level-tags";
 
@@ -22,7 +20,6 @@ export function UniversityCard({
   showAskButton = true,
 }: UniversityCardProps) {
   const initial = getUniversityInitial(university.name);
-  const hot = isHotUniversity(university);
   const gradUrl = university.graduate_url;
 
   return (
@@ -40,11 +37,11 @@ export function UniversityCard({
             <img
               src={university.logo_url}
               alt={university.name}
-              className="size-14 rounded-full object-cover ring-2 ring-[#007AFF]/10"
+              className="size-14 rounded-full object-cover ring-2 ring-black/10"
             />
           ) : (
-            <div className="flex size-14 items-center justify-center rounded-full bg-[#007AFF]/10 ring-2 ring-[#007AFF]/15">
-              <span className="text-base font-bold text-[#007AFF]">{initial}</span>
+            <div className="flex size-14 items-center justify-center rounded-full bg-black/5 ring-2 ring-black/10">
+              <span className="text-base font-bold text-[#111827]">{initial}</span>
             </div>
           )}
         </div>
@@ -54,7 +51,6 @@ export function UniversityCard({
             <h3 className="truncate text-base font-bold text-foreground">
               {university.name}
             </h3>
-            {hot && <Flame className="size-4 shrink-0 fill-[#007AFF] text-[#007AFF]" />}
           </div>
           <LevelTags university={university} />
         </div>
@@ -92,7 +88,7 @@ export function UniversityCard({
                 window.open(gradUrl, "_blank", "noopener,noreferrer");
               }
             }}
-            className="shrink-0 rounded-full bg-[#007AFF]/100 px-4 py-1.5 text-xs font-medium text-white transition-colors hover:bg-[#007AFF]"
+            className="shrink-0 rounded-full border border-border bg-white px-4 py-1.5 text-xs font-medium text-foreground transition-colors hover:bg-muted/50"
           >
             访问研究生官网
           </span>

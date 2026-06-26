@@ -207,7 +207,7 @@ function UniversityDetailContent({ universityId }: UniversityDetailClientProps) 
               <button
                 type="button"
                 onClick={() => loadUniversity()}
-                className="rounded-lg bg-[#007AFF] px-4 py-2 text-sm font-medium text-white hover:bg-[#007AFF]/90"
+                className="rounded-lg border border-border bg-white px-4 py-2 text-sm font-medium text-foreground hover:bg-muted/50"
               >
                 重试
               </button>
@@ -252,28 +252,27 @@ function UniversityDetailContent({ universityId }: UniversityDetailClientProps) 
           </button>
         </div>
 
-        <div className="relative mx-4 overflow-hidden rounded-2xl bg-gradient-to-r from-[#007AFF] to-[#007AFF]/80 lg:mx-0">
-          <div className="absolute inset-0 bg-black/20" />
+        <div className="relative mx-4 overflow-hidden rounded-2xl border border-border bg-white lg:mx-0">
           <div className="relative flex items-end gap-4 px-6 py-8">
             {university.logo_url ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img
                 src={university.logo_url}
                 alt={university.name}
-                className="size-20 rounded-full border-4 border-white object-cover shadow-lg"
+                className="size-20 rounded-full border-4 border-border object-cover shadow-lg"
               />
             ) : (
-              <div className="flex size-20 items-center justify-center rounded-full border-4 border-white bg-white shadow-lg">
-                <span className="text-2xl font-bold text-[#007AFF]">{initial}</span>
+              <div className="flex size-20 items-center justify-center rounded-full border-4 border-border bg-black/5 shadow-lg">
+                <span className="text-2xl font-bold text-[#111827]">{initial}</span>
               </div>
             )}
-            <div className="min-w-0 flex-1 pb-1 text-white">
+            <div className="min-w-0 flex-1 pb-1 text-[#111827]">
               <h2 className="text-xl font-bold lg:text-2xl">{university.name}</h2>
-              <p className="mt-1 text-sm text-white/90">
+              <p className="mt-1 text-sm text-muted-foreground">
                 {university.province} · {university.city} · {zone}
               </p>
               <div className="mt-2 flex flex-wrap gap-1.5">
-                <LevelTags university={university} variant="light" />
+                <LevelTags university={university} />
               </div>
             </div>
           </div>
@@ -297,7 +296,7 @@ function UniversityDetailContent({ universityId }: UniversityDetailClientProps) 
             rel="noopener noreferrer"
             onClick={(e) => !gradUrl && e.preventDefault()}
             aria-disabled={!gradUrl}
-            className={`flex flex-1 items-center justify-center gap-1.5 rounded-xl bg-[#007AFF] py-3 text-sm font-medium text-white hover:bg-[#007AFF]/90 ${!gradUrl ? "pointer-events-none opacity-40" : ""}`}
+            className={`flex flex-1 items-center justify-center gap-1.5 rounded-xl border border-border bg-white py-3 text-sm font-medium text-foreground hover:bg-muted/50 ${!gradUrl ? "pointer-events-none opacity-40" : ""}`}
           >
             访问研究生官网
             <ExternalLink className="size-3.5" />

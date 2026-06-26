@@ -121,15 +121,15 @@ export function ScoresTab({
   return (
     <div className="flex h-full flex-col">
       {highlightDigits && onClearHighlight && (
-        <div className="flex items-center justify-between gap-2 border-b border-[#007AFF]/15 bg-[#007AFF]/10 px-4 py-2 text-xs">
-          <span className="text-[#007AFF]">
+        <div className="flex items-center justify-between gap-2 border-b border-black/10 bg-black/5 px-4 py-2 text-xs">
+          <span className="text-[#111827]">
             已定位专业
             {highlightedName ? `：${highlightedName}` : ` ${highlightDigits}`}
           </span>
           <button
             type="button"
             onClick={onClearHighlight}
-            className="shrink-0 font-medium text-[#007AFF] hover:underline"
+            className="shrink-0 font-medium text-[#111827] hover:underline"
           >
             查看全部
           </button>
@@ -207,7 +207,7 @@ export function ScoresTab({
                       ref={highlighted ? highlightRef : undefined}
                       className={cn(
                         "hover:bg-muted/20",
-                        highlighted && "bg-[#007AFF]/10"
+                        highlighted && "bg-black/5"
                       )}
                     >
                       <td className="py-3 pl-4">

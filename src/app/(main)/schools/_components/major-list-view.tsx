@@ -144,7 +144,7 @@ export function MajorListView({
       </div>
 
       {!loading && search && (
-        <p className="mb-3 text-xs text-[#007AFF]">
+        <p className="mb-3 text-xs text-[#111827]">
           关键词筛选：「{search}」
           <button
             type="button"
@@ -159,7 +159,7 @@ export function MajorListView({
       {!loading && (
         <p className="mb-3 text-sm text-muted-foreground">
           共找到{" "}
-          <span className="font-semibold text-[#007AFF]">{total}</span>{" "}
+          <span className="font-semibold text-[#111827]">{total}</span>{" "}
           个{degreeType === "学硕" ? "学术型" : "专业型"}招生专业
           {hasMore ? `，已显示 ${visibleItems.length} 个` : null}
         </p>

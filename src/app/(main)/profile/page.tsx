@@ -19,7 +19,7 @@ export default async function ProfilePage() {
   const user = await requireAuth("/profile");
 
   return (
-    <div className="flex flex-col gap-6 p-6 md:p-8">
+    <div className="mx-auto flex w-full max-w-4xl flex-col gap-6 p-6 md:p-8">
       <h1 className="text-2xl font-semibold tracking-tight">Profile</h1>
       <ProfilePanel
         userId={user.id}

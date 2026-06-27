@@ -1,25 +1,43 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { ImagePlus, Loader2, Mic, Send, Square, Volume2, X } from "lucide-react";
+import {
+  Bot,
+  ChevronDown,
+  FileText,
+  Loader2,
+  MessageSquare,
+  Mic,
+  Paperclip,
+  Send,
+  Square,
+  Volume2,
+  X,
+} from "lucide-react";
 
 import { transcribeAudio } from "@/lib/api/chat";
 import { WavRecorder } from "@/lib/audio/wav-recorder";
 import { cn } from "@/lib/utils";
 
-const ALLOWED_MIME = new Set([
+const ALLOWED_IMG_MIME = new Set([
   "image/jpeg",
   "image/png",
   "image/gif",
   "image/webp",
 ]);
-const ALLOWED_EXT = new Set(["jpg", "jpeg", "png", "gif", "webp"]);
+const ALLOWED_IMG_EXT = new Set(["jpg", "jpeg", "png", "gif", "webp"]);
+const ALLOWED_DOC_EXT = new Set(["pdf", "docx", "doc", "txt", "md", "csv"]);
 const HEIC_EXT = new Set(["heic", "heif"]);
 const HEIC_MIME = new Set(["image/heic", "image/heif"]);
 const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
+const MAX_DOC_BYTES = 10 * 1024 * 1024;
 const MAX_AUDIO_SECONDS = 30;
 
-type ImageAttachState = "idle" | "loading" | "ready" | "error";
+const FILE_INPUT_ACCEPT =
+  "image/jpeg,image/png,image/gif,image/webp,.jpg,.jpeg,.png,.gif,.webp,.pdf,.docx,.doc,.txt,.md,.csv";
+
+type AttachState = "idle" | "loading" | "ready" | "error";
+type AttachKind = "image" | "document" | null;
 
 export type ChatSendPayload = {
   content: string;
@@ -27,6 +45,7 @@ export type ChatSendPayload = {
   previewUrl: string | null;
   audioFile: Blob | null;
   enableTts: boolean;
+  docFile: File | null;
 };
 
 type ChatInputProps = {
@@ -35,12 +54,25 @@ type ChatInputProps = {
   disabled?: boolean;
   isStreaming?: boolean;
   placeholder?: string;
+  chatMode?: "chat" | "agent";
+  onModeChange?: (mode: "chat" | "agent") => void;
 };
 
-function isAllowedImageFile(file: File): boolean {
-  if (ALLOWED_MIME.has(file.type)) return true;
+function isImageFile(file: File): boolean {
+  if (ALLOWED_IMG_MIME.has(file.type)) return true;
   const ext = file.name.split(".").pop()?.toLowerCase() ?? "";
-  return ALLOWED_EXT.has(ext);
+  return ALLOWED_IMG_EXT.has(ext);
+}
+
+function isDocumentFile(file: File): boolean {
+  const ext = file.name.split(".").pop()?.toLowerCase() ?? "";
+  return ALLOWED_DOC_EXT.has(ext);
+}
+
+function formatBytes(bytes: number): string {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
 }
 
 function formatSeconds(sec: number): string {
@@ -63,22 +95,27 @@ export function ChatInput({
   disabled,
   isStreaming,
   placeholder = "Ask anything…",
+  chatMode = "chat",
+  onModeChange,
 }: ChatInputProps) {
   const [content, setContent] = useState("");
-  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [attachFile, setAttachFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-  const [imageState, setImageState] = useState<ImageAttachState>("idle");
+  const [attachState, setAttachState] = useState<AttachState>("idle");
+  const [attachKind, setAttachKind] = useState<AttachKind>(null);
   const [imageHint, setImageHint] = useState<string | null>(null);
   const [isRecording, setIsRecording] = useState(false);
   const [isTranscribing, setIsTranscribing] = useState(false);
   const [recordSeconds, setRecordSeconds] = useState(0);
   const [enableTts, setEnableTts] = useState(false);
+  const [modeDropdownOpen, setModeDropdownOpen] = useState(false);
 
   const fileRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const previewUrlRef = useRef<string | null>(null);
   const wavRecorderRef = useRef<WavRecorder | null>(null);
   const recordTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const modeDropdownRef = useRef<HTMLDivElement>(null);
 
   const revokePreview = useCallback(() => {
     if (previewUrlRef.current) {
@@ -96,6 +133,18 @@ export function ChatInput({
     }
   }, [revokePreview]);
 
+  // Close mode dropdown on outside click
+  useEffect(() => {
+    if (!modeDropdownOpen) return;
+    const handler = (e: MouseEvent) => {
+      if (modeDropdownRef.current && !modeDropdownRef.current.contains(e.target as Node)) {
+        setModeDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [modeDropdownOpen]);
+
   const resizeTextarea = useCallback(() => {
     const el = textareaRef.current;
     if (!el) return;
@@ -107,10 +156,11 @@ export function ChatInput({
     resizeTextarea();
   }, [content, resizeTextarea]);
 
-  const clearImage = useCallback(() => {
+  const clearAttach = useCallback(() => {
     revokePreview();
-    setImageFile(null);
-    setImageState("idle");
+    setAttachFile(null);
+    setAttachState("idle");
+    setAttachKind(null);
     setImageHint(null);
   }, [revokePreview]);
 
@@ -186,62 +236,71 @@ export function ChatInput({
       if (!file) return;
 
       const ext = file.name.split(".").pop()?.toLowerCase() ?? "";
+      const isImg = isImageFile(file);
+      const isDoc = isDocumentFile(file);
+
+      // HEIC check
       if (HEIC_MIME.has(file.type) || HEIC_EXT.has(ext)) {
-        clearImage();
-        setImageState("error");
-        setImageHint(
-          "HEIC format is not supported. Export as JPEG from your photo library."
-        );
+        clearAttach();
+        setAttachState("error");
+        setImageHint("HEIC format is not supported. Export as JPEG from your photo library.");
         return;
       }
 
-      if (!isAllowedImageFile(file)) {
-        clearImage();
-        setImageState("error");
-        setImageHint("Only jpg, jpeg, png, gif, and webp images are supported");
+      if (!isImg && !isDoc) {
+        clearAttach();
+        setAttachState("error");
+        setImageHint("Unsupported file type. Supported: images, PDF, DOCX, TXT, MD, CSV");
         return;
       }
 
-      if (file.size > MAX_IMAGE_BYTES) {
-        clearImage();
-        setImageState("error");
-        setImageHint("Image too large (over 5MB). Compress and try again.");
+      const maxBytes = isImg ? MAX_IMAGE_BYTES : MAX_DOC_BYTES;
+      if (file.size > maxBytes) {
+        clearAttach();
+        setAttachState("error");
+        setImageHint(`File too large (over ${maxBytes === MAX_IMAGE_BYTES ? "5" : "10"}MB)`);
         return;
       }
 
       revokePreview();
-      setImageFile(null);
-      setImageState("loading");
-      setImageHint("Waiting for image to load…");
+      setAttachFile(null);
+      setAttachState("loading");
+      setAttachKind(isImg ? "image" : "document");
+      setImageHint(isImg ? "Loading image…" : "Loading file…");
 
-      const objectUrl = URL.createObjectURL(file);
-      previewUrlRef.current = objectUrl;
-      setPreviewUrl(objectUrl);
+      // For images, create preview URL
+      if (isImg) {
+        const objectUrl = URL.createObjectURL(file);
+        previewUrlRef.current = objectUrl;
+        setPreviewUrl(objectUrl);
+      }
 
       try {
         const buffer = await file.arrayBuffer();
         if (buffer.byteLength === 0) throw new Error("empty");
-        setImageFile(file);
-        setImageState("ready");
+        setAttachFile(file);
+        setAttachState("ready");
+        setAttachKind(isImg ? "image" : "document");
         setImageHint(null);
       } catch {
         revokePreview();
-        setImageFile(null);
-        setImageState("error");
-        setImageHint("Failed to read image. Please select again.");
+        setAttachFile(null);
+        setAttachState("error");
+        setAttachKind(null);
+        setImageHint("Failed to read file. Please select again.");
       }
     },
-    [clearImage, revokePreview]
+    [clearAttach, revokePreview]
   );
 
   const trimmed = content.trim();
-  const hasImageSelection = imageState !== "idle";
-  const imageReady = imageState === "ready" && imageFile !== null;
-  const imagePending = imageState === "loading";
+  const hasAttach = attachState !== "idle";
+  const attachReady = attachState === "ready" && attachFile !== null;
+  const attachPending = attachState === "loading";
   const voiceBusy = isRecording || isTranscribing;
 
   const canSend =
-    (!!trimmed && !hasImageSelection) || imageReady || (!!trimmed && imageReady);
+    (!!trimmed && !hasAttach) || attachReady || (!!trimmed && attachReady);
 
   const handleSend = useCallback(() => {
     if (isStreaming) {
@@ -249,13 +308,26 @@ export function ChatInput({
       return;
     }
     if (voiceBusy) return;
-    if (imagePending) return;
-    if (hasImageSelection && !imageReady) return;
+    if (attachPending) return;
+    if (hasAttach && !attachReady) return;
     if (!canSend) return;
 
-    const text = trimmed || (imageReady ? "Please analyze this problem" : "");
-    const fileToSend = imageReady ? imageFile : null;
-    const previewToSend = imageReady ? previewUrlRef.current : null;
+    const isImg = attachReady && attachKind === "image" && attachFile;
+    const isDoc = attachReady && attachKind === "document" && attachFile;
+
+    let text = trimmed;
+    // For documents, append filename to content
+    if (isDoc && !trimmed) {
+      text = `请分析这份文件：${attachFile!.name}`;
+    } else if (isDoc && trimmed) {
+      text = `${trimmed}\n\n[附件: ${attachFile!.name}]`;
+    } else if (isImg && !trimmed) {
+      text = "Please analyze this problem";
+    }
+
+    const fileToSend = isImg ? attachFile : null;
+    const previewToSend = isImg ? previewUrlRef.current : null;
+    const docToSend = isDoc ? attachFile : null;
 
     onSend({
       content: text,
@@ -263,27 +335,30 @@ export function ChatInput({
       previewUrl: previewToSend,
       audioFile: null,
       enableTts,
+      docFile: docToSend,
     });
 
     setContent("");
-    if (fileToSend) {
+    if (attachFile) {
       previewUrlRef.current = null;
       setPreviewUrl(null);
-      setImageFile(null);
-      setImageState("idle");
+      setAttachFile(null);
+      setAttachState("idle");
+      setAttachKind(null);
       setImageHint(null);
     } else {
-      clearImage();
+      clearAttach();
     }
     if (textareaRef.current) textareaRef.current.style.height = "auto";
   }, [
     canSend,
-    clearImage,
+    clearAttach,
     enableTts,
-    hasImageSelection,
-    imageFile,
-    imagePending,
-    imageReady,
+    hasAttach,
+    attachFile,
+    attachKind,
+    attachPending,
+    attachReady,
     isStreaming,
     onSend,
     onStop,
@@ -306,8 +381,8 @@ export function ChatInput({
     !showStop &&
     (disabled ||
       voiceBusy ||
-      imagePending ||
-      (hasImageSelection && !imageReady) ||
+      attachPending ||
+      (hasAttach && !attachReady) ||
       !canSend);
 
   const footerHint = (() => {
@@ -315,8 +390,8 @@ export function ChatInput({
       return `Recording ${formatSeconds(recordSeconds)} / max ${MAX_AUDIO_SECONDS}s — tap mic to stop`;
     }
     if (isTranscribing) return "Converting speech to text…";
-    if (imagePending) return "Waiting for image to load…";
-    if (hasImageSelection && imageState === "error") return imageHint;
+    if (attachPending) return "Loading file…";
+    if (hasAttach && attachState === "error") return imageHint;
     if (imageHint) return imageHint;
     return "Tap mic to dictate, edit, and send · Enter to send";
   })();
@@ -324,14 +399,15 @@ export function ChatInput({
   const footerHintWarning =
     isRecording ||
     isTranscribing ||
-    imagePending ||
-    (hasImageSelection && imageState === "error") ||
+    attachPending ||
+    (hasAttach && attachState === "error") ||
     !!imageHint;
 
   return (
     <div className="shrink-0 border-t border-border bg-background/95 px-4 py-3 backdrop-blur md:px-6">
       <div className="mx-auto max-w-3xl">
-        {previewUrl && (
+        {/* Attachment preview */}
+        {previewUrl && attachKind === "image" && (
           <div className="mb-2">
             <div className="relative inline-block">
               {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -340,7 +416,7 @@ export function ChatInput({
                 alt="Selected image preview"
                 className="max-h-28 max-w-full rounded-xl border border-border object-contain bg-muted/30"
               />
-              {imagePending && (
+              {attachPending && (
                 <div className="absolute inset-0 flex items-center justify-center rounded-xl bg-black/40">
                   <div className="size-5 animate-spin rounded-full border-2 border-white border-t-transparent" />
                 </div>
@@ -348,9 +424,38 @@ export function ChatInput({
               {!isStreaming && (
                 <button
                   type="button"
-                  onClick={clearImage}
+                  onClick={clearAttach}
                   className="absolute -top-1.5 -right-1.5 flex size-5 items-center justify-center rounded-full bg-foreground/80 text-background hover:bg-foreground"
-                  aria-label="Remove image"
+                  aria-label="Remove attachment"
+                >
+                  <X className="size-3" />
+                </button>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Document file card preview */}
+        {attachReady && attachKind === "document" && attachFile && (
+          <div className="mb-2">
+            <div className="relative inline-flex items-center gap-2.5 rounded-xl border border-border bg-muted/40 py-2 pl-3 pr-8">
+              <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary/10">
+                <FileText className="size-4 text-primary" />
+              </div>
+              <div className="flex flex-col">
+                <span className="max-w-[200px] truncate text-xs font-medium text-foreground">
+                  {attachFile.name}
+                </span>
+                <span className="text-[10px] text-muted-foreground">
+                  {formatBytes(attachFile.size)}
+                </span>
+              </div>
+              {!isStreaming && (
+                <button
+                  type="button"
+                  onClick={clearAttach}
+                  className="absolute right-1.5 top-1/2 -translate-y-1/2 flex size-5 items-center justify-center rounded-full bg-foreground/80 text-background hover:bg-foreground"
+                  aria-label="Remove attachment"
                 >
                   <X className="size-3" />
                 </button>
@@ -363,23 +468,90 @@ export function ChatInput({
           <input
             ref={fileRef}
             type="file"
-            accept="image/jpeg,image/png,image/gif,image/webp,.jpg,.jpeg,.png,.gif,.webp"
+            accept={FILE_INPUT_ACCEPT}
             className="hidden"
             onChange={handleFileChange}
           />
+
+          {/* Mode dropdown */}
+          {onModeChange && (
+            <div ref={modeDropdownRef} className="relative shrink-0">
+              <button
+                type="button"
+                onClick={() => setModeDropdownOpen((v) => !v)}
+                disabled={isStreaming}
+                className={cn(
+                  "mb-0.5 flex h-8 shrink-0 items-center gap-1 rounded-lg px-2 text-xs font-medium transition-colors",
+                  chatMode === "agent"
+                    ? "text-primary"
+                    : "text-muted-foreground hover:text-foreground",
+                  isStreaming && "cursor-not-allowed opacity-50"
+                )}
+                aria-label="Select mode"
+              >
+                {chatMode === "chat" ? (
+                  <MessageSquare className="size-4.5" />
+                ) : (
+                  <Bot className="size-4.5" />
+                )}
+                <span className="hidden sm:inline">
+                  {chatMode === "chat" ? "Chat" : "Agent"}
+                </span>
+                <ChevronDown className="size-3 text-muted-foreground/50" />
+              </button>
+              {modeDropdownOpen && (
+                <div className="absolute bottom-full left-0 z-50 mb-1.5 w-32 overflow-hidden rounded-lg border border-border bg-background shadow-lg">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onModeChange("chat");
+                      setModeDropdownOpen(false);
+                    }}
+                    className={cn(
+                      "flex w-full items-center gap-2 px-3 py-2 text-xs transition-colors hover:bg-muted",
+                      chatMode === "chat"
+                        ? "font-medium text-foreground"
+                        : "text-muted-foreground"
+                    )}
+                  >
+                    <MessageSquare className="size-4" />
+                    Chat
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onModeChange("agent");
+                      setModeDropdownOpen(false);
+                    }}
+                    className={cn(
+                      "flex w-full items-center gap-2 px-3 py-2 text-xs transition-colors hover:bg-muted",
+                      chatMode === "agent"
+                        ? "font-medium text-primary"
+                        : "text-muted-foreground"
+                    )}
+                  >
+                    <Bot className="size-4" />
+                    Agent
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Attachment button */}
           <button
             type="button"
             onClick={() => fileRef.current?.click()}
-            disabled={disabled || isStreaming || imagePending || voiceBusy}
+            disabled={disabled || isStreaming || attachPending || voiceBusy}
             className={cn(
               "mb-0.5 flex size-8 shrink-0 items-center justify-center rounded-lg transition-colors",
-              disabled || isStreaming || imagePending || voiceBusy
+              disabled || isStreaming || attachPending || voiceBusy
                 ? "cursor-not-allowed text-muted-foreground/40"
                 : "text-muted-foreground hover:bg-muted hover:text-foreground"
             )}
-            aria-label="Upload image"
+            aria-label="Attach file"
           >
-            <ImagePlus className="size-4.5" />
+            <Paperclip className="size-4.5" />
           </button>
 
           <button
@@ -388,14 +560,14 @@ export function ChatInput({
               if (isRecording) void stopRecording();
               else void startRecording();
             }}
-            disabled={disabled || isStreaming || imagePending || isTranscribing}
+            disabled={disabled || isStreaming || attachPending || isTranscribing}
             className={cn(
               "mb-0.5 flex size-8 shrink-0 items-center justify-center rounded-lg transition-colors",
               isRecording
                 ? "bg-destructive text-destructive-foreground animate-pulse"
                 : isTranscribing
                   ? "cursor-wait text-muted-foreground"
-                  : disabled || isStreaming || imagePending
+                  : disabled || isStreaming || attachPending
                     ? "cursor-not-allowed text-muted-foreground/40"
                     : "text-muted-foreground hover:bg-muted hover:text-foreground"
             )}
@@ -436,8 +608,8 @@ export function ChatInput({
                 ? "AI is responding…"
                 : isTranscribing
                   ? "Transcribing…"
-                  : imageReady
-                    ? "Add a note or send the image…"
+                  : attachReady
+                    ? "Add a note or send…"
                     : placeholder
             }
             disabled={(disabled && !isStreaming) || isRecording || isTranscribing}
@@ -454,7 +626,7 @@ export function ChatInput({
               "mb-0.5 flex size-8 shrink-0 items-center justify-center rounded-lg transition-colors",
               showStop
                 ? "bg-foreground text-background hover:bg-foreground/80"
-                : canSend && !disabled && !imagePending && !voiceBusy
+                : canSend && !disabled && !attachPending && !voiceBusy
                   ? "bg-primary text-primary-foreground hover:bg-primary/90"
                   : "cursor-not-allowed bg-muted text-muted-foreground/40"
             )}

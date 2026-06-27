@@ -13,14 +13,25 @@ from pathlib import Path
 
 import httpx
 import numpy as np
-from piper import PiperVoice
-from piper.config import SynthesisConfig
 
 from app.config import get_settings
 
 logger = logging.getLogger(__name__)
 
-_voice_cache: dict[str, PiperVoice] = {}
+# Piper 是可选依赖（仅 CPU TTS 兜底用），缺失时不应阻断后端启动。
+# 这里改为惰性导入，真正用到 Piper 引擎时才 import。
+PiperVoice = None  # type: ignore[assignment]
+SynthesisConfig = None  # type: ignore[assignment]
+try:
+    from piper import PiperVoice as _PiperVoice
+    from piper.config import SynthesisConfig as _SynthesisConfig
+
+    PiperVoice = _PiperVoice
+    SynthesisConfig = _SynthesisConfig
+except ImportError:
+    logger.info("piper 未安装，Piper TTS 引擎不可用（不阻断后端启动）")
+
+_voice_cache: dict[str, "PiperVoice"] = {}
 
 
 class TTSEngine(ABC):

@@ -1,5 +1,8 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
+# Windows 保留字误生成文件（无法删除）
+nul
+
 # ========== 后端 FastAPI 忽略项 ==========
 # 用户上传图片（项目根 uploads/；落盘路径见 backend/app/config.py）
 uploads/**

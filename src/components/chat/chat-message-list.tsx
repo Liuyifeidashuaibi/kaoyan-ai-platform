@@ -9,10 +9,17 @@ import React, {
   useState,
 } from "react";
 import dynamic from "next/dynamic";
-import { Check, ChevronDown, Copy, RefreshCw, ThumbsDown, ThumbsUp } from "lucide-react";
+import { Check, ChevronDown, Copy, FileText, RefreshCw, ThumbsDown, ThumbsUp } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import type { ChatMessage } from "@/lib/api/types";
+import { AgentFileList, AgentStepList } from "@/components/chat/agent-step-list";
+import {
+  parseAgentFiles,
+  stripAgentFiles,
+  type AgentFile,
+  type AgentStep,
+  type ChatMessage,
+} from "@/lib/api/types";
 import { userMessageDisplayText } from "@/lib/chat/display";
 import { resolveUploadUrl } from "@/lib/config/api";
 import { cn } from "@/lib/utils";
@@ -29,6 +36,25 @@ const ChatMarkdownContent = dynamic(
   }
 );
 
+/* ── User attachment parser ────────────────────────────── */
+function parseUserAttachment(content: string): { filename: string; cleanText: string } | null {
+  // Pattern 1: text\n\n[附件: filename.ext]
+  const bracketMatch = content.match(/\[附件:\s*(.+?)\]/);
+  if (bracketMatch) {
+    const filename = bracketMatch[1].trim();
+    const cleanText = content.replace(/\n*\[附件:\s*.+?\]/, "").trim();
+    return { filename, cleanText };
+  }
+  // Pattern 2: 请分析这份文件：filename.ext
+  const analyzeMatch = content.match(/^请分析这份文件：(.+)$/m);
+  if (analyzeMatch) {
+    const filename = analyzeMatch[1].trim();
+    const cleanText = content.replace(/^请分析这份文件：.+$/m, "").trim();
+    return { filename, cleanText };
+  }
+  return null;
+}
+
 /* ── Types ───────────────────────────────────────────────── */
 type MessageActionsProps = {
   content: string;
@@ -43,6 +69,8 @@ type MessageBubbleProps = {
   imagePath?: string | null;
   localPreview?: string | null;
   isStreaming?: boolean;
+  steps?: AgentStep[];
+  files?: AgentFile[];
   onRegenerate?: () => void;
 };
 
@@ -50,6 +78,9 @@ type ChatMessageListProps = {
   messages: ChatMessage[];
   streamingContent?: string;
   isStreaming?: boolean;
+  streamingSteps?: AgentStep[];
+  streamingFiles?: AgentFile[];
+  agentThinkingRound?: number;
   onRegenerate?: (messageIndex: number) => void;
 };
 
@@ -135,7 +166,7 @@ function TypingCursor() {
 }
 
 /* ── Thinking dots ───────────────────────────────────────── */
-function ThinkingDots() {
+function ThinkingDots({ label = "Generating response…" }: { label?: string }) {
   return (
     <div className="flex items-center gap-2 py-2 text-sm text-muted-foreground">
       <span className="inline-flex gap-1">
@@ -147,7 +178,7 @@ function ThinkingDots() {
           />
         ))}
       </span>
-      <span>Generating response…</span>
+      <span>{label}</span>
     </div>
   );
 }
@@ -160,12 +191,22 @@ const MessageBubble = memo(function MessageBubble({
   imagePath,
   localPreview,
   isStreaming,
+  steps,
+  files,
   onRegenerate,
 }: MessageBubbleProps) {
   const isUser = role === "user";
   const imageSrc = localPreview || (imagePath ? resolveUploadUrl(imagePath) : "");
   const userText = isUser ? userMessageDisplayText(content, displayContent) : content;
   const [imageBroken, setImageBroken] = useState(false);
+
+  // Parse attachment from user message
+  const attachment = isUser ? parseUserAttachment(userText) : null;
+  const displayText = attachment ? attachment.cleanText : userText;
+
+  // Agent 模式：从内容中解析文件信息，剥离标记
+  const agentFiles = files ?? parseAgentFiles(content);
+  const displayContentClean = isUser ? userText : stripAgentFiles(content);
 
   useEffect(() => {
     setImageBroken(false);
@@ -195,8 +236,21 @@ const MessageBubble = memo(function MessageBubble({
                 Failed to load image. Refresh or upload again.
               </div>
             )}
-            {userText ? (
-              <div className="whitespace-pre-wrap break-words">{userText}</div>
+            {attachment && (
+              <div className="mb-2 flex items-center gap-2.5 rounded-xl border border-black/10 bg-white/60 py-2 pl-3 pr-2">
+                <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary/10">
+                  <FileText className="size-4 text-primary" />
+                </div>
+                <div className="flex flex-col">
+                  <span className="max-w-[200px] truncate text-xs font-medium text-foreground">
+                    {attachment.filename}
+                  </span>
+                  <span className="text-[10px] text-muted-foreground">Document</span>
+                </div>
+              </div>
+            )}
+            {displayText ? (
+              <div className="whitespace-pre-wrap break-words">{displayText}</div>
             ) : null}
           </div>
         ) : (
@@ -215,10 +269,12 @@ const MessageBubble = memo(function MessageBubble({
                 Failed to load image. Refresh or upload again.
               </div>
             )}
+            {steps && steps.length > 0 && <AgentStepList steps={steps} />}
             <div className="prose-sm max-w-none break-words text-foreground">
-              <ChatMarkdownContent content={content} />
+              <ChatMarkdownContent content={displayContentClean} />
               {isStreaming && <TypingCursor />}
             </div>
+            {agentFiles.length > 0 && <AgentFileList files={agentFiles} />}
           </div>
         )}
 
@@ -240,6 +296,9 @@ export function ChatMessageList({
   messages,
   streamingContent = "",
   isStreaming,
+  streamingSteps,
+  streamingFiles,
+  agentThinkingRound = 0,
   onRegenerate,
 }: ChatMessageListProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -270,7 +329,7 @@ export function ChatMessageList({
   useEffect(() => {
     if (isUserScrollingRef.current) return;
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [streamingContent]);
+  }, [streamingContent, streamingSteps, agentThinkingRound]);
 
   /* Scroll to bottom when new messages arrive (user sent) */
   useEffect(() => {
@@ -315,13 +374,21 @@ export function ChatMessageList({
             />
           ))}
 
-          {isStreaming && !streamingContent && <ThinkingDots />}
+          {isStreaming && !streamingContent && !streamingSteps?.length && (
+            <ThinkingDots label={agentThinkingRound > 0 ? `Agent 正在思考（第 ${agentThinkingRound} 轮）…` : "Generating response…"} />
+          )}
 
-          {isStreaming && streamingContent && (
+          {isStreaming && agentThinkingRound > 0 && (streamingSteps?.length ?? 0) > 0 && !streamingContent && (
+            <ThinkingDots label={`Agent 正在思考（第 ${agentThinkingRound} 轮）…`} />
+          )}
+
+          {isStreaming && (streamingContent || streamingSteps?.length) && (
             <MessageBubble
               role="assistant"
               content={streamingContent}
               isStreaming
+              steps={streamingSteps}
+              files={streamingFiles}
             />
           )}
 

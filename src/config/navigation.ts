@@ -1,5 +1,6 @@
 import {
   BookOpen,
+  Bot,
   GraduationCap,
   Home,
   Languages,
@@ -29,6 +30,12 @@ export const navItems: NavItem[] = [
     label: "Chat",
     icon: MessageSquare,
     description: "AI study assistant",
+  },
+  {
+    href: "/agent",
+    label: "Agent",
+    icon: Bot,
+    description: "Document generation workbench",
   },
   {
     href: "/wrong-questions",

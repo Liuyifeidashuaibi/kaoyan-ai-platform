@@ -47,6 +47,7 @@ celery_app = Celery(
         "app.infrastructure.tasks.score_crawler_task",
         "app.infrastructure.tasks.vector_ingest_task",
         "app.infrastructure.tasks.exam_process_task",
+        "app.infrastructure.tasks.agent_batch_task",
     ],
 )
 
@@ -68,6 +69,7 @@ celery_app.conf.update(
         "app.infrastructure.tasks.batch_ocr_task.*": {"queue": "heavy"},
         "app.infrastructure.tasks.vector_ingest_task.*": {"queue": "heavy"},
         "app.infrastructure.tasks.exam_process_task.*": {"queue": "heavy"},
+        "app.infrastructure.tasks.agent_batch_task.*": {"queue": "heavy"},
         "app.infrastructure.tasks.score_crawler_task.*": {"queue": "default"},
     },
 )

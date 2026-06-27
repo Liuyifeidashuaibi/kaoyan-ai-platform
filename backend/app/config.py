@@ -73,7 +73,26 @@ class Settings(BaseSettings):
     public_data_dir: str = "data/public"
     upload_dir: str = "uploads/wrong_questions"
     chroma_persist_dir: str = "chroma_db"
-    database_url: str = "sqlite:///./kaoyan.db"
+    # 业务数据库 — 优先 Postgres（DATABASE_URL 环境变量），未配置时回退 SQLite
+    # 这样本地开发零改动，商用部署设 DATABASE_URL=postgresql://... 即可
+    database_url: str = Field(
+        default="",
+        validation_alias="DATABASE_URL",
+    )
+
+    @property
+    def effective_database_url(self) -> str:
+        """实际使用的数据库连接串：DATABASE_URL 优先，否则本地 SQLite。"""
+        if self.database_url.strip():
+            return self.database_url.strip()
+        return f"sqlite:///{(self.root / 'kaoyan.db').as_posix()}"
+
+    @property
+    def is_postgres(self) -> bool:
+        """是否使用 PostgreSQL（决定是否跳过 SQLite 专属迁移逻辑）。"""
+        return self.effective_database_url.startswith(
+            ("postgresql://", "postgresql+psycopg://", "postgres://")
+        )
 
     # RAG
     rag_top_k: int = 4

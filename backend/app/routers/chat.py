@@ -9,16 +9,18 @@ AI 聊天路由 — 会话管理、消息历史、流式对话、图片处理。
 
 import json
 import logging
+import pathlib
 from dataclasses import replace as dc_replace
 
 from fastapi import APIRouter, Depends, File, Form, Query, UploadFile
-from fastapi.responses import JSONResponse, StreamingResponse
+from fastapi.responses import FileResponse, JSONResponse, StreamingResponse
 from sqlalchemy.orm import Session
 
 from app.config import get_settings
 from app.database import get_db
 from app.schemas.chat import ChatSearchRequest, ChatSendRequest, ChatSessionCreate
-from app.services.chat_context import strip_ocr_for_display
+from app.services.agent_mode_service import get_agent_mode_service
+from app.services.chat_context import build_history_for_llm, strip_ocr_for_display
 from app.services.chat_service import ChatService
 from app.services.media_service import get_media_service
 from app.utils.file_utils import ensure_dir, save_upload_image
@@ -343,3 +345,181 @@ async def search_sessions(
         for s in sessions
     ]
     return success_response(data)
+
+
+# ── Agent 模式 ────────────────────────────────────────────
+
+AGENT_FILES_MARKER = "__AGENT_FILES__"
+
+
+@router.post("/agent/stream")
+async def agent_stream(
+    session_id: str = Form(...),
+    content: str = Form(default=""),
+    file: UploadFile | None = File(default=None),
+    resume_task_id: str = Form(default=""),
+    service: ChatService = Depends(_get_chat_service),
+):
+    """
+    Agent 模式流式回复 — 任务执行型 AI，可调用工具（导出文件、知识检索）。
+
+    支持文件上传：用户可上传 docx/pdf/txt 等文档，Agent 会先读取文件内容再生成。
+    支持断点续跑：传入 resume_task_id 从上次中断处恢复。
+
+    SSE 事件格式：
+      data: {"type":"thinking","round":1}
+      data: {"type":"step","tool":"...","args":{},"status":"running"|"done"}
+      data: {"type":"token","token":"..."}
+      data: {"type":"file","file":{"filename":"...","file_url":"..."}}
+      data: {"type":"done"}
+      data: {"type":"resumed","task_id":"..."}  (断点续跑成功)
+    """
+    session = service.get_session(session_id)
+    if not session:
+        return JSONResponse(
+            status_code=404,
+            content=error_response("会话不存在，请新建对话后重试"),
+        )
+
+    if not content.strip() and not file:
+        return error_response("请输入任务描述或上传文件")
+
+    # 保存上传文件到 uploads/chat/
+    saved_file_name: str | None = None
+    if file:
+        try:
+            file_bytes = await file.read()
+        except Exception as exc:
+            return error_response(f"读取文件失败: {exc}")
+        if file_bytes:
+            chat_upload_dir = settings.upload_path.parent / "chat"
+            ensure_dir(chat_upload_dir)
+            import uuid as _uuid
+            safe_name = pathlib.Path(file.filename or "upload.docx").name
+            stem = pathlib.Path(safe_name).stem
+            ext = pathlib.Path(safe_name).suffix
+            file_id = _uuid.uuid4().hex[:8]
+            saved_file_name = f"{stem}_{file_id}{ext}"
+            saved_path = chat_upload_dir / saved_file_name
+            saved_path.write_bytes(file_bytes)
+            logger.info("[Agent] 文件已保存: %s", saved_file_name)
+
+    # 保存用户消息
+    service.save_message(session_id, "user", content)
+
+    # 构建多轮历史
+    prior_messages = service.get_messages(session_id)
+    history = build_history_for_llm(prior_messages)
+    # 移除最后一条（刚保存的用户消息），因为 stream_agent_reply 会自己加
+    if history and history[-1]["role"] == "user":
+        history = history[:-1]
+
+    # 更新会话标题（首次）
+    if session.title == "新对话" and content:
+        title_src = content.split("\n", 1)[0].strip()
+        session.title = title_src[:50] + ("..." if len(title_src) > 50 else "")
+        service.db.commit()
+
+    agent_service = get_agent_mode_service()
+
+    async def event_generator():
+        full_response: list[str] = []
+        files_info: list[dict] = []
+        try:
+            async for chunk in agent_service.stream_agent_reply(
+                content, history, file_name=saved_file_name, session_id=session_id,
+                resume_task_id=resume_task_id,
+            ):
+                if not chunk.startswith("data: "):
+                    continue
+                payload = chunk[6:].strip()
+                if not payload:
+                    continue
+                try:
+                    evt = json.loads(payload)
+                except json.JSONDecodeError:
+                    continue
+
+                # 转发给前端
+                yield chunk
+
+                # 收集结果（error 事件不重复 yield）
+                if evt.get("type") == "token":
+                    full_response.append(evt.get("token", ""))
+                elif evt.get("type") == "file":
+                    file_data = evt.get("file", {})
+                    files_info.append(file_data)
+                elif evt.get("type") == "error":
+                    return
+        except Exception as exc:
+            logger.error("Agent stream 失败: %s", exc)
+            yield f'data: {json.dumps({"error": str(exc)}, ensure_ascii=False)}\n\n'
+            return
+
+        # 保存助手消息（文件信息编码在内容末尾）
+        assistant_text = "".join(full_response)
+        if files_info:
+            assistant_text += f"\n\n{AGENT_FILES_MARKER}{json.dumps(files_info, ensure_ascii=False)}"
+        service.save_message(session_id, "assistant", assistant_text)
+
+    return StreamingResponse(
+        event_generator(),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
+            "X-Accel-Buffering": "no",
+        },
+    )
+
+
+@router.get("/files/{filename}")
+async def download_chat_file(filename: str):
+    """下载 Agent 生成的文件（uploads/chat/ 目录）。"""
+    # 安全检查：禁止路径穿越
+    safe_name = pathlib.Path(filename).name
+    if safe_name != filename:
+        return error_response("非法文件名")
+
+    file_path = settings.upload_path.parent / "chat" / safe_name
+    if not file_path.is_file():
+        return error_response("文件不存在")
+
+    return FileResponse(
+        path=str(file_path),
+        filename=safe_name,
+        media_type="application/octet-stream",
+    )
+
+
+# ── Agent 任务日志 ─────────────────────────────────────────
+
+@router.get("/agent/tasks")
+async def list_agent_tasks(
+    limit: int = Query(default=20, description="返回任务数量"),
+):
+    """获取最近的 Agent 任务列表（全链路审计）。"""
+    from app.services.agent_task_logger import get_task_logger
+    logger = get_task_logger()
+    tasks = logger.get_recent_tasks(limit=limit)
+    return success_response(tasks)
+
+
+@router.get("/agent/tasks/{task_id}")
+async def get_agent_task_detail(task_id: str):
+    """获取 Agent 任务执行详情（含每步工具调用记录）。"""
+    from app.services.agent_task_logger import get_task_logger
+    logger = get_task_logger()
+    detail = logger.get_task_detail(task_id)
+    if detail is None:
+        return error_response("任务不存在")
+    return success_response(detail)
+
+
+@router.get("/agent/stats")
+async def agent_stats():
+    """获取 Agent 系统统计（商业级监控面板）。"""
+    from app.services.agent_mode_service import get_agent_mode_service
+    service = get_agent_mode_service()
+    stats = service.get_system_stats()
+    return success_response(stats)

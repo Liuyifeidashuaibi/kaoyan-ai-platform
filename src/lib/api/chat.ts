@@ -2,7 +2,7 @@ import { rateLimitedApiFetch, rateLimitedApiUpload } from "@/lib/api/rate_limite
 
 import { ensureApiBaseUrl } from "@/lib/config/api";
 
-import type { ChatMessage, ChatSession } from "@/lib/api/types";
+import type { AgentFile, AgentStep, ChatMessage, ChatSession } from "@/lib/api/types";
 
 
 
@@ -233,4 +233,197 @@ export async function streamChatMessage({
 
   }
 
+}
+
+// ── Agent 模式 ────────────────────────────────────────────
+
+/** 格式校验单项检查结果 */
+export type ValidationCheck = {
+  rule: string;
+  passed: boolean;
+  message: string;
+};
+
+/** 格式校验事件载荷 */
+export type ValidateEventPayload = {
+  template_id: number;
+  passed: boolean;
+  failed_count: number;
+  checks: ValidationCheck[];
+  summary: string;
+};
+
+/** 返工事件载荷 */
+export type ReworkEventPayload = {
+  rework_count: number;
+  failed_checks: ValidationCheck[];
+};
+
+export type StreamAgentOptions = {
+  sessionId: string;
+  content: string;
+  docFile?: File | null;
+  onThinking?: (round: number) => void;
+  onStep?: (step: AgentStep) => void;
+  onToken: (token: string) => void;
+  onFile?: (file: AgentFile) => void;
+  /** LangGraph validate 节点：按模板校验规则检查导出内容 */
+  onValidate?: (payload: ValidateEventPayload) => void;
+  /** LangGraph rework 节点：校验不通过返工通知 */
+  onRework?: (payload: ReworkEventPayload) => void;
+  /** 断点续跑成功 */
+  onResumed?: (taskId: string) => void;
+  onDone?: () => void;
+  signal?: AbortSignal;
+};
+
+/**
+ * Agent 模式 SSE 流式发送消息。
+ * 事件类型：
+ *   thinking（思考中）、step（工具调用）、token（文本）、file（文件）、
+ *   validate（格式校验）、rework（返工）、resumed（断点续跑）、done（结束）
+ */
+export async function streamAgentMessage({
+  sessionId,
+  content,
+  docFile,
+  onThinking,
+  onStep,
+  onToken,
+  onFile,
+  onValidate,
+  onRework,
+  onResumed,
+  onDone,
+  signal,
+}: StreamAgentOptions): Promise<void> {
+  const form = new FormData();
+  form.append("session_id", sessionId);
+  form.append("content", content);
+
+  if (docFile) {
+    form.append("file", docFile, docFile.name);
+  }
+
+  const base = await ensureApiBaseUrl();
+  const res = await fetch(`${base}/api/chat/agent/stream`, {
+    method: "POST",
+    body: form,
+    signal,
+  });
+
+  if (!res.ok) {
+    let message = `Agent 请求失败 (${res.status})`;
+    const contentType = res.headers.get("content-type") ?? "";
+    try {
+      if (contentType.includes("application/json")) {
+        const body = (await res.json()) as { message?: string; detail?: string };
+        message = body.message || body.detail || message;
+      } else {
+        const text = (await res.text()).trim();
+        if (text) message = text;
+      }
+    } catch {
+      /* ignore */
+    }
+    throw new Error(message);
+  }
+
+  if (!res.body) throw new Error("流式响应为空");
+
+  const reader = res.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = "";
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+
+    buffer += decoder.decode(value, { stream: true });
+    const lines = buffer.split("\n");
+    buffer = lines.pop() ?? "";
+
+    for (const line of lines) {
+      if (!line.startsWith("data: ")) continue;
+      const payload = line.slice(6).trim();
+      if (!payload) continue;
+
+      try {
+        const data = JSON.parse(payload) as {
+          type?: string;
+          round?: number;
+          step_id?: number;
+          tool?: string;
+          args?: Record<string, unknown>;
+          result?: Record<string, unknown>;
+          status?: string;
+          token?: string;
+          file?: AgentFile;
+          done?: boolean;
+          error?: string;
+          // LangGraph validate / rework / resumed 事件
+          template_id?: number;
+          passed?: boolean;
+          failed_count?: number;
+          checks?: ValidationCheck[];
+          summary?: string;
+          rework_count?: number;
+          failed_checks?: ValidationCheck[];
+          task_id?: string;
+        };
+
+        if (data.error) throw new Error(data.error);
+
+        if (data.type === "thinking") {
+          onThinking?.(data.round ?? 1);
+        }
+
+        if (data.type === "step" && data.tool) {
+          onStep?.({
+            step_id: data.step_id ?? 0,
+            tool: data.tool,
+            args: data.args ?? {},
+            result: data.result,
+            status: (data.status as "running" | "done") ?? "running",
+          });
+        }
+
+        if (data.type === "token" && data.token) {
+          onToken(data.token);
+        }
+
+        if (data.type === "file" && data.file) {
+          onFile?.(data.file);
+        }
+
+        if (data.type === "validate" && data.template_id != null) {
+          onValidate?.({
+            template_id: data.template_id,
+            passed: data.passed ?? true,
+            failed_count: data.failed_count ?? 0,
+            checks: data.checks ?? [],
+            summary: data.summary ?? "",
+          });
+        }
+
+        if (data.type === "rework" && data.rework_count != null) {
+          onRework?.({
+            rework_count: data.rework_count,
+            failed_checks: data.failed_checks ?? [],
+          });
+        }
+
+        if (data.type === "resumed" && data.task_id) {
+          onResumed?.(data.task_id);
+        }
+
+        if (data.type === "done" || data.done) {
+          onDone?.();
+        }
+      } catch (e) {
+        if (e instanceof SyntaxError) continue;
+        throw e;
+      }
+    }
+  }
 }

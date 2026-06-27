@@ -17,9 +17,10 @@ import {
   deleteChatSession,
   getChatMessages,
   listChatSessions,
+  streamAgentMessage,
   streamChatMessage,
 } from "@/lib/api/chat";
-import type { ChatMessage, ChatSession } from "@/lib/api/types";
+import type { AgentFile, AgentStep, ChatMessage, ChatSession } from "@/lib/api/types";
 import { initApiBaseUrl } from "@/lib/config/api";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -69,6 +70,10 @@ export function ChatApp() {
   const [loadingMessages, setLoadingMessages] = useState(false);
   const [isStreaming, setIsStreaming] = useState(false);
   const [streamingContent, setStreamingContent] = useState("");
+  const [chatMode, setChatMode] = useState<"chat" | "agent">("chat");
+  const [streamingSteps, setStreamingSteps] = useState<AgentStep[]>([]);
+  const [streamingFiles, setStreamingFiles] = useState<AgentFile[]>([]);
+  const [agentThinkingRound, setAgentThinkingRound] = useState(0);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -194,6 +199,7 @@ export function ChatApp() {
         localPreview?: string | null;
         skipOptimisticUser?: boolean;
         skipUserSave?: boolean;
+        docFile?: File | null;
       }
     ) => {
       const imageFile = options?.imageFile ?? null;
@@ -209,6 +215,9 @@ export function ChatApp() {
       setError(null);
       setIsStreaming(true);
       setStreamingContent("");
+      setStreamingSteps([]);
+      setStreamingFiles([]);
+      setAgentThinkingRound(0);
 
       const tempUserMsg: ChatMessage = {
         id: Date.now(),
@@ -224,33 +233,66 @@ export function ChatApp() {
       }
 
       try {
-        await streamChatMessage({
-          sessionId,
-          content,
-          imageFile,
-          audioFile,
-          imagePath,
-          skipUserSave: options?.skipUserSave,
-          enableTts,
-          signal: controller.signal,
-          onToken: (token) => {
-            setStreamingContent((prev) => prev + token);
-          },
-          onDone: (payload) => {
-            if (!payload.ttsAudioBase64) return;
-            try {
-              const src = `data:audio/wav;base64,${payload.ttsAudioBase64}`;
-              if (ttsAudioRef.current) {
-                ttsAudioRef.current.pause();
+        if (chatMode === "agent") {
+          // ── Agent 模式：调用 streamAgentMessage ──
+          await streamAgentMessage({
+            sessionId,
+            content,
+            docFile: options?.docFile ?? null,
+            signal: controller.signal,
+            onThinking: (round) => {
+              setAgentThinkingRound(round);
+            },
+            onStep: (step) => {
+              setAgentThinkingRound(0);
+              setStreamingSteps((prev) => {
+                const idx = prev.findIndex((s) => s.step_id === step.step_id);
+                if (idx >= 0) {
+                  const next = [...prev];
+                  next[idx] = step;
+                  return next;
+                }
+                return [...prev, step];
+              });
+            },
+            onToken: (token) => {
+              setAgentThinkingRound(0);
+              setStreamingContent((prev) => prev + token);
+            },
+            onFile: (file) => {
+              setStreamingFiles((prev) => [...prev, file]);
+            },
+          });
+        } else {
+          // ── Chat 模式：调用 streamChatMessage ──
+          await streamChatMessage({
+            sessionId,
+            content,
+            imageFile,
+            audioFile,
+            imagePath,
+            skipUserSave: options?.skipUserSave,
+            enableTts,
+            signal: controller.signal,
+            onToken: (token) => {
+              setStreamingContent((prev) => prev + token);
+            },
+            onDone: (payload) => {
+              if (!payload.ttsAudioBase64) return;
+              try {
+                const src = `data:audio/wav;base64,${payload.ttsAudioBase64}`;
+                if (ttsAudioRef.current) {
+                  ttsAudioRef.current.pause();
+                }
+                const audio = new Audio(src);
+                ttsAudioRef.current = audio;
+                void audio.play();
+              } catch {
+                /* ignore playback errors */
               }
-              const audio = new Audio(src);
-              ttsAudioRef.current = audio;
-              void audio.play();
-            } catch {
-              /* ignore playback errors */
-            }
-          },
-        });
+            },
+          });
+        }
         const data = await getChatMessages(sessionId);
         // 服务端已有 image_path，不再需要 blob URL
         if (localPreview) URL.revokeObjectURL(localPreview);
@@ -266,10 +308,13 @@ export function ChatApp() {
       } finally {
         setIsStreaming(false);
         setStreamingContent("");
+        setStreamingSteps([]);
+        setStreamingFiles([]);
+        setAgentThinkingRound(0);
         abortControllerRef.current = null;
       }
     },
-    [refreshSessions]
+    [refreshSessions, chatMode]
   );
 
   const handleStop = useCallback(() => {
@@ -359,12 +404,14 @@ export function ChatApp() {
     previewUrl,
     audioFile,
     enableTts,
+    docFile,
   }: ChatSendPayload) => {
     const sendPayload = {
       imageFile: imageFile ?? null,
       audioFile: audioFile ?? null,
       enableTts,
       localPreview: previewUrl,
+      docFile: docFile ?? null,
     };
 
     if (!activeSessionId) {
@@ -555,6 +602,9 @@ export function ChatApp() {
             messages={messages}
             streamingContent={streamingContent}
             isStreaming={isStreaming}
+            streamingSteps={streamingSteps}
+            streamingFiles={streamingFiles}
+            agentThinkingRound={agentThinkingRound}
             onRegenerate={handleRegenerate}
           />
         )}
@@ -564,6 +614,9 @@ export function ChatApp() {
           onStop={handleStop}
           isStreaming={isStreaming}
           disabled={loadingMessages && messages.length === 0 && !isStreaming}
+          placeholder={chatMode === "agent" ? "描述任务，Agent 将自主执行…" : undefined}
+          chatMode={chatMode}
+          onModeChange={setChatMode}
         />
         </div>
         {/* 试卷解析上传弹窗 */}

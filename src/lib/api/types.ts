@@ -12,6 +12,47 @@ export type ChatSession = {
   updated_at: string;
 };
 
+/** Agent 工具执行步骤 */
+export type AgentStep = {
+  step_id: number;
+  tool: string;
+  args: Record<string, unknown>;
+  result?: Record<string, unknown>;
+  status: "running" | "done";
+};
+
+/** Agent 生成的文件 */
+export type AgentFile = {
+  filename: string;
+  file_url: string;
+  file_path: string;
+  file_size: number;
+  format: string;
+  title: string;
+};
+
+/** Agent 模式消息内容中的文件标记 */
+export const AGENT_FILES_MARKER = "__AGENT_FILES__";
+
+/** 从消息内容中提取文件信息 */
+export function parseAgentFiles(content: string): AgentFile[] {
+  const idx = content.indexOf(AGENT_FILES_MARKER);
+  if (idx === -1) return [];
+  try {
+    const jsonPart = content.slice(idx + AGENT_FILES_MARKER.length).trim();
+    return JSON.parse(jsonPart) as AgentFile[];
+  } catch {
+    return [];
+  }
+}
+
+/** 获取不含文件标记的纯文本内容 */
+export function stripAgentFiles(content: string): string {
+  const idx = content.indexOf(AGENT_FILES_MARKER);
+  if (idx === -1) return content;
+  return content.slice(0, idx).trimEnd();
+}
+
 export type ChatMessage = {
   id: number;
   role: "user" | "assistant" | "system";

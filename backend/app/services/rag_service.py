@@ -26,6 +26,7 @@ logger = logging.getLogger(__name__)
 COLLECTION_PUBLIC = "public_knowledge"
 COLLECTION_PRIVATE = "private_wrong_questions"
 COLLECTION_SCHOOL = "school_knowledge"
+COLLECTION_TEMPLATES = "agent_templates"  # 文档/行业模板向量库（格式强约束）
 
 
 class RAGService:
@@ -37,6 +38,7 @@ class RAGService:
         self._public_index: VectorStoreIndex | None = None
         self._private_index: VectorStoreIndex | None = None
         self._school_index: VectorStoreIndex | None = None
+        self._templates_index: VectorStoreIndex | None = None
         self._embed_model: DashScopeEmbedding | None = None
 
     def _get_embed_model(self) -> DashScopeEmbedding:
@@ -85,6 +87,13 @@ class RAGService:
         if self._school_index is None:
             self._school_index = self._build_index(COLLECTION_SCHOOL)
         return self._school_index
+
+    @property
+    def templates_index(self) -> VectorStoreIndex:
+        """模板向量索引（懒加载）。"""
+        if self._templates_index is None:
+            self._templates_index = self._build_index(COLLECTION_TEMPLATES)
+        return self._templates_index
 
     def _load_documents_from_dir(self, directory: Path) -> list[Document]:
         """
@@ -260,6 +269,97 @@ class RAGService:
         if not contexts:
             return ""
         return "\n\n".join(contexts[:k])
+
+    # ── 模板知识库 ────────────────────────────────────────
+
+    def ingest_template(
+        self,
+        template_id: int,
+        name: str,
+        category: str,
+        doc_type: str,
+        style_rules: str,
+        validation_rules: str,
+        source_text: str = "",
+    ) -> None:
+        """
+        将文档/行业模板向量化写入模板库，供 Agent 导出前检索。
+
+        模板检索结果会打 kind="template" 元数据标记，与参考资料区分。
+        """
+        self._get_embed_model()
+
+        # 拼接可检索文本：名称 + 分类 + 文档类型 + 样式规则 + 校验规则 + 源文本
+        parts = [f"【模板】{name}", f"分类：{category}", f"文档类型：{doc_type}"]
+        if style_rules:
+            parts.append(f"样式规则：{style_rules}")
+        if validation_rules:
+            parts.append(f"校验规则：{validation_rules}")
+        if source_text:
+            parts.append(f"模板原文：{source_text[:3000]}")
+        text = "\n".join(parts)
+
+        doc = Document(
+            text=text,
+            metadata={
+                "template_id": str(template_id),
+                "name": name,
+                "category": category,
+                "doc_type": doc_type,
+                "kind": "template",
+            },
+        )
+        splitter = SentenceSplitter(chunk_size=512, chunk_overlap=64)
+        nodes = splitter.get_nodes_from_documents([doc])
+
+        client = self._get_chroma_client()
+        chroma_collection = client.get_or_create_collection(COLLECTION_TEMPLATES)
+        vector_store = ChromaVectorStore(chroma_collection=chroma_collection)
+        storage_context = StorageContext.from_defaults(vector_store=vector_store)
+
+        index = VectorStoreIndex.from_vector_store(
+            vector_store,
+            storage_context=storage_context,
+        )
+        index.insert_nodes(nodes)
+        self._templates_index = None  # 下次使用时重新加载
+
+    def retrieve_templates(
+        self,
+        query: str,
+        doc_type: str | None = None,
+        top_k: int = 3,
+    ) -> list[dict[str, Any]]:
+        """
+        语义检索匹配模板 — 按文档类型+查询关键词召回。
+
+        返回模板列表，每项含 name/category/doc_type/style_rules/validation_rules 等字段。
+        结果打 kind="template" 标记，与参考资料检索结果区分。
+        """
+        try:
+            nodes = self.templates_index.as_retriever(
+                similarity_top_k=top_k,
+            ).retrieve(query)
+        except Exception as exc:
+            logger.warning("模板库检索失败: %s", exc)
+            return []
+
+        results: list[dict[str, Any]] = []
+        for node in nodes:
+            meta = node.metadata or {}
+            # 过滤：如果指定了 doc_type，只返回匹配的
+            if doc_type and meta.get("doc_type", "") and meta["doc_type"] != doc_type:
+                continue
+            snippet = compress_rag_snippet(node.get_content(), self.settings.rag_snippet_max_chars)
+            results.append({
+                "template_id": meta.get("template_id", ""),
+                "name": meta.get("name", ""),
+                "category": meta.get("category", ""),
+                "doc_type": meta.get("doc_type", ""),
+                "kind": "template",
+                "snippet": snippet,
+            })
+        return results
 
 
 # 全局单例

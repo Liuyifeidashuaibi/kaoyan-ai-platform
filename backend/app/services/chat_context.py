@@ -91,6 +91,9 @@ def build_history_for_llm(
     if len(relevant) > max_msgs:
         relevant = relevant[-max_msgs:]
 
+    # Agent 文件标记 — 历史中剥离，避免污染 LLM 上下文
+    _AGENT_MARKER = "__AGENT_FILES__"
+
     # 从最新往旧累积，超限时丢弃更旧消息，确保追问仍在上下文中
     history_rev: list[dict] = []
     total_chars = 0
@@ -98,6 +101,9 @@ def build_history_for_llm(
         text = (m.content or "").strip()
         if not text:
             continue
+        # 剥离 Agent 文件标记（仅 assistant 消息）
+        if m.role == "assistant" and _AGENT_MARKER in text:
+            text = text.split(_AGENT_MARKER, 1)[0].rstrip()
         if m.role == "assistant" and len(text) > s.chat_assistant_msg_max_chars:
             text = text[: s.chat_assistant_msg_max_chars].rstrip() + "…"
         if total_chars + len(text) > s.chat_history_max_chars:

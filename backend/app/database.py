@@ -1,5 +1,12 @@
 """
-数据库连接与 ORM 模型定义（SQLite + SQLAlchemy）。
+数据库连接与 ORM 模型定义。
+
+支持两种后端：
+  - PostgreSQL（商用正式环境）：设置 DATABASE_URL=postgresql://...
+  - SQLite（本地开发默认）：kaoyan.db 单文件
+
+新增 Agent 商用层表：AgentTask / AgentTaskStep / AgentTemplate / AgentGeneratedFile，
+支撑任务审计、模板管理、文件资产清单等商用能力。
 """
 
 from datetime import datetime
@@ -8,6 +15,7 @@ from sqlalchemy import (
     Boolean,
     Column,
     DateTime,
+    Float,
     ForeignKey,
     Integer,
     String,
@@ -20,11 +28,12 @@ from app.config import get_settings
 
 settings = get_settings()
 
-# SQLite 数据库文件放在项目根目录
-_db_path = settings.root / "kaoyan.db"
+# 方言自适应引擎：PostgreSQL（生产）或 SQLite（本地）透明切换
 engine = create_engine(
-    f"sqlite:///{_db_path}",
-    connect_args={"check_same_thread": False},
+    settings.effective_database_url,
+    # SQLite 单连接并发限制；其它后端不传该参数
+    connect_args={"check_same_thread": False} if settings.effective_database_url.startswith("sqlite") else {},
+    pool_pre_ping=True,
 )
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
@@ -114,6 +123,106 @@ class ExamPaper(Base):
     expires_at = Column(DateTime, nullable=True)          # 7天TTL
 
     session = relationship("ChatSession", backref="exam_papers")
+
+
+# ── Agent 商用层 ORM 表 ────────────────────────────────────
+# 持久化任务审计、模板配置、文件资产清单，满足企业商用交付要求。
+
+
+class AgentTask(Base):
+    """Agent 任务记录 — 全链路审计主表。
+
+    每次 Agent 任务（用户一次提问触发的完整工作流）对应一条记录，
+    持久化到数据库（替代旧的内存字典），重启不丢失。
+    """
+
+    __tablename__ = "agent_tasks"
+
+    task_id = Column(String(64), primary_key=True)
+    session_id = Column(String(36), nullable=True, index=True)
+    user_id = Column(String(36), nullable=True, index=True)
+    user_input = Column(Text, default="")
+    status = Column(String(20), default="running", index=True)  # running/completed/failed
+    final_output = Column(Text, default="")
+    started_at = Column(DateTime, default=datetime.utcnow)
+    finished_at = Column(DateTime, nullable=True)
+    total_duration_ms = Column(Float, default=0.0)
+    success = Column(Boolean, default=False)
+    error = Column(Text, default="")
+
+    steps = relationship(
+        "AgentTaskStep",
+        back_populates="task",
+        cascade="all, delete-orphan",
+        order_by="AgentTaskStep.step_id",
+    )
+    files = relationship(
+        "AgentGeneratedFile",
+        back_populates="task",
+        cascade="all, delete-orphan",
+    )
+
+
+class AgentTaskStep(Base):
+    """Agent 任务单步执行记录 — 工具调用审计明细。"""
+
+    __tablename__ = "agent_task_steps"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    task_id = Column(String(64), ForeignKey("agent_tasks.task_id"), nullable=False, index=True)
+    step_id = Column(Integer, nullable=False)             # 轮内步骤序号
+    round_idx = Column(Integer, nullable=False, default=0)
+    tool_name = Column(String(100), default="")
+    args = Column(Text, default="{}")                     # JSON 字符串
+    result = Column(Text, default="{}")                   # JSON 字符串
+    status = Column(String(20), default="pending")        # pending/running/done/error
+    error = Column(Text, default="")
+    duration_ms = Column(Float, default=0.0)
+    timestamp = Column(DateTime, default=datetime.utcnow)
+
+    task = relationship("AgentTask", back_populates="steps")
+
+
+class AgentTemplate(Base):
+    """文档/行业模板 — 强制格式约束的规则来源。
+
+    Agent 导出前检索匹配模板，按 style_rules / validation_rules 约束生成内容，
+    实现"输出版式高度统一"的商用核心能力。
+    """
+
+    __tablename__ = "agent_templates"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    name = Column(String(200), nullable=False)
+    category = Column(String(100), default="general", index=True)  # 论文/报告/标书/报表…
+    doc_type = Column(String(50), default="pdf")                   # pdf/docx/xlsx/pptx
+    description = Column(Text, default="")
+    style_rules = Column(Text, default="{}")        # JSON: 字体/字号/行距/标题层级
+    cover_format = Column(Text, default="{}")       # JSON: 封面字段与排版
+    validation_rules = Column(Text, default="{}")   # JSON: 校验规则(必含章节/字数/结构)
+    source_text = Column(Text, default="")          # 向量化用的纯文本(供 RAG 检索)
+    is_active = Column(Boolean, default=True, nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+
+class AgentGeneratedFile(Base):
+    """Agent 生成的文件资产清单 — 可审计/可批量管理。"""
+
+    __tablename__ = "agent_generated_files"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    task_id = Column(String(64), ForeignKey("agent_tasks.task_id"), nullable=True, index=True)
+    object_name = Column(String(500), default="")
+    filename = Column(String(255), default="")
+    format = Column(String(20), default="pdf")  # pdf/docx/xlsx/pptx/txt
+    title = Column(String(255), default="")
+    size = Column(Integer, default=0)
+    storage = Column(String(20), default="local")  # local / minio
+    file_url = Column(String(1000), default="")
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    task = relationship("AgentTask", back_populates="files")
 
 
 def _migrate_wrong_questions_columns() -> None:
@@ -211,11 +320,18 @@ _db_initialized = False
 
 
 def init_db() -> None:
-    """创建所有表（若不存在）并执行轻量迁移（仅首次调用时执行）。"""
+    """创建所有表（若不存在）并执行轻量迁移（仅首次调用时执行）。
+
+    SQLite 专属迁移逻辑（PRAGMA 补列）仅在 SQLite 后端执行；
+    PostgreSQL 等其它后端跳过（新库由 create_all 直接建全字段）。
+    """
     global _db_initialized
     if _db_initialized:
         return
     Base.metadata.create_all(bind=engine)
+    if settings.is_postgres:
+        _db_initialized = True
+        return
     _migrate_wrong_questions_columns()
     _migrate_wq_user_scoping()
     _migrate_chat_message_indexes()

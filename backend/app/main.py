@@ -22,7 +22,7 @@ load_dotenv(_project_root / "crawler" / ".env")
 
 from app.config import get_settings
 from app.database import init_db
-from app.routers import admin, chat, community, exam, schools, settings, tasks, translator, wrong_questions
+from app.routers import admin, agent_batch, chat, community, exam, schools, settings, tasks, templates, translator, wrong_questions
 from app.modules.en_learn.router import router as en_learn_router
 from app.modules.tts.router import router as tts_router
 from app.modules.word_dict.router import router as word_dict_router
@@ -105,6 +105,8 @@ app.include_router(en_learn_router)
 app.include_router(tts_router)
 app.include_router(word_dict_router)
 app.include_router(exam.router)
+app.include_router(templates.router)
+app.include_router(agent_batch.router)
 
 # 静态文件服务 — 提供上传图片访问（确保目录存在后再挂载）
 _uploads_root = get_settings().root / "uploads"
